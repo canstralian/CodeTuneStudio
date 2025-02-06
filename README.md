@@ -27,7 +27,7 @@ streamlit run app.py
 ```
 ├── .streamlit/          # Streamlit configuration
 ├── components/          # UI components
-├── migrations/         # Database migrations
-├── styles/            # Custom CSS styles
-├── utils/             # Utility functions
-└── app.py            # Main application file
+├── migrations/          # Database migrations
+├── styles/             # Custom CSS styles
+├── utils/              # Utility functions
+└── app.py              # Main application file
