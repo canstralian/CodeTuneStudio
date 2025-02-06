@@ -12,6 +12,7 @@ from transformers import (
 from transformers.generation import GenerationConfig
 from typing import Dict, Set, Tuple, Optional, Union, Any
 import logging
+from .peft_trainer import PEFTTrainer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,7 @@ class ModelInference:
         self.device_map = device_map
         self.model: Optional[AutoModelForCausalLM] = None
         self.tokenizer: Optional[AutoTokenizer] = None
+        self.peft_trainer: Optional[PEFTTrainer] = None
 
     def get_default_logits_processors(self, 
                                    min_length: int = 10,
@@ -167,6 +169,19 @@ class ModelInference:
             logger.info("Pre-trained model loaded successfully")
         except Exception as e:
             logger.error(f"Error loading pre-trained model: {str(e)}")
+            raise
+
+    def setup_peft(self, peft_config: Optional[Dict] = None) -> None:
+        """Initialize PEFT trainer with the current model"""
+        try:
+            if self.model is None:
+                raise ValueError("Model not initialized. Call load_pretrained first.")
+
+            self.peft_trainer = PEFTTrainer(self.model, peft_config)
+            self.peft_trainer.prepare_for_training()
+            logger.info("PEFT trainer initialized successfully")
+        except Exception as e:
+            logger.error(f"Error setting up PEFT trainer: {str(e)}")
             raise
 
     def cleanup(self) -> None:
