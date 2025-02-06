@@ -7,10 +7,9 @@ from transformers import (
     MinLengthLogitsProcessor,
     TemperatureLogitsWarper,
     TopKLogitsWarper,
-    TopPLogitsWarper,
-    GenerateDecoderOnlyOutput,
-    GenerateEncoderDecoderOutput
+    TopPLogitsWarper
 )
+from transformers.generation import GenerationConfig
 from typing import Optional, Dict, Any, List, Union, Tuple
 import logging
 
@@ -76,7 +75,7 @@ class ModelInference:
                      max_length: int = 100,
                      generation_config: Optional[Dict[str, Any]] = None,
                      logits_processors: Optional[List] = None,
-                     return_full_output: bool = False) -> Union[str, Union[GenerateDecoderOnlyOutput, GenerateEncoderDecoderOutput]]:
+                     return_full_output: bool = False) -> Union[str, Dict[str, Any]]:
         """
         Generate text using the loaded model with enhanced control and output options
 
@@ -88,7 +87,7 @@ class ModelInference:
             return_full_output: If True, returns full generation output object
 
         Returns:
-            Either generated text string or full generation output object
+            Either generated text string or full generation output dictionary
         """
         try:
             if self.model is None or self.tokenizer is None:
@@ -96,27 +95,27 @@ class ModelInference:
 
             # Set default generation config if none provided
             if generation_config is None:
-                generation_config = {
-                    "max_length": max_length,
-                    "num_beams": 4,
-                    "temperature": 0.7,
-                    "no_repeat_ngram_size": 2,
-                    "min_length": 10,
-                    "top_k": 50,
-                    "top_p": 0.9,
-                    "return_dict_in_generate": return_full_output,
-                    "output_scores": return_full_output,
-                    "output_attentions": return_full_output,
-                    "output_hidden_states": return_full_output
-                }
+                generation_config = GenerationConfig(
+                    max_length=max_length,
+                    num_beams=4,
+                    temperature=0.7,
+                    no_repeat_ngram_size=2,
+                    min_length=10,
+                    top_k=50,
+                    top_p=0.9,
+                    return_dict_in_generate=return_full_output,
+                    output_scores=return_full_output,
+                    output_attentions=return_full_output,
+                    output_hidden_states=return_full_output
+                )
 
             # Initialize default logits processors if none provided
             if logits_processors is None:
                 logits_processors = self.get_default_logits_processors(
-                    min_length=generation_config.get("min_length", 10),
-                    temperature=generation_config.get("temperature", 0.7),
-                    top_k=generation_config.get("top_k", 50),
-                    top_p=generation_config.get("top_p", 0.9)
+                    min_length=generation_config.min_length,
+                    temperature=generation_config.temperature,
+                    top_k=generation_config.top_k,
+                    top_p=generation_config.top_p
                 )
 
             inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True)
@@ -126,7 +125,7 @@ class ModelInference:
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    **generation_config,
+                    generation_config=generation_config,
                     logits_processor=logits_processors
                 )
 
