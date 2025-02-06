@@ -1,4 +1,3 @@
-
 import streamlit as st
 from flask import Flask
 from components.dataset_selector import dataset_browser
@@ -81,32 +80,30 @@ def main():
         if not selected_dataset or not validate_dataset_name(selected_dataset):
             st.error("Invalid dataset name selected")
             return
-            
+
         config = training_parameters()
         if not isinstance(config, dict):
             st.error("Invalid configuration format")
             return
-            
+
         errors = validate_config(config)
-            
-            if errors:
-                for error in errors:
-                    st.error(error)
-            else:
-                try:
-                    config_id = save_training_config(config, selected_dataset)
-                    st.session_state.current_config_id = config_id
-                    
-                    training_monitor()
-                    experiment_compare()
-                    
-                    if st.button("Export Configuration"):
-                        st.json(config)
-                except Exception as e:
-                    st.error(f"Database error: {str(e)}")
-                    db.session.rollback()
+
+        if errors:
+            for error in errors:
+                st.error(error)
         else:
-            st.warning("Please select a dataset to continue")
+            try:
+                config_id = save_training_config(config, selected_dataset)
+                st.session_state.current_config_id = config_id
+
+                training_monitor()
+                experiment_compare()
+
+                if st.button("Export Configuration"):
+                    st.json(config)
+            except Exception as e:
+                st.error(f"Database error: {str(e)}")
+                db.session.rollback()
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
 
