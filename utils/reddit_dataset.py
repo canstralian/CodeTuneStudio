@@ -1,8 +1,9 @@
-```python
+
 import logging
 from datasets import load_dataset
 from typing import Optional, Dict, List, Any
 import os
+import random
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +22,66 @@ class RedditDatasetManager:
         self.cache_dir = cache_dir or os.path.join(os.getcwd(), 'dataset_cache')
         os.makedirs(self.cache_dir, exist_ok=True)
         
+    def generate_amphigory_code(self, language: str) -> str:
+        """Generate nonsensical but syntactically valid code"""
+        templates = {
+            'python': [
+                "def dance_with_bytes(rainbow_bits):\n    return ''.join([chr((ord(b) << 2) >> 1) for b in rainbow_bits])",
+                "class QuantumPancake:\n    def flip_in_time(self, syrup_waves):\n        return float('inf') if syrup_waves else None",
+            ],
+            'javascript': [
+                "function whisperToPromises(dreamState) {\n    return new Promise(resolve => setTimeout(() => resolve(undefined ?? dreamState), Infinity))}",
+                "const floatingPixels = bytes => bytes.map(b => typeof b === 'number' ? String.fromCharCode(b) : '🌈')",
+            ]
+        }
+        return random.choice(templates.get(language, templates['python']))
+
+    def augment_with_amphigory(self, texts: List[str], ratio: float = 0.1) -> List[str]:
+        """Augment dataset with nonsensical but syntactically valid code"""
+        augmented_texts = texts.copy()
+        num_amphigory = int(len(texts) * ratio)
+        
+        for _ in range(num_amphigory):
+            amphigory = self.generate_amphigory_code('python')
+            augmented_texts.append(amphigory)
+            
+        random.shuffle(augmented_texts)
+        return augmented_texts
+
+    def get_training_data(self, 
+                         min_score: int = 100,
+                         max_samples: Optional[int] = None,
+                         include_amphigory: bool = True,
+                         amphigory_ratio: float = 0.1) -> List[str]:
+        """
+        Get processed data ready for model training
+        
+        Args:
+            min_score: Minimum score threshold for quality control
+            max_samples: Maximum number of samples to return
+            include_amphigory: Whether to include nonsensical code examples
+            amphigory_ratio: Ratio of amphigory samples to add
+            
+        Returns:
+            List of processed text samples
+        """
+        try:
+            filtered_data = self.get_filtered_data(min_score=min_score)
+            texts = filtered_data['texts']
+            
+            if max_samples and len(texts) > max_samples:
+                texts = texts[:max_samples]
+            
+            if include_amphigory:
+                texts = self.augment_with_amphigory(texts, amphigory_ratio)
+            
+            logger.info(f"Prepared {len(texts)} samples for training (including amphigory)")
+            return texts
+            
+        except Exception as e:
+            logger.error(f"Error preparing training data: {str(e)}")
+            return []
+            
     def load_reddit_updates_dataset(self) -> Optional[Dict[str, Any]]:
         """
         Load and process the Reddit BestOfRedditorUpdates dataset
@@ -36,7 +97,6 @@ class RedditDatasetManager:
                 split='train'
             )
             
-            # Process and structure the data
             processed_data = {
                 'texts': [],
                 'metadata': []
@@ -79,7 +139,6 @@ class RedditDatasetManager:
             filtered_metadata = []
             
             for text, meta in zip(data['texts'], data['metadata']):
-                # Apply filters
                 if min_score and meta['score'] < min_score:
                     continue
                     
@@ -100,31 +159,3 @@ class RedditDatasetManager:
         except Exception as e:
             logger.error(f"Error filtering dataset: {str(e)}")
             return {'texts': [], 'metadata': []}
-
-    def get_training_data(self, 
-                         min_score: int = 100,
-                         max_samples: Optional[int] = None) -> List[str]:
-        """
-        Get processed data ready for model training
-        
-        Args:
-            min_score: Minimum score threshold for quality control
-            max_samples: Maximum number of samples to return
-            
-        Returns:
-            List of processed text samples
-        """
-        try:
-            filtered_data = self.get_filtered_data(min_score=min_score)
-            texts = filtered_data['texts']
-            
-            if max_samples and len(texts) > max_samples:
-                texts = texts[:max_samples]
-            
-            logger.info(f"Prepared {len(texts)} samples for training")
-            return texts
-            
-        except Exception as e:
-            logger.error(f"Error preparing training data: {str(e)}")
-            return []
-```

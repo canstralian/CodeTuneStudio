@@ -53,6 +53,13 @@ def get_training_parameters(col):
 def training_parameters():
     st.header("Training Configuration")
     
+    with st.expander("Dataset Enhancement Options", expanded=False):
+        include_amphigory = st.checkbox("Include Amphigory Examples", value=True, 
+            help="Include nonsensical but syntactically valid code examples to enhance model robustness")
+        if include_amphigory:
+            amphigory_ratio = st.slider("Amphigory Ratio", 0.0, 0.3, 0.1, 0.05,
+                help="Ratio of amphigory examples to include in training data")
+    
     with st.container():
         st.markdown("""
         <div class="card">
