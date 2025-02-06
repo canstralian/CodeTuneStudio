@@ -15,6 +15,7 @@ from components.dataset_selector import dataset_browser, validate_dataset_name
 from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
+from components.version_manager import version_manager
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
 
