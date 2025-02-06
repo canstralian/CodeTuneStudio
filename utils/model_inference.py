@@ -7,9 +7,11 @@ from transformers import (
     MinLengthLogitsProcessor,
     TemperatureLogitsWarper,
     TopKLogitsWarper,
-    TopPLogitsWarper
+    TopPLogitsWarper,
+    GenerateDecoderOnlyOutput,
+    GenerateEncoderDecoderOutput
 )
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union, Tuple
 import logging
 
 # Configure logging
@@ -73,8 +75,21 @@ class ModelInference:
                      prompt: str,
                      max_length: int = 100,
                      generation_config: Optional[Dict[str, Any]] = None,
-                     logits_processors: Optional[List] = None) -> str:
-        """Generate text using the loaded model with enhanced control"""
+                     logits_processors: Optional[List] = None,
+                     return_full_output: bool = False) -> Union[str, Union[GenerateDecoderOnlyOutput, GenerateEncoderDecoderOutput]]:
+        """
+        Generate text using the loaded model with enhanced control and output options
+
+        Args:
+            prompt: Input text to generate from
+            max_length: Maximum length of generated text
+            generation_config: Configuration for text generation
+            logits_processors: List of logits processors for controlling generation
+            return_full_output: If True, returns full generation output object
+
+        Returns:
+            Either generated text string or full generation output object
+        """
         try:
             if self.model is None or self.tokenizer is None:
                 raise ValueError("Model or tokenizer not initialized")
@@ -88,7 +103,11 @@ class ModelInference:
                     "no_repeat_ngram_size": 2,
                     "min_length": 10,
                     "top_k": 50,
-                    "top_p": 0.9
+                    "top_p": 0.9,
+                    "return_dict_in_generate": return_full_output,
+                    "output_scores": return_full_output,
+                    "output_attentions": return_full_output,
+                    "output_hidden_states": return_full_output
                 }
 
             # Initialize default logits processors if none provided
@@ -111,7 +130,13 @@ class ModelInference:
                     logits_processor=logits_processors
                 )
 
-            return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            if not return_full_output:
+                return self.tokenizer.decode(
+                    outputs[0] if isinstance(outputs, torch.Tensor) else outputs.sequences[0],
+                    skip_special_tokens=True
+                )
+            return outputs
+
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
             raise
@@ -122,7 +147,7 @@ class ModelInference:
             logger.info(f"Loading model weights from: {weights_path}")
             if self.model is None:
                 raise ValueError("Model not initialized. Call initialize_model first.")
-            
+
             state_dict = torch.load(weights_path, map_location="cpu")
             self.model.load_state_dict(state_dict)
             logger.info("Model weights loaded successfully")
@@ -144,6 +169,7 @@ class ModelInference:
         except Exception as e:
             logger.error(f"Error loading pre-trained model: {str(e)}")
             raise
+
     def cleanup(self) -> None:
         """Clean up model resources"""
         try:

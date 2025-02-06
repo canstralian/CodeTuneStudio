@@ -1,0 +1,42 @@
+The GenerateEncoderDecoderOutput class in Hugging Face’s Transformers library is designed to encapsulate the outputs of encoder-decoder generation models during text generation tasks. This class inherits from ModelOutput and provides a structured way to access various components of the generation process.
+
+Constructor Parameters:
+   •   sequences (torch.LongTensor): A tensor of shape (batch_size * num_return_sequences, sequence_length) representing the generated sequences. The sequence_length may be shorter than max_length if all batches finish early due to the eos_token_id.
+   •   scores (tuple(torch.FloatTensor), optional): Processed prediction scores of the language modeling head at each generation step. This is a tuple with up to max_new_tokens elements, each of shape (batch_size, config.vocab_size). Returned when output_scores=True.
+   •   logits (tuple(torch.FloatTensor), optional): Unprocessed prediction scores of the language modeling head at each generation step. This is a tuple with up to max_new_tokens elements, each of shape (batch_size, config.vocab_size). Returned when output_logits=True.
+   •   encoder_attentions (tuple(torch.FloatTensor), optional): A tuple of torch.FloatTensor (one for each layer of the encoder) of shape (batch_size, num_heads, sequence_length, sequence_length). Returned when output_attentions=True.
+   •   encoder_hidden_states (tuple(torch.FloatTensor), optional): A tuple of torch.FloatTensor (one for the output of the embeddings + one for the output of each layer) of shape (batch_size, sequence_length, hidden_size). Returned when output_hidden_states=True.
+   •   decoder_attentions (tuple(tuple(torch.FloatTensor)), optional): A tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of torch.FloatTensor of shape (batch_size, num_heads, generated_length, sequence_length). Returned when output_attentions=True.
+   •   cross_attentions (tuple(tuple(torch.FloatTensor)), optional): A tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of torch.FloatTensor of shape (batch_size, num_heads, generated_length, sequence_length). Returned when output_attentions=True.
+   •   decoder_hidden_states (tuple(tuple(torch.FloatTensor)), optional): A tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of torch.FloatTensor of shape (batch_size, generated_length, hidden_size). Returned when output_hidden_states=True.
+   •   past_key_values (tuple(tuple(torch.FloatTensor)), optional): Returns the model cache, used to speed up decoding. The cache format may vary between models; typically, it is a Cache instance. Returned when use_cache=True.
+
+Usage Example:
+
+Here’s how you might use GenerateEncoderDecoderOutput in a text generation scenario:
+
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+# Load pre-trained model and tokenizer
+model_name = "t5-small"  # Replace with your model's name
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+# Encode input prompt
+prompt = "Translate English to French: How are you?"
+inputs = tokenizer(prompt, return_tensors="pt")
+
+# Generate text
+outputs = model.generate(**inputs, return_dict_in_generate=True, output_scores=True)
+
+# Access generated sequences
+generated_sequences = outputs.sequences
+
+# Decode generated sequences
+generated_text = tokenizer.decode(generated_sequences[0], skip_special_tokens=True)
+print(generated_text)
+
+In this example, outputs is an instance of GenerateEncoderDecoderOutput, providing access to the generated sequences, scores, logits, and other components of the generation process.
+
+For more detailed information, refer to the Hugging Face Transformers documentation on generation outputs.
