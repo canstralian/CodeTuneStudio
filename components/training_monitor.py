@@ -1,9 +1,44 @@
+
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 from utils.visualization import create_metrics_chart
 from utils.mock_training import mock_training_step
 from utils.database import TrainingMetric, db
+
+def initialize_training_state():
+    if 'training_active' not in st.session_state:
+        st.session_state.training_active = False
+        st.session_state.current_epoch = 0
+        st.session_state.train_loss = []
+        st.session_state.eval_loss = []
+
+def handle_training_step(progress_bar, metrics_chart, step):
+    train_loss, eval_loss = mock_training_step()
+    st.session_state.train_loss.append(train_loss)
+    st.session_state.eval_loss.append(eval_loss)
+
+    if hasattr(st.session_state, 'current_config_id'):
+        metric = TrainingMetric(
+            config_id=st.session_state.current_config_id,
+            epoch=st.session_state.current_epoch,
+            step=step,
+            train_loss=train_loss,
+            eval_loss=eval_loss
+        )
+        db.session.add(metric)
+        db.session.commit()
+
+    progress = (step + 1) / 100
+    progress_bar.progress(progress)
+    
+    fig = create_metrics_chart(
+        st.session_state.train_loss,
+        st.session_state.eval_loss
+    )
+    metrics_chart.plotly_chart(fig, use_container_width=True)
+    
+    st.session_state.current_epoch = int(progress * 3)
 
 def training_monitor():
     st.header("Training Progress")
@@ -15,14 +50,8 @@ def training_monitor():
         </div>
         """, unsafe_allow_html=True)
 
-        # Initialize training state
-        if 'training_active' not in st.session_state:
-            st.session_state.training_active = False
-            st.session_state.current_epoch = 0
-            st.session_state.train_loss = []
-            st.session_state.eval_loss = []
+        initialize_training_state()
 
-        # Training controls
         col1, col2 = st.columns([2, 1])
         with col1:
             if not st.session_state.training_active:
@@ -38,44 +67,13 @@ def training_monitor():
         with col2:
             st.metric("Current Epoch", st.session_state.current_epoch)
 
-        # Training progress
         progress_bar = st.progress(0)
         metrics_chart = st.empty()
 
         if st.session_state.training_active:
             try:
                 for i in range(100):
-                    # Mock training step
-                    train_loss, eval_loss = mock_training_step()
-                    st.session_state.train_loss.append(train_loss)
-                    st.session_state.eval_loss.append(eval_loss)
-
-                    # Save metrics to database
-                    if hasattr(st.session_state, 'current_config_id'):
-                        metric = TrainingMetric(
-                            config_id=st.session_state.current_config_id,
-                            epoch=st.session_state.current_epoch,
-                            step=i,
-                            train_loss=train_loss,
-                            eval_loss=eval_loss
-                        )
-                        db.session.add(metric)
-                        db.session.commit()
-
-                    # Update progress
-                    progress = (i + 1) / 100
-                    progress_bar.progress(progress)
-
-                    # Update metrics chart
-                    fig = create_metrics_chart(
-                        st.session_state.train_loss,
-                        st.session_state.eval_loss
-                    )
-                    metrics_chart.plotly_chart(fig, use_container_width=True)
-
-                    # Update epoch
-                    st.session_state.current_epoch = int(progress * 3)
-
+                    handle_training_step(progress_bar, metrics_chart, i)
                     if not st.session_state.training_active:
                         break
             except Exception as e:
