@@ -8,7 +8,11 @@ from utils.database import init_db, TrainingConfig, TrainingMetric, db
 
 # Initialize Flask app for database
 flask_app = Flask(__name__)
-init_db(flask_app)
+flask_app = init_db(flask_app)
+
+# Create application context
+app_ctx = flask_app.app_context()
+app_ctx.push()
 
 # Page configuration
 st.set_page_config(
@@ -58,21 +62,20 @@ if selected_dataset:
             st.error(error)
     else:
         # Save configuration to database
-        with flask_app.app_context():
-            training_config = TrainingConfig(
-                model_type=config['model_type'],
-                dataset_name=selected_dataset,
-                batch_size=config['batch_size'],
-                learning_rate=config['learning_rate'],
-                epochs=config['epochs'],
-                max_seq_length=config['max_seq_length'],
-                warmup_steps=config['warmup_steps']
-            )
-            db.session.add(training_config)
-            db.session.commit()
+        training_config = TrainingConfig(
+            model_type=config['model_type'],
+            dataset_name=selected_dataset,
+            batch_size=config['batch_size'],
+            learning_rate=config['learning_rate'],
+            epochs=config['epochs'],
+            max_seq_length=config['max_seq_length'],
+            warmup_steps=config['warmup_steps']
+        )
+        db.session.add(training_config)
+        db.session.commit()
 
-            # Store config ID in session state
-            st.session_state.current_config_id = training_config.id
+        # Store config ID in session state
+        st.session_state.current_config_id = training_config.id
 
         # Training monitor
         training_monitor()

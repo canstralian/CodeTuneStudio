@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.14.1",
     "datasets>=3.2.0",
+    "flask>=3.1.0",
     "flask-migrate>=4.1.0",
     "flask-sqlalchemy>=3.1.1",
     "numpy>=2.2.2",
@@ -13,4 +14,5 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "sqlalchemy>=2.0.37",
     "streamlit>=1.42.0",
+    "twilio>=9.4.4",
 ]

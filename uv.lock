@@ -80,6 +80,18 @@ wheels = [
 ]
 
 [[package]]
+name = "aiohttp-retry"
+version = "2.9.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9d/61/ebda4d8e3d8cfa1fd3db0fb428db2dd7461d5742cea35178277ad180b033/aiohttp_retry-2.9.1.tar.gz", hash = "sha256:8eb75e904ed4ee5c2ec242fefe85bf04240f685391c4879d8f541d6028ff01f1", size = 13608 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/99/84ba7273339d0f3dfa57901b846489d2e5c2cd731470167757f1935fffbd/aiohttp_retry-2.9.1-py3-none-any.whl", hash = "sha256:66d2759d1921838256a05a3f80ad7e724936f083e35be5abb5e16eed6be6dc54", size = 9981 },
+]
+
+[[package]]
 name = "aiosignal"
 version = "1.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1013,6 +1025,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.10.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/46/bd74733ff231675599650d3e47f361794b22ef3e3770998dda30d3b63726/pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953", size = 87785 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/61/ad/689f02752eeec26aed679477e80e632ef1b682313be70793d798c1d5fc8f/PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb", size = 22997 },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -1089,6 +1110,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
     { name = "datasets" },
+    { name = "flask" },
     { name = "flask-migrate" },
     { name = "flask-sqlalchemy" },
     { name = "numpy" },
@@ -1096,12 +1118,14 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "sqlalchemy" },
     { name = "streamlit" },
+    { name = "twilio" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.14.1" },
     { name = "datasets", specifier = ">=3.2.0" },
+    { name = "flask", specifier = ">=3.1.0" },
     { name = "flask-migrate", specifier = ">=4.1.0" },
     { name = "flask-sqlalchemy", specifier = ">=3.1.1" },
     { name = "numpy", specifier = ">=2.2.2" },
@@ -1109,6 +1133,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "sqlalchemy", specifier = ">=2.0.37" },
     { name = "streamlit", specifier = ">=1.42.0" },
+    { name = "twilio", specifier = ">=9.4.4" },
 ]
 
 [[package]]
@@ -1330,6 +1355,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540 },
+]
+
+[[package]]
+name = "twilio"
+version = "9.4.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "aiohttp-retry" },
+    { name = "pyjwt" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6d/0f/1ea92192bd16001dde01074b656002b755fde466de57acbc5176e109c12a/twilio-9.4.4.tar.gz", hash = "sha256:60dc5fbae13df9aa83b16025c6f953831c50fd2cb65d53d940bc2289f65211a2", size = 988134 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/19/f6/2e77510ae3b713f3dc463eaf9fc311b7e6f788b036389dd254f13c68389f/twilio-9.4.4-py2.py3-none-any.whl", hash = "sha256:eea20c4d58ca7dd32d9763dbf4de19acba2eb8b543a761ea79efd455c94cfadf", size = 1875738 },
 ]
 
 [[package]]

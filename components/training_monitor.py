@@ -4,7 +4,6 @@ import numpy as np
 from utils.visualization import create_metrics_chart
 from utils.mock_training import mock_training_step
 from utils.database import TrainingMetric, db
-from flask import current_app
 
 def training_monitor():
     st.header("Training Progress")
@@ -44,15 +43,15 @@ def training_monitor():
         metrics_chart = st.empty()
 
         if st.session_state.training_active:
-            for i in range(100):
-                # Mock training step
-                train_loss, eval_loss = mock_training_step()
-                st.session_state.train_loss.append(train_loss)
-                st.session_state.eval_loss.append(eval_loss)
+            try:
+                for i in range(100):
+                    # Mock training step
+                    train_loss, eval_loss = mock_training_step()
+                    st.session_state.train_loss.append(train_loss)
+                    st.session_state.eval_loss.append(eval_loss)
 
-                # Save metrics to database
-                if hasattr(st.session_state, 'current_config_id'):
-                    with current_app.app_context():
+                    # Save metrics to database
+                    if hasattr(st.session_state, 'current_config_id'):
                         metric = TrainingMetric(
                             config_id=st.session_state.current_config_id,
                             epoch=st.session_state.current_epoch,
@@ -63,19 +62,22 @@ def training_monitor():
                         db.session.add(metric)
                         db.session.commit()
 
-                # Update progress
-                progress = (i + 1) / 100
-                progress_bar.progress(progress)
+                    # Update progress
+                    progress = (i + 1) / 100
+                    progress_bar.progress(progress)
 
-                # Update metrics chart
-                fig = create_metrics_chart(
-                    st.session_state.train_loss,
-                    st.session_state.eval_loss
-                )
-                metrics_chart.plotly_chart(fig, use_container_width=True)
+                    # Update metrics chart
+                    fig = create_metrics_chart(
+                        st.session_state.train_loss,
+                        st.session_state.eval_loss
+                    )
+                    metrics_chart.plotly_chart(fig, use_container_width=True)
 
-                # Update epoch
-                st.session_state.current_epoch = int(progress * 3)
+                    # Update epoch
+                    st.session_state.current_epoch = int(progress * 3)
 
-                if not st.session_state.training_active:
-                    break
+                    if not st.session_state.training_active:
+                        break
+            except Exception as e:
+                st.error(f"Training error: {str(e)}")
+                st.session_state.training_active = False
