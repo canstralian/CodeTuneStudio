@@ -1,3 +1,4 @@
+
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
@@ -7,17 +8,15 @@ from utils.database import TrainingMetric, db
 from components.loading_animation import show_training_animation
 
 def initialize_training_state():
+    """Initialize or reset training state"""
     if 'training_active' not in st.session_state:
         st.session_state.training_active = False
         st.session_state.current_epoch = 0
         st.session_state.train_loss = []
         st.session_state.eval_loss = []
 
-def handle_training_step(progress_bar, metrics_chart, step):
-    train_loss, eval_loss = mock_training_step()
-    st.session_state.train_loss.append(train_loss)
-    st.session_state.eval_loss.append(eval_loss)
-
+def save_training_metrics(train_loss, eval_loss, step):
+    """Save training metrics to database"""
     if hasattr(st.session_state, 'current_config_id'):
         metric = TrainingMetric(
             config_id=st.session_state.current_config_id,
@@ -29,21 +28,28 @@ def handle_training_step(progress_bar, metrics_chart, step):
         db.session.add(metric)
         db.session.commit()
 
+def update_training_progress(progress_bar, metrics_chart, step):
+    """Update training progress and visualizations"""
+    train_loss, eval_loss = mock_training_step()
+    st.session_state.train_loss.append(train_loss)
+    st.session_state.eval_loss.append(eval_loss)
+    
+    save_training_metrics(train_loss, eval_loss, step)
+    
     progress = (step + 1) / 100
     progress_bar.progress(progress)
-
-    # Update loading animation with current progress
     show_training_animation(progress)
-
+    
     fig = create_metrics_chart(
         st.session_state.train_loss,
         st.session_state.eval_loss
     )
     metrics_chart.plotly_chart(fig, use_container_width=True)
-
+    
     st.session_state.current_epoch = int(progress * 3)
 
 def training_monitor():
+    """Main training monitoring interface"""
     st.header("Training Progress")
 
     with st.container():
@@ -54,7 +60,7 @@ def training_monitor():
         """, unsafe_allow_html=True)
 
         initialize_training_state()
-
+        
         col1, col2 = st.columns([2, 1])
         with col1:
             if not st.session_state.training_active:
@@ -63,7 +69,6 @@ def training_monitor():
                     st.session_state.current_epoch = 0
                     st.session_state.train_loss = []
                     st.session_state.eval_loss = []
-                    # Show initial loading animation
                     show_training_animation()
             else:
                 if st.button("Stop Training", type="secondary"):
@@ -78,7 +83,7 @@ def training_monitor():
         if st.session_state.training_active:
             try:
                 for i in range(100):
-                    handle_training_step(progress_bar, metrics_chart, i)
+                    update_training_progress(progress_bar, metrics_chart, i)
                     if not st.session_state.training_active:
                         break
             except Exception as e:

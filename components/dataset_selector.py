@@ -1,3 +1,4 @@
+
 import streamlit as st
 from datasets import load_dataset
 
@@ -7,14 +8,16 @@ AVAILABLE_DATASETS = [
     "github_code_snippets"
 ]
 
-def show_dataset_preview(selected_dataset):
-    """Display dataset preview without caching since it contains widgets"""
+def display_preview_data():
+    """Display sample dataset preview"""
     preview_data = {
         "code": ["def hello():", "print('Hello World')"],
         "language": ["python", "python"]
     }
     st.dataframe(preview_data)
 
+def display_dataset_info():
+    """Display detailed dataset information"""
     with st.expander("Dataset Information"):
         st.write("Number of examples: 1000")
         st.write("Languages: Python, JavaScript")
@@ -22,7 +25,7 @@ def show_dataset_preview(selected_dataset):
 
 @st.cache_data(ttl=3600)
 def get_dataset_info(dataset_name):
-    """Cache only the dataset information retrieval"""
+    """Retrieve and cache dataset information"""
     return {
         "num_examples": 1000,
         "languages": ["Python", "JavaScript"],
@@ -30,7 +33,7 @@ def get_dataset_info(dataset_name):
     }
 
 def dataset_browser():
-    """Main dataset browser function without caching due to widget usage"""
+    """Main dataset selection interface"""
     st.header("Dataset Selection")
 
     with st.container():
@@ -50,7 +53,8 @@ def dataset_browser():
             try:
                 st.info(f"Selected dataset: {selected_dataset}")
                 st.write("Dataset Preview:")
-                show_dataset_preview(selected_dataset)
+                display_preview_data()
+                display_dataset_info()
             except Exception as e:
                 st.error(f"Error loading dataset: {str(e)}")
 
