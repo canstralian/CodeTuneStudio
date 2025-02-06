@@ -1,13 +1,17 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from utils.visualization import create_metrics_chart
 from utils.mock_training import mock_training_step
 from utils.database import TrainingMetric, db
 from utils.model_inference import ModelInference
+from utils.distributed_trainer import DistributedTrainer, DistributedTrainingError
 from components.loading_animation import show_training_animation
 import logging
+import torch
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,15 +25,18 @@ def initialize_training_state() -> None:
         st.session_state.train_loss: List[float] = []
         st.session_state.eval_loss: List[float] = []
         st.session_state.model_inference: Optional[ModelInference] = None
+        st.session_state.distributed_trainer: Optional[DistributedTrainer] = None
+        st.session_state.training_threads: List[threading.Thread] = []
 
-def save_training_metrics(train_loss: float, eval_loss: float, step: int) -> None:
+def save_training_metrics(train_loss: float, eval_loss: float, step: int, rank: Optional[int] = None) -> None:
     """
-    Save training metrics to database with error handling
+    Save training metrics to database with enhanced error handling for distributed training
 
     Args:
         train_loss: Training loss value
         eval_loss: Evaluation loss value
         step: Current training step
+        rank: Process rank for distributed training
     """
     try:
         if hasattr(st.session_state, 'current_config_id'):
@@ -38,28 +45,40 @@ def save_training_metrics(train_loss: float, eval_loss: float, step: int) -> Non
                 epoch=st.session_state.current_epoch,
                 step=step,
                 train_loss=float(train_loss),
-                eval_loss=float(eval_loss)
+                eval_loss=float(eval_loss),
+                process_rank=rank
             )
             db.session.add(metric)
             db.session.commit()
-            logger.info(f"Saved metrics for step {step}: train_loss={train_loss}, eval_loss={eval_loss}")
+            logger.info(f"Saved metrics for step {step} {'(rank ' + str(rank) + ')' if rank is not None else ''}: "
+                       f"train_loss={train_loss}, eval_loss={eval_loss}")
     except Exception as e:
         logger.error(f"Failed to save metrics: {str(e)}")
         db.session.rollback()
         raise
 
+def get_device_info() -> Dict[str, Any]:
+    """Get available device information for distributed training"""
+    try:
+        return DistributedTrainer.get_available_devices()
+    except Exception as e:
+        logger.error(f"Error getting device information: {str(e)}")
+        return {'error': str(e)}
+
 def update_training_progress(
     progress_bar: st.progress,
     metrics_chart: st.empty,
-    step: int
+    step: int,
+    rank: Optional[int] = None
 ) -> None:
     """
-    Update training progress and visualizations with proper error handling
+    Update training progress and visualizations with distributed training support
 
     Args:
         progress_bar: Streamlit progress bar widget
         metrics_chart: Streamlit empty container for metrics
         step: Current training step
+        rank: Process rank for distributed training
     """
     try:
         train_loss, eval_loss = mock_training_step()
@@ -71,7 +90,7 @@ def update_training_progress(
         st.session_state.train_loss.append(float(train_loss))
         st.session_state.eval_loss.append(float(eval_loss))
 
-        save_training_metrics(train_loss, eval_loss, step)
+        save_training_metrics(train_loss, eval_loss, step, rank)
 
         progress = min(1.0, (step + 1) / 100)
         progress_bar.progress(progress)
@@ -90,8 +109,26 @@ def update_training_progress(
         logger.error(f"Error updating training progress: {str(e)}")
         raise
 
+def initialize_distributed_training() -> Optional[DistributedTrainer]:
+    """Initialize distributed training environment"""
+    try:
+        device_info = get_device_info()
+        if device_info.get('cuda_available', False):
+            trainer = DistributedTrainer(
+                world_size=device_info['device_count'],
+                backend='nccl'
+            )
+            logger.info(f"Initialized distributed training with {device_info['device_count']} devices")
+            return trainer
+        else:
+            logger.warning("No CUDA devices available for distributed training")
+            return None
+    except Exception as e:
+        logger.error(f"Failed to initialize distributed training: {str(e)}")
+        return None
+
 def training_monitor() -> None:
-    """Main training monitoring interface with enhanced error handling"""
+    """Main training monitoring interface with distributed training support"""
     st.header("Training Progress")
 
     try:
@@ -104,6 +141,13 @@ def training_monitor() -> None:
 
             initialize_training_state()
 
+            # Device information display
+            device_info = get_device_info()
+            if device_info.get('cuda_available', False):
+                st.info(f"Found {device_info['device_count']} CUDA devices available for distributed training")
+                for i, device in enumerate(device_info['devices']):
+                    st.text(f"Device {i}: {device['name']} ({device['total_memory'] / 1024**3:.1f} GB)")
+
             col1, col2 = st.columns([2, 1])
             with col1:
                 if not st.session_state.training_active:
@@ -112,6 +156,10 @@ def training_monitor() -> None:
                         st.session_state.current_epoch = 0
                         st.session_state.train_loss = []
                         st.session_state.eval_loss = []
+
+                        # Initialize distributed training if available
+                        st.session_state.distributed_trainer = initialize_distributed_training()
+
                         # Initialize model inference
                         st.session_state.model_inference = ModelInference(
                             model_name="Replit-v1.5",
@@ -123,6 +171,8 @@ def training_monitor() -> None:
                         st.session_state.training_active = False
                         if st.session_state.model_inference:
                             st.session_state.model_inference.cleanup()
+                        if st.session_state.distributed_trainer:
+                            st.session_state.distributed_trainer.cleanup()
 
             with col2:
                 st.metric("Current Epoch", st.session_state.current_epoch)
@@ -132,19 +182,46 @@ def training_monitor() -> None:
 
             if st.session_state.training_active:
                 try:
-                    for i in range(100):
-                        if not st.session_state.training_active:
-                            break
-                        update_training_progress(progress_bar, metrics_chart, i)
+                    if st.session_state.distributed_trainer:
+                        # Distributed training
+                        world_size = st.session_state.distributed_trainer.world_size
+                        with ThreadPoolExecutor(max_workers=world_size) as executor:
+                            for i in range(100):
+                                if not st.session_state.training_active:
+                                    break
+                                futures = []
+                                for rank in range(world_size):
+                                    future = executor.submit(
+                                        update_training_progress,
+                                        progress_bar,
+                                        metrics_chart,
+                                        i,
+                                        rank
+                                    )
+                                    futures.append(future)
+                                # Wait for all processes to complete
+                                for future in futures:
+                                    future.result()
+                    else:
+                        # Single device training
+                        for i in range(100):
+                            if not st.session_state.training_active:
+                                break
+                            update_training_progress(progress_bar, metrics_chart, i)
                 except Exception as e:
                     logger.error(f"Training error: {str(e)}")
                     st.error(f"Training error: {str(e)}")
                     st.session_state.training_active = False
                     if st.session_state.model_inference:
                         st.session_state.model_inference.cleanup()
+                    if st.session_state.distributed_trainer:
+                        st.session_state.distributed_trainer.cleanup()
                 finally:
-                    if not st.session_state.training_active and st.session_state.model_inference:
-                        st.session_state.model_inference.cleanup()
+                    if not st.session_state.training_active:
+                        if st.session_state.model_inference:
+                            st.session_state.model_inference.cleanup()
+                        if st.session_state.distributed_trainer:
+                            st.session_state.distributed_trainer.cleanup()
 
     except Exception as e:
         logger.error(f"Fatal error in training monitor: {str(e)}")
