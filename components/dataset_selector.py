@@ -1,4 +1,3 @@
-
 import streamlit as st
 from datasets import load_dataset
 
@@ -8,6 +7,7 @@ AVAILABLE_DATASETS = [
     "github_code_snippets"
 ]
 
+@st.cache_data(ttl=3600)  # Cache dataset preview for 1 hour
 def show_dataset_preview(selected_dataset):
     preview_data = {
         "code": ["def hello():", "print('Hello World')"],
@@ -20,6 +20,7 @@ def show_dataset_preview(selected_dataset):
         st.write("Languages: Python, JavaScript")
         st.write("Average sequence length: 128")
 
+@st.cache_resource  # Cache dataset browser UI
 def dataset_browser():
     st.header("Dataset Selection")
 

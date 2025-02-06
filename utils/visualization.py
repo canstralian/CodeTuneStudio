@@ -1,8 +1,10 @@
 import plotly.graph_objects as go
+import streamlit as st
 
+@st.cache_data(ttl=30)  # Cache metrics chart for 30 seconds
 def create_metrics_chart(train_loss, eval_loss):
     """
-    Create a plotly chart for training metrics
+    Create a plotly chart for training metrics with caching
     """
     fig = go.Figure()
 

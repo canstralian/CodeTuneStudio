@@ -2,11 +2,24 @@ import streamlit as st
 import plotly.graph_objects as go
 from utils.database import TrainingConfig, TrainingMetric, db
 
+@st.cache_data(ttl=60)  # Cache experiment data for 1 minute
+def fetch_experiment_data(exp_id):
+    metrics = db.session.query(TrainingMetric).filter_by(config_id=exp_id).all()
+    return {
+        'epochs': [m.epoch for m in metrics],
+        'train_loss': [m.train_loss for m in metrics],
+        'eval_loss': [m.eval_loss for m in metrics]
+    }
+
+@st.cache_data(ttl=300)  # Cache experiment list for 5 minutes
+def fetch_experiments():
+    return db.session.query(TrainingConfig).all()
+
 def experiment_compare():
     st.header("Experiment Comparison")
 
-    # Get all experiments
-    experiments = db.session.query(TrainingConfig).all()
+    # Get all experiments with caching
+    experiments = fetch_experiments()
     selected_experiments = st.multiselect(
         "Select experiments to compare",
         options=[(exp.id, f"Experiment {exp.id} - {exp.model_type}") for exp in experiments],
@@ -16,15 +29,13 @@ def experiment_compare():
     if selected_experiments:
         fig = go.Figure()
         for exp_id, exp_name in selected_experiments:
-            metrics = db.session.query(TrainingMetric).filter_by(config_id=exp_id).all()
-            epochs = [m.epoch for m in metrics]
-            train_loss = [m.train_loss for m in metrics]
-            eval_loss = [m.eval_loss for m in metrics]
+            # Fetch cached experiment data
+            data = fetch_experiment_data(exp_id)
 
             # Enhanced hover data for training loss
             fig.add_trace(go.Scatter(
-                x=epochs,
-                y=train_loss,
+                x=data['epochs'],
+                y=data['train_loss'],
                 name=f"{exp_name} - Train",
                 hovertemplate=(
                     "<b>%{fullData.name}</b><br>" +
@@ -37,8 +48,8 @@ def experiment_compare():
 
             # Enhanced hover data for evaluation loss
             fig.add_trace(go.Scatter(
-                x=epochs,
-                y=eval_loss,
+                x=data['epochs'],
+                y=data['eval_loss'],
                 name=f"{exp_name} - Eval",
                 hovertemplate=(
                     "<b>%{fullData.name}</b><br>" +
