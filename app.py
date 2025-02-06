@@ -24,8 +24,11 @@ class MLFineTuningApp:
     def __init__(self):
         """Initialize application components and database"""
         self.flask_app = Flask(__name__)
+        self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+        self.flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         self._configure_streamlit()
-        self._init_database()
+        with self.flask_app.app_context():
+            self._init_database()
 
     def _configure_streamlit(self) -> None:
         """Configure Streamlit UI settings"""
@@ -84,19 +87,20 @@ class MLFineTuningApp:
             Configuration ID if successful, None otherwise
         """
         try:
-            training_config = TrainingConfig(
-                model_type=config['model_type'],
-                dataset_name=selected_dataset,
-                batch_size=config['batch_size'],
-                learning_rate=config['learning_rate'],
-                epochs=config['epochs'],
-                max_seq_length=config['max_seq_length'],
-                warmup_steps=config['warmup_steps']
-            )
-            db.session.add(training_config)
-            db.session.commit()
-            logger.info(f"Saved config for dataset: {selected_dataset}")
-            return training_config.id
+            with self.flask_app.app_context():
+                training_config = TrainingConfig(
+                    model_type=config['model_type'],
+                    dataset_name=selected_dataset,
+                    batch_size=config['batch_size'],
+                    learning_rate=config['learning_rate'],
+                    epochs=config['epochs'],
+                    max_seq_length=config['max_seq_length'],
+                    warmup_steps=config['warmup_steps']
+                )
+                db.session.add(training_config)
+                db.session.commit()
+                logger.info(f"Saved config for dataset: {selected_dataset}")
+                return training_config.id
         except Exception as e:
             logger.error(f"Failed to save config: {str(e)}")
             db.session.rollback()
@@ -130,8 +134,9 @@ class MLFineTuningApp:
             config_id = self.save_training_config(config, selected_dataset)
             if config_id:
                 st.session_state.current_config_id = config_id
-                training_monitor()
-                experiment_compare()
+                with self.flask_app.app_context():
+                    training_monitor()
+                    experiment_compare()
 
                 if st.button("Export Configuration"):
                     st.json(config)
