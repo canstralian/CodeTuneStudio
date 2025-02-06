@@ -40,4 +40,5 @@ class TrainingMetric(db.Model):
     step = db.Column(db.Integer, nullable=False)
     train_loss = db.Column(db.Float, nullable=False)
     eval_loss = db.Column(db.Float, nullable=False)
+    process_rank = db.Column(db.Integer, nullable=True)  # Added for distributed training
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
