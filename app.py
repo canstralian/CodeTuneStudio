@@ -91,6 +91,9 @@ if selected_dataset:
 
         # Training monitor
         training_monitor()
+        
+        # Experiment comparison
+        experiment_compare()
 
         # Export configuration
         if st.button("Export Configuration"):
