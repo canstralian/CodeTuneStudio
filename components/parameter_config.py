@@ -21,28 +21,51 @@ def get_model_parameters(col) -> Dict[str, Any]:
         Dictionary containing validated model parameters
     """
     try:
-        model_type = col.selectbox(
-            "Model Architecture",
-            ["CodeT5", "Replit-v1.5"],
-            help="Select the base model architecture for fine-tuning. Each architecture is optimized for different tasks."
-        )
+        st.markdown("""
+        <style>
+        .parameter-help {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .parameter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-        batch_size = col.number_input(
-            "Batch Size",
-            min_value=1,
-            max_value=128,
-            value=16,
-            help="Number of samples processed in each training step. Larger values use more memory but can train faster."
-        )
+        with st.container():
+            st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
+            st.subheader("🤖 Model Architecture")
+            st.markdown('<p class="parameter-help">Select the base model and configure its core parameters.</p>', 
+                       unsafe_allow_html=True)
 
-        learning_rate = col.number_input(
-            "Learning Rate",
-            min_value=1e-6,
-            max_value=1e-2,
-            value=2e-5,
-            format="%.0e",
-            help="Step size for gradient updates. Too high can cause unstable training, too low can make training very slow."
-        )
+            model_type = st.selectbox(
+                "Model Architecture",
+                ["CodeT5", "Replit-v1.5"],
+                help="Select the base model architecture for fine-tuning. Each architecture is optimized for different tasks."
+            )
+
+            batch_size = st.number_input(
+                "Batch Size",
+                min_value=1,
+                max_value=128,
+                value=16,
+                help="Number of samples processed in each training step. Larger values use more memory but can train faster."
+            )
+
+            learning_rate = st.number_input(
+                "Learning Rate",
+                min_value=1e-6,
+                max_value=1e-2,
+                value=2e-5,
+                format="%.0e",
+                help="Step size for gradient updates. Too high can cause unstable training, too low can make training very slow."
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
 
         return {
             "model_type": sanitize_string(model_type),
@@ -64,29 +87,36 @@ def get_training_parameters(col) -> Dict[str, Any]:
         Dictionary containing validated training parameters
     """
     try:
-        epochs = col.number_input(
-            "Number of Epochs",
-            min_value=1,
-            max_value=100,
-            value=3,
-            help="Number of complete passes through the dataset. More epochs can improve results but take longer to train."
-        )
+        with st.container():
+            st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
+            st.subheader("⚙️ Training Configuration")
+            st.markdown('<p class="parameter-help">Configure the training process parameters.</p>', 
+                       unsafe_allow_html=True)
 
-        max_seq_length = col.number_input(
-            "Max Sequence Length",
-            min_value=64,
-            max_value=512,
-            value=128,
-            help="Maximum length of input sequences. Longer sequences provide more context but require more memory."
-        )
+            epochs = st.number_input(
+                "Number of Epochs",
+                min_value=1,
+                max_value=100,
+                value=3,
+                help="Number of complete passes through the dataset. More epochs can improve results but take longer to train."
+            )
 
-        warmup_steps = col.number_input(
-            "Warmup Steps",
-            min_value=0,
-            max_value=1000,
-            value=100,
-            help="Number of steps for learning rate warmup. Helps stabilize early training."
-        )
+            max_seq_length = st.number_input(
+                "Max Sequence Length",
+                min_value=64,
+                max_value=512,
+                value=128,
+                help="Maximum length of input sequences. Longer sequences provide more context but require more memory."
+            )
+
+            warmup_steps = st.number_input(
+                "Warmup Steps",
+                min_value=0,
+                max_value=1000,
+                value=100,
+                help="Number of steps for learning rate warmup. Helps stabilize early training."
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
 
         return {
             "epochs": int(epochs),
@@ -105,6 +135,11 @@ def get_dataset_enhancement_options() -> Dict[str, Any]:
         Dictionary containing dataset enhancement options
     """
     try:
+        st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
+        st.subheader("🔄 Data Enhancement")
+        st.markdown('<p class="parameter-help">Configure additional data enhancement options.</p>', 
+                   unsafe_allow_html=True)
+
         include_amphigory = st.checkbox(
             "Include Amphigory Examples",
             value=True,
@@ -121,6 +156,7 @@ def get_dataset_enhancement_options() -> Dict[str, Any]:
                 step=0.05,
                 help="Ratio of amphigory examples to include in training data"
             )
+        st.markdown('</div>', unsafe_allow_html=True)
 
         return {
             "include_amphigory": include_amphigory,
@@ -143,36 +179,31 @@ def training_parameters() -> Optional[Dict[str, Any]]:
         # Dataset enhancement options
         enhancement_options = get_dataset_enhancement_options()
 
-        with st.container():
-            st.markdown("""
-            <div class="card">
-                <h3>Model Parameters</h3>
-                <p>Configure the core model and training parameters below.</p>
-            </div>
-            """, unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
 
-            col1, col2 = st.columns(2)
-
-            # Get parameters with validation
+        # Get parameters with validation
+        with col1:
             model_params = get_model_parameters(col1)
+
+        with col2:
             training_params = get_training_parameters(col2)
 
-            # Combine all parameters
-            config = {
-                **model_params,
-                **training_params,
-                **enhancement_options
-            }
+        # Combine all parameters
+        config = {
+            **model_params,
+            **training_params,
+            **enhancement_options
+        }
 
-            # Validate complete configuration
-            errors = validate_config(config)
-            if errors:
-                for error in errors:
-                    st.error(error)
-                return None
+        # Validate complete configuration
+        errors = validate_config(config)
+        if errors:
+            for error in errors:
+                st.error(error)
+            return None
 
-            logger.info("Training parameters configured successfully")
-            return config
+        logger.info("Training parameters configured successfully")
+        return config
 
     except Exception as e:
         logger.error(f"Error in training parameter configuration: {str(e)}")
