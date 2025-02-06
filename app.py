@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import os
 import logging
 import time
@@ -31,38 +31,55 @@ class MLFineTuningApp:
         self._configure_database()
         self._configure_streamlit()
 
-        with self.flask_app.app_context():
-            self._init_database()
+        retries = 3
+        while retries > 0:
+            try:
+                with self.flask_app.app_context():
+                    self._init_database()
+                break
+            except Exception as e:
+                retries -= 1
+                if retries == 0:
+                    logger.critical(f"Failed to initialize application: {e}")
+                    raise
+                logger.warning(f"Retrying database initialization: {e}")
+                time.sleep(2)
 
     def _configure_database(self):
-        """Configure database settings with connection pooling"""
+        """Configure database settings with optimized connection pooling"""
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            raise ValueError("DATABASE_URL environment variable is not set")
+
         self.flask_app.config.update({
-            'SQLALCHEMY_DATABASE_URI': os.environ.get('DATABASE_URL'),
+            'SQLALCHEMY_DATABASE_URI': database_url,
             'SQLALCHEMY_TRACK_MODIFICATIONS': False,
             'SQLALCHEMY_ENGINE_OPTIONS': {
                 'poolclass': QueuePool,
-                'pool_size': 10,
-                'max_overflow': 20,
-                'pool_timeout': 30,
-                'pool_recycle': 1800,
+                'pool_size': 5,  # Reduced from 10 for better resource management
+                'max_overflow': 10,  # Reduced from 20
+                'pool_timeout': 20,  # Reduced from 30
+                'pool_recycle': 900,  # Reduced from 1800 for more frequent recycling
+                'pool_pre_ping': True  # Added for connection health checks
             }
         })
 
     @contextmanager
     def session_scope(self):
-        """Provide a transactional scope around operations"""
+        """Provide a transactional scope around operations with improved error handling"""
+        session = db.session()
         try:
-            yield db.session
-            db.session.commit()
+            yield session
+            session.commit()
         except Exception as e:
-            db.session.rollback()
+            session.rollback()
             logger.error(f"Database transaction failed: {e}")
             raise
         finally:
-            db.session.close()
+            session.close()
 
     def _configure_streamlit(self):
-        """Configure Streamlit UI settings"""
+        """Configure Streamlit UI settings with error handling"""
         try:
             st.set_page_config(
                 page_title="ML Model Fine-tuning",
@@ -73,32 +90,28 @@ class MLFineTuningApp:
             self._load_custom_css()
         except Exception as e:
             logger.error(f"Streamlit configuration failed: {e}")
-            raise
+            raise RuntimeError(f"Failed to configure Streamlit: {e}")
 
     def _load_custom_css(self):
-        """Load custom CSS styles"""
+        """Load custom CSS styles with improved error handling"""
         css_path = "styles/custom.css"
-        if os.path.exists(css_path):
-            with open(css_path) as f:
-                st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-        else:
-            logger.warning(f"CSS file not found: {css_path}")
+        try:
+            if os.path.exists(css_path):
+                with open(css_path) as f:
+                    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+            else:
+                logger.warning(f"CSS file not found: {css_path}")
+        except Exception as e:
+            logger.error(f"Failed to load CSS: {e}")
 
     def _init_database(self):
-        """Initialize database with retry logic"""
-        retries, delay = 3, 1
-        for attempt in range(retries):
-            try:
-                init_db(self.flask_app)
-                logger.info("Database initialized")
-                return
-            except Exception as e:
-                if attempt == retries - 1:
-                    logger.error(f"Database initialization failed after {retries} attempts: {e}")
-                    raise
-                logger.warning(f"Database initialization attempt {attempt + 1} failed: {e}")
-                time.sleep(delay)
-                delay *= 2
+        """Initialize database with improved retry logic"""
+        try:
+            init_db(self.flask_app)
+            logger.info("Database initialized successfully")
+        except Exception as e:
+            logger.error(f"Database initialization failed: {e}")
+            raise
 
     def setup_sidebar(self):
         """Configure sidebar navigation"""
@@ -110,13 +123,24 @@ class MLFineTuningApp:
             - [Dataset Selection](#dataset-selection)
             - [Training Configuration](#training-configuration)
             - [Training Progress](#training-progress)
+            - [Experiment Comparison](#experiment-comparison)
             ---
             ### About
             Fine-tune ML models with advanced monitoring
             """)
 
     def save_training_config(self, config: Dict[str, Any], dataset: str) -> Optional[int]:
-        """Save training configuration to database"""
+        """Save training configuration to database with improved error handling"""
+        if not isinstance(config, dict):
+            logger.error("Invalid configuration format")
+            return None
+
+        required_fields = ['model_type', 'batch_size', 'learning_rate', 'epochs', 
+                         'max_seq_length', 'warmup_steps']
+        if not all(field in config for field in required_fields):
+            logger.error("Missing required configuration fields")
+            return None
+
         retries = 3
         for attempt in range(retries):
             try:
@@ -133,7 +157,8 @@ class MLFineTuningApp:
                         )
                         session.add(training_config)
                         session.flush()
-                        return training_config.id
+                        config_id = training_config.id
+                        return config_id
             except Exception as e:
                 if attempt == retries - 1:
                     logger.error(f"Config save failed after {retries} attempts: {e}")
@@ -142,7 +167,7 @@ class MLFineTuningApp:
                 time.sleep(2 ** attempt)
 
     def run(self):
-        """Run the main application"""
+        """Run the main application with improved error handling and validation"""
         try:
             self.setup_sidebar()
             st.markdown("# ML Model Fine-tuning Platform")
@@ -153,13 +178,15 @@ class MLFineTuningApp:
                 return
 
             config = training_parameters()
-            if not isinstance(config, dict) or (errors := validate_config(config)):
-                if errors:
-                    for error in errors:
-                        st.error(error)
+            errors = validate_config(config) if isinstance(config, dict) else ["Invalid configuration format"]
+
+            if errors:
+                for error in errors:
+                    st.error(error)
                 return
 
-            if config_id := self.save_training_config(config, selected_dataset):
+            config_id = self.save_training_config(config, selected_dataset)
+            if config_id:
                 st.session_state.current_config_id = config_id
                 with self.flask_app.app_context():
                     training_monitor()
@@ -172,18 +199,18 @@ class MLFineTuningApp:
 
         except Exception as e:
             logger.error(f"Application error: {e}")
-            st.error(f"An unexpected error occurred: {e}")
+            st.error("An unexpected error occurred. Please try again or contact support.")
             if hasattr(st.session_state, 'current_config_id'):
                 del st.session_state.current_config_id
 
 def main():
-    """Application entry point"""
+    """Application entry point with improved error handling"""
     try:
         app = MLFineTuningApp()
         app.run()
     except Exception as e:
         logger.critical(f"Fatal error: {e}")
-        st.error("Critical error occurred. Please reload the page.")
+        st.error("A critical error occurred. Please reload the page or contact support.")
 
 if __name__ == "__main__":
     main()
