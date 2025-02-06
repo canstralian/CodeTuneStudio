@@ -1,0 +1,82 @@
+Integrating NVIDIA’s LogitsProcessorZoo into your CodeTune application can significantly enhance the control and precision of your language model’s text generation. Here’s how you can implement these processors:
+
+1. Install Necessary Libraries
+
+Ensure you have the Hugging Face Transformers library installed:
+
+pip install transformers
+
+2. Import Required Modules
+
+Begin by importing the necessary classes from the Transformers library:
+
+from transformers import AutoTokenizer, AutoModelForCausalLM, LogitsProcessorList, GenLengthLogitsProcessor
+
+3. Load the Pre-trained Model and Tokenizer
+
+Select a pre-trained model compatible with your application needs:
+
+model_name = "meta-llama/Llama-3.2-1B"  # Replace with your model's name
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+4. Define the Prompt
+
+Specify the input prompt for text generation:
+
+prompt = "The capital of France is"
+
+5. Tokenize the Input
+
+Convert the prompt into token IDs:
+
+inputs = tokenizer(prompt, return_tensors="pt")
+
+6. Initialize Logits Processors
+
+Create a list of logits processors to control the generation behavior:
+
+logits_processor = LogitsProcessorList()
+logits_processor.append(GenLengthLogitsProcessor(max_length=50))
+
+7. Generate Text with Custom Logits Processor
+
+Use the generate method with the custom logits processor to produce controlled text:
+
+outputs = model.generate(**inputs, logits_processor=logits_processor)
+generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+print(generated_text)
+
+8. Integrate into CodeTune Application
+
+To incorporate this functionality into your CodeTune application:
+   •   Define a Function for Text Generation:
+
+def generate_text_with_control(prompt, max_length=50):
+    inputs = tokenizer(prompt, return_tensors="pt")
+    logits_processor = LogitsProcessorList()
+    logits_processor.append(GenLengthLogitsProcessor(max_length=max_length))
+    outputs = model.generate(**inputs, logits_processor=logits_processor)
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+
+   •   Integrate into Application Workflow:
+Incorporate this function into your application’s text generation pipeline, allowing users to input prompts and receive controlled outputs.
+
+9. Customize Logits Processors
+
+Depending on your application’s requirements, you can utilize different logits processors from the LogitsProcessorZoo to achieve specific behaviors:
+   •   CiteFromPromptLogitsProcessor: Guides the model to include specific phrases or citations from the prompt in the generated text.
+   •   ForceLastPhraseLogitsProcessor: Ensures that the model’s output ends with a predefined phrase.
+   •   MultipleChoiceLogitsProcessor: Directs the model to select one of several predefined options.
+
+For example, to use the CiteFromPromptLogitsProcessor:
+
+from transformers import CiteFromPromptLogitsProcessor
+
+logits_processor = LogitsProcessorList()
+logits_processor.append(CiteFromPromptLogitsProcessor())
+
+By integrating these processors, you can achieve more precise and contextually relevant text generation in your CodeTune application.
+
+For a comprehensive understanding and additional examples, refer to Hugging Face’s blog post on NVIDIA’s LogitsProcessorZoo.  ￼
