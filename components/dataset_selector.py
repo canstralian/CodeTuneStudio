@@ -2,11 +2,19 @@
 import streamlit as st
 from datasets import load_dataset
 
-AVAILABLE_DATASETS = [
+from typing import Dict, Set, Tuple
+from functools import lru_cache
+
+AVAILABLE_DATASETS: Set[str] = {
     "code_search_net",
     "python_code_instructions",
     "github_code_snippets"
-]
+}
+
+@lru_cache(maxsize=32)
+def validate_dataset_name(name: str) -> bool:
+    """Validate dataset name using regex pattern"""
+    return bool(re.match(r'^[a-zA-Z0-9_\-]+$', name))
 
 def display_preview_data():
     """Display sample dataset preview"""

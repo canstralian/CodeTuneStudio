@@ -78,9 +78,16 @@ def main():
 
     try:
         selected_dataset = dataset_browser()
-        if selected_dataset:
-            config = training_parameters()
-            errors = validate_config(config)
+        if not selected_dataset or not validate_dataset_name(selected_dataset):
+            st.error("Invalid dataset name selected")
+            return
+            
+        config = training_parameters()
+        if not isinstance(config, dict):
+            st.error("Invalid configuration format")
+            return
+            
+        errors = validate_config(config)
             
             if errors:
                 for error in errors:
