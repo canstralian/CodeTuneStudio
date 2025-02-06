@@ -10,7 +10,7 @@ from transformers import (
     TopPLogitsWarper
 )
 from transformers.generation import GenerationConfig
-from typing import Optional, Dict, Any, List, Union, Tuple
+from typing import Dict, Set, Tuple, Optional, Union, Any
 import logging
 
 # Configure logging
@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ModelInference:
-    """Handle large model inference using Accelerate library with enhanced logits processing"""
+    """Handle large model inference using Accelerate library with enhanced performance optimization"""
 
     def __init__(self, model_name: str, device_map: str = "auto"):
         self.model_name = model_name
@@ -26,25 +26,11 @@ class ModelInference:
         self.model: Optional[AutoModelForCausalLM] = None
         self.tokenizer: Optional[AutoTokenizer] = None
 
-    def initialize_model(self) -> None:
-        """Initialize model with empty weights"""
-        try:
-            logger.info(f"Initializing empty model: {self.model_name}")
-            with init_empty_weights():
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    self.model_name,
-                    torch_dtype=torch.float16
-                )
-            logger.info("Empty model initialization successful")
-        except Exception as e:
-            logger.error(f"Error initializing empty model: {str(e)}")
-            raise
-
     def get_default_logits_processors(self, 
-                                    min_length: int = 10,
-                                    temperature: float = 0.7,
-                                    top_k: int = 50,
-                                    top_p: float = 0.9) -> LogitsProcessorList:
+                                   min_length: int = 10,
+                                   temperature: float = 0.7,
+                                   top_k: int = 50,
+                                   top_p: float = 0.9) -> LogitsProcessorList:
         """Get default set of logits processors for controlled generation"""
         try:
             processors = LogitsProcessorList()
@@ -73,8 +59,8 @@ class ModelInference:
     def generate_text(self, 
                      prompt: str,
                      max_length: int = 100,
-                     generation_config: Optional[Dict[str, Any]] = None,
-                     logits_processors: Optional[List] = None,
+                     generation_config: Optional[GenerationConfig] = None,
+                     logits_processors: Optional[LogitsProcessorList] = None,
                      return_full_output: bool = False) -> Union[str, Dict[str, Any]]:
         """
         Generate text using the loaded model with enhanced control and output options
@@ -138,6 +124,20 @@ class ModelInference:
 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
+            raise
+
+    def initialize_model(self) -> None:
+        """Initialize model with empty weights"""
+        try:
+            logger.info(f"Initializing empty model: {self.model_name}")
+            with init_empty_weights():
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name,
+                    torch_dtype=torch.float16
+                )
+            logger.info("Empty model initialization successful")
+        except Exception as e:
+            logger.error(f"Error initializing empty model: {str(e)}")
             raise
 
     def load_model_weights(self, weights_path: str) -> None:
