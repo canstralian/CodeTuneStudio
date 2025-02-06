@@ -95,7 +95,11 @@ if selected_dataset:
         # Experiment comparison
         experiment_compare()
 
-        # Export configuration
+        # Model export
+        from components.model_export import export_model
+        export_model()
+        
+        # Export configuration  
         if st.button("Export Configuration"):
             st.json(config)
 else:
