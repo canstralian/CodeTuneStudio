@@ -5,21 +5,33 @@ from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, TrainingMetric, db
+import os
 
 # Initialize Flask app for database
 flask_app = Flask(__name__)
-flask_app = init_db(flask_app)
 
-# Create application context
+# Configure for different environments
+is_huggingface = os.environ.get('SPACE_ID') is not None
+if is_huggingface:
+    # HuggingFace Spaces specific configuration
+    st.set_page_config(
+        page_title="Code Model Fine-tuning",
+        page_icon="🚀",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+else:
+    # Local development configuration
+    st.set_page_config(
+        page_title="Code Model Fine-tuning",
+        page_icon="🚀",
+        layout="wide"
+    )
+
+# Initialize database
+flask_app = init_db(flask_app)
 app_ctx = flask_app.app_context()
 app_ctx.push()
-
-# Page configuration
-st.set_page_config(
-    page_title="Code Model Fine-tuning",
-    page_icon="🚀",
-    layout="wide"
-)
 
 # Load custom CSS
 with open("styles/custom.css") as f:
