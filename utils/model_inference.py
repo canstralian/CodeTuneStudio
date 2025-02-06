@@ -10,13 +10,21 @@ from transformers import (
     TopPLogitsWarper
 )
 from transformers.generation import GenerationConfig
-from typing import Dict, Set, Tuple, Optional, Union, Any
+from typing import Dict, Set, Tuple, Optional, Union, Any, List
 import logging
 from .peft_trainer import PEFTTrainer
+from .reddit_dataset import RedditDatasetManager # Added import
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+class RedditDatasetManager: # Minimal implementation for runnable code
+    def get_training_data(self, min_score: int = 100, max_samples: int = 1000) -> List[str]:
+        # Replace this with your actual Reddit data retrieval logic
+        return ["Sample Reddit Post 1", "Sample Reddit Post 2"]
+
 
 class ModelInference:
     """Handle large model inference using Accelerate library with enhanced performance optimization"""
@@ -27,6 +35,7 @@ class ModelInference:
         self.model: Optional[AutoModelForCausalLM] = None
         self.tokenizer: Optional[AutoTokenizer] = None
         self.peft_trainer: Optional[PEFTTrainer] = None
+        self.reddit_manager = RedditDatasetManager() # Added reddit_manager instance
 
     def get_default_logits_processors(self, 
                                    min_length: int = 10,
@@ -196,3 +205,34 @@ class ModelInference:
         except Exception as e:
             logger.error(f"Error cleaning up resources: {str(e)}")
             raise
+
+    def prepare_reddit_data_for_training(self, 
+                                       min_score: int = 100,
+                                       max_samples: int = 1000) -> List[str]:
+        """
+        Prepare Reddit data for model training or fine-tuning
+
+        Args:
+            min_score: Minimum score threshold for posts
+            max_samples: Maximum number of samples to use
+
+        Returns:
+            List of processed text samples
+        """
+        try:
+            logger.info("Preparing Reddit data for training")
+            training_data = self.reddit_manager.get_training_data(
+                min_score=min_score,
+                max_samples=max_samples
+            )
+
+            if not training_data:
+                logger.warning("No Reddit training data available")
+                return []
+
+            logger.info(f"Successfully prepared {len(training_data)} Reddit samples")
+            return training_data
+
+        except Exception as e:
+            logger.error(f"Error preparing Reddit data: {str(e)}")
+            return []
