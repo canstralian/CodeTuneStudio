@@ -7,8 +7,8 @@ AVAILABLE_DATASETS = [
     "github_code_snippets"
 ]
 
-@st.cache_data(ttl=3600)  # Cache dataset preview for 1 hour
 def show_dataset_preview(selected_dataset):
+    """Display dataset preview without caching since it contains widgets"""
     preview_data = {
         "code": ["def hello():", "print('Hello World')"],
         "language": ["python", "python"]
@@ -20,8 +20,17 @@ def show_dataset_preview(selected_dataset):
         st.write("Languages: Python, JavaScript")
         st.write("Average sequence length: 128")
 
-@st.cache_resource  # Cache dataset browser UI
+@st.cache_data(ttl=3600)
+def get_dataset_info(dataset_name):
+    """Cache only the dataset information retrieval"""
+    return {
+        "num_examples": 1000,
+        "languages": ["Python", "JavaScript"],
+        "avg_seq_length": 128
+    }
+
 def dataset_browser():
+    """Main dataset browser function without caching due to widget usage"""
     st.header("Dataset Selection")
 
     with st.container():
