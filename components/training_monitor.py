@@ -1,10 +1,10 @@
-
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 from utils.visualization import create_metrics_chart
 from utils.mock_training import mock_training_step
 from utils.database import TrainingMetric, db
+from components.loading_animation import show_training_animation
 
 def initialize_training_state():
     if 'training_active' not in st.session_state:
@@ -31,13 +31,16 @@ def handle_training_step(progress_bar, metrics_chart, step):
 
     progress = (step + 1) / 100
     progress_bar.progress(progress)
-    
+
+    # Update loading animation with current progress
+    show_training_animation(progress)
+
     fig = create_metrics_chart(
         st.session_state.train_loss,
         st.session_state.eval_loss
     )
     metrics_chart.plotly_chart(fig, use_container_width=True)
-    
+
     st.session_state.current_epoch = int(progress * 3)
 
 def training_monitor():
@@ -60,6 +63,8 @@ def training_monitor():
                     st.session_state.current_epoch = 0
                     st.session_state.train_loss = []
                     st.session_state.eval_loss = []
+                    # Show initial loading animation
+                    show_training_animation()
             else:
                 if st.button("Stop Training", type="secondary"):
                     st.session_state.training_active = False
