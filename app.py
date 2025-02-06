@@ -3,6 +3,7 @@ from flask import Flask
 from components.dataset_selector import dataset_browser
 from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
+from components.experiment_compare import experiment_compare  # Add this import
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, TrainingMetric, db
 import os
@@ -34,8 +35,11 @@ app_ctx = flask_app.app_context()
 app_ctx.push()
 
 # Load custom CSS
-with open("styles/custom.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+try:
+    with open("styles/custom.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+except FileNotFoundError:
+    st.warning("Custom CSS file not found. Using default styling.")
 
 # Sidebar
 with st.sidebar:
@@ -60,47 +64,54 @@ with st.sidebar:
 # Main content
 st.markdown("# Code Model Fine-tuning")
 
-# Dataset selection
-selected_dataset = dataset_browser()
+try:
+    # Dataset selection
+    selected_dataset = dataset_browser()
 
-# Training configuration
-if selected_dataset:
-    config = training_parameters()
+    # Training configuration
+    if selected_dataset:
+        config = training_parameters()
 
-    # Validate configuration
-    errors = validate_config(config)
-    if errors:
-        for error in errors:
-            st.error(error)
+        # Validate configuration
+        errors = validate_config(config)
+        if errors:
+            for error in errors:
+                st.error(error)
+        else:
+            # Save configuration to database
+            try:
+                training_config = TrainingConfig(
+                    model_type=config['model_type'],
+                    dataset_name=selected_dataset,
+                    batch_size=config['batch_size'],
+                    learning_rate=config['learning_rate'],
+                    epochs=config['epochs'],
+                    max_seq_length=config['max_seq_length'],
+                    warmup_steps=config['warmup_steps']
+                )
+                db.session.add(training_config)
+                db.session.commit()
+
+                # Store config ID in session state
+                st.session_state.current_config_id = training_config.id
+
+                # Training monitor
+                training_monitor()
+
+                # Experiment comparison
+                experiment_compare()
+
+                # Model export
+                from components.model_export import export_model
+                export_model()
+
+                # Export configuration  
+                if st.button("Export Configuration"):
+                    st.json(config)
+            except Exception as e:
+                st.error(f"Database error: {str(e)}")
+                db.session.rollback()
     else:
-        # Save configuration to database
-        training_config = TrainingConfig(
-            model_type=config['model_type'],
-            dataset_name=selected_dataset,
-            batch_size=config['batch_size'],
-            learning_rate=config['learning_rate'],
-            epochs=config['epochs'],
-            max_seq_length=config['max_seq_length'],
-            warmup_steps=config['warmup_steps']
-        )
-        db.session.add(training_config)
-        db.session.commit()
-
-        # Store config ID in session state
-        st.session_state.current_config_id = training_config.id
-
-        # Training monitor
-        training_monitor()
-        
-        # Experiment comparison
-        experiment_compare()
-
-        # Model export
-        from components.model_export import export_model
-        export_model()
-        
-        # Export configuration  
-        if st.button("Export Configuration"):
-            st.json(config)
-else:
-    st.warning("Please select a dataset to continue")
+        st.warning("Please select a dataset to continue")
+except Exception as e:
+    st.error(f"An error occurred: {str(e)}")
