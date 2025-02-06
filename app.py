@@ -132,6 +132,10 @@ class MLFineTuningApp:
 
     def save_training_config(self, config: Dict[str, Any], dataset: str) -> Optional[int]:
         """Save training configuration to database with improved error handling"""
+        if not config:  # Early return if config is None
+            logger.error("Configuration is None")
+            return None
+
         if not isinstance(config, dict):
             logger.error("Invalid configuration format")
             return None
