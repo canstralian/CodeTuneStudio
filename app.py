@@ -5,17 +5,15 @@ from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
 from utils.config_validator import validate_config
-from utils.database import init_db, TrainingConfig, TrainingMetric, db
+from utils.database import init_db, TrainingConfig, db
 import os
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def init_streamlit():
-    """Initialize Streamlit configuration"""
-    is_huggingface = os.environ.get('SPACE_ID') is not None
+    is_huggingface = bool(os.environ.get('SPACE_ID'))
     st.set_page_config(
         page_title="Code Model Fine-tuning",
         page_icon="🚀",
@@ -24,15 +22,13 @@ def init_streamlit():
     )
 
 def load_custom_css():
-    """Load custom CSS styles"""
     try:
         with open("styles/custom.css") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
-        logger.warning("Custom CSS file not found. Using default styling.")
+        logger.warning("Custom CSS file not found")
 
 def setup_sidebar():
-    """Setup sidebar navigation and information"""
     with st.sidebar:
         st.title("Code Model Fine-tuning")
         st.markdown("---")
@@ -41,17 +37,13 @@ def setup_sidebar():
         - [Dataset Selection](#dataset-selection)
         - [Training Configuration](#training-configuration)
         - [Training Progress](#training-progress)
-        """)
-        st.markdown("---")
-        st.markdown("### About")
-        st.markdown("""
-        This app allows you to fine-tune code generation models
-        using datasets from Hugging Face. Configure your training
-        parameters and monitor the process in real-time.
+        ---
+        ### About
+        Fine-tune code generation models using Hugging Face datasets.
+        Configure training parameters and monitor progress.
         """)
 
 def save_training_config(config, selected_dataset):
-    """Save training configuration to database"""
     try:
         training_config = TrainingConfig(
             model_type=config['model_type'],
@@ -64,66 +56,59 @@ def save_training_config(config, selected_dataset):
         )
         db.session.add(training_config)
         db.session.commit()
-        logger.info(f"Saved training configuration for dataset: {selected_dataset}")
+        logger.info(f"Saved config for dataset: {selected_dataset}")
         return training_config.id
     except Exception as e:
-        logger.error(f"Failed to save training config: {str(e)}")
+        logger.error(f"Failed to save config: {e}")
         raise
 
 def main():
     try:
         # Initialize application
         flask_app = Flask(__name__)
-        flask_app = init_db(flask_app)
-        app_ctx = flask_app.app_context()
-        app_ctx.push()
+        init_db(flask_app)
+        with flask_app.app_context():
+            init_streamlit()
+            load_custom_css()
+            setup_sidebar()
 
-        # Setup Streamlit UI
-        init_streamlit()
-        load_custom_css()
-        setup_sidebar()
+            st.markdown("# Code Model Fine-tuning")
 
-        # Main content
-        st.markdown("# Code Model Fine-tuning")
+            # Dataset selection
+            selected_dataset = dataset_browser()
+            if not selected_dataset or not validate_dataset_name(selected_dataset):
+                st.warning("Please select a valid dataset")
+                return
 
-        selected_dataset = dataset_browser()
+            # Training configuration
+            config = training_parameters()
+            if not isinstance(config, dict):
+                st.error("Invalid configuration format")
+                return
 
-        if not selected_dataset:
-            st.warning("Please select a dataset to continue")
-            return
+            errors = validate_config(config)
+            if errors:
+                for error in errors:
+                    st.error(error)
+                return
 
-        if not validate_dataset_name(selected_dataset):
-            st.error("Invalid dataset name selected")
-            return
+            # Save configuration and monitor training
+            try:
+                config_id = save_training_config(config, selected_dataset)
+                st.session_state.current_config_id = config_id
+                training_monitor()
+                experiment_compare()
 
-        config = training_parameters()
-        if not isinstance(config, dict):
-            st.error("Invalid configuration format")
-            return
-
-        errors = validate_config(config)
-        if errors:
-            for error in errors:
-                st.error(error)
-            return
-
-        try:
-            config_id = save_training_config(config, selected_dataset)
-            st.session_state.current_config_id = config_id
-
-            training_monitor()
-            experiment_compare()
-
-            if st.button("Export Configuration"):
-                st.json(config)
-        except Exception as e:
-            logger.error(f"Database error: {str(e)}")
-            st.error(f"Database error: {str(e)}")
-            db.session.rollback()
+                if st.button("Export Configuration"):
+                    st.json(config)
+            except Exception as e:
+                logger.error(f"Database error: {e}")
+                st.error(f"Database error: {e}")
+                db.session.rollback()
 
     except Exception as e:
-        logger.error(f"Application error: {str(e)}")
-        st.error(f"An error occurred: {str(e)}")
+        logger.error(f"Application error: {e}")
+        st.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
