@@ -1,0 +1,26 @@
+/* Custom styles for the app */
+.stButton > button {
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.card {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    margin: 1rem 0;
+}
+
+.success-text {
+    color: #09AB3B;
+}
+
+.error-text {
+    color: #FF4B4B;
+}
+
+.info-text {
+    color: #0068C9;
+}
