@@ -120,16 +120,36 @@ class MLFineTuningApp:
         """Load agent tools from plugins directory"""
         try:
             plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
+            logger.info(f"Searching for plugins in: {plugins_dir}")
+
             registry.discover_tools(plugins_dir)
-            logger.info(f"Loaded {len(registry.list_tools())} tools: {registry.list_tools()}")
+            tools = registry.list_tools()
+
+            logger.info("=== Plugin Loading Status ===")
+            logger.info(f"Found {len(tools)} tools:")
+            for tool in tools:
+                logger.info(f"- {tool}")
+            logger.info("=========================")
+
         except Exception as e:
-            logger.error(f"Failed to load plugins: {e}")
+            logger.error(f"Failed to load plugins: {str(e)}")
             raise
 
     def setup_sidebar(self):
-        """Configure sidebar navigation"""
+        """Configure sidebar navigation with plugin information"""
         with st.sidebar:
             st.title("ML Model Fine-tuning")
+            st.markdown("---")
+
+            # Display loaded plugins
+            st.markdown("### Available Plugins")
+            tools = registry.list_tools()
+            if tools:
+                for tool in tools:
+                    st.text(f"✓ {tool}")
+            else:
+                st.text("No plugins loaded")
+
             st.markdown("---")
             st.markdown("""
             ### Navigation
