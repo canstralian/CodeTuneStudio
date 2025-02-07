@@ -18,6 +18,7 @@ from components.experiment_compare import experiment_compare
 from components.version_manager import version_manager
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
+from utils.plugins.registry import registry
 
 # Configure logging
 logging.basicConfig(
@@ -31,6 +32,7 @@ class MLFineTuningApp:
         self.flask_app = Flask(__name__)
         self._configure_database()
         self._configure_streamlit()
+        self._load_plugins()  # Add plugin loading
 
         retries = 3
         while retries > 0:
@@ -112,6 +114,16 @@ class MLFineTuningApp:
             logger.info("Database initialized successfully")
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
+            raise
+
+    def _load_plugins(self):
+        """Load agent tools from plugins directory"""
+        try:
+            plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
+            registry.discover_tools(plugins_dir)
+            logger.info(f"Loaded {len(registry.list_tools())} tools: {registry.list_tools()}")
+        except Exception as e:
+            logger.error(f"Failed to load plugins: {e}")
             raise
 
     def setup_sidebar(self):
