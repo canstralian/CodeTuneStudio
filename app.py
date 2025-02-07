@@ -129,20 +129,30 @@ class MLFineTuningApp:
             plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
             logger.info(f"Loading plugins from: {plugins_dir}")
 
-            # Clear existing registrations to prevent duplicates
-            registry.clear_tools()
-            registry.discover_tools(plugins_dir)
+            try:
+                # Clear existing registrations to prevent duplicates
+                registry.clear_tools()
+            except Exception as e:
+                logger.warning(f"Failed to clear tools registry: {str(e)}")
+                # Continue execution as this is not a critical error
 
-            tools = registry.list_tools()
-            logger.info("=== Plugin Loading Status ===")
-            logger.info(f"Successfully loaded {len(tools)} tools:")
-            for tool in tools:
-                logger.info(f"- {tool}")
-            logger.info("=========================")
+            try:
+                registry.discover_tools(plugins_dir)
+                tools = registry.list_tools()
+                logger.info("=== Plugin Loading Status ===")
+                logger.info(f"Successfully loaded {len(tools)} tools:")
+                for tool in tools:
+                    logger.info(f"- {tool}")
+                logger.info("=========================")
+            except Exception as e:
+                logger.error(f"Error during plugin discovery: {str(e)}", exc_info=True)
+                # Continue execution to allow application to run without plugins
+                tools = []
 
         except Exception as e:
-            logger.error(f"Plugin loading failed: {str(e)}", exc_info=True)
-            raise
+            logger.error(f"Plugin loading system error: {str(e)}", exc_info=True)
+            # Allow application to continue without plugins
+            pass
 
     def setup_sidebar(self) -> None:
         """Configure sidebar with cached plugin information"""
