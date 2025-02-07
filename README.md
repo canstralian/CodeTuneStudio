@@ -1,12 +1,17 @@
-ML Fine-Tuning Platform
+# ML Fine-Tuning Platform
 
-Welcome to the ML Fine-Tuning Platform! This application is designed to streamline the process of fine-tuning machine learning models, providing an intuitive interface for efficient model customization.
+Welcome to the **ML Fine-Tuning Platform**! This application is designed to streamline the process of fine-tuning machine learning models, providing an intuitive interface for efficient model customization.
 
- 
+---
 
- 
+![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/ml-finetuning-platform)
+![GitHub issues](https://img.shields.io/github/issues/yourusername/ml-finetuning-platform)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/ml-finetuning-platform)
+![GitHub contributors](https://img.shields.io/github/contributors/yourusername/ml-finetuning-platform)
+![GitHub license](https://img.shields.io/github/license/yourusername/ml-finetuning-platform)
+![GitHub stars](https://img.shields.io/github/stars/yourusername/ml-finetuning-platform?style=social)
 
- 
+---
 
 ✨ Features
    •   User-Friendly Interface: Leverage the power of Streamlit to offer an interactive and accessible platform for users of all levels.
