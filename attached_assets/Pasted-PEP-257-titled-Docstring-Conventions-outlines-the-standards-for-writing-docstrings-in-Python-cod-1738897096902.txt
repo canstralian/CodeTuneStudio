@@ -1,0 +1,28 @@
+PEP 257, titled “Docstring Conventions,” outlines the standards for writing docstrings in Python code. Docstrings are string literals that appear as the first statement in a module, function, class, or method definition, and they become the __doc__ special attribute of that object. The PEP emphasizes that while these conventions are recommended for maintainability and clarity, they are not mandatory.  ￼
+
+Key Points from PEP 257:
+   •   Purpose of Docstrings: They serve to document modules, classes, functions, and methods, providing a convenient way of associating documentation with Python code.
+   •   One-line Docstrings: Used for simple and obvious cases. They should be concise, fitting on a single line, and use triple double quotes ("""). The closing quotes should be on the same line as the opening quotes. For example:
+
+def example_function():
+    """Perform an example operation."""
+    pass
+
+
+   •   Multi-line Docstrings: These begin with a one-line summary, followed by a blank line, and then a more detailed description. The summary line should fit on one line and be separated from the rest of the docstring by a blank line. For example:
+
+def complex_function(param1, param2):
+    """
+    Perform a complex operation.
+
+    This function takes two parameters and performs a series of
+    operations to achieve the desired result. It handles various
+    edge cases and ensures that the output is always valid.
+    """
+    pass
+
+
+   •   Docstring Formatting: For consistency, always use triple double quotes (""") around docstrings. Use raw triple double quotes (r""") if the docstring contains backslashes.
+   •   Additional Docstrings: String literals that occur immediately after another docstring are called “additional docstrings.” These are not recognized by the Python bytecode compiler but can be extracted by software tools.
+
+By adhering to these conventions, developers can create clear and consistent documentation within their Python code, enhancing readability and maintainability.
