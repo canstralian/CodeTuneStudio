@@ -6,7 +6,20 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class ModelVersion:
+    """
+    Manage versioning of machine learning models and their configurations.
+
+    This class provides functionality to save, load, and list different versions
+    of ML models along with their associated configuration parameters.
+    """
+
     def __init__(self, version_dir: str = "model_versions"):
+        """
+        Initialize the model version manager.
+
+        Args:
+            version_dir: Directory path where model versions will be stored.
+        """
         self.version_dir = version_dir
         os.makedirs(version_dir, exist_ok=True)
         
@@ -33,7 +46,15 @@ class ModelVersion:
         return version_id
     
     def load_version(self, version_id: str) -> Optional[Dict[str, Any]]:
-        """Load a specific model version"""
+        """
+        Load a specific model version's configuration.
+
+        Args:
+            version_id: Unique identifier of the model version.
+
+        Returns:
+            Configuration dictionary if version exists, None otherwise.
+        """
         version_path = os.path.join(self.version_dir, version_id)
         if not os.path.exists(version_path):
             return None
@@ -42,7 +63,12 @@ class ModelVersion:
             return json.load(f)
             
     def list_versions(self) -> Dict[str, Dict[str, Any]]:
-        """List all available model versions"""
+        """
+        List all available model versions and their configurations.
+
+        Returns:
+            Dictionary mapping version IDs to their configuration dictionaries.
+        """
         versions = {}
         for version_id in os.listdir(self.version_dir):
             config = self.load_version(version_id)
