@@ -12,13 +12,20 @@ logger = logging.getLogger(__name__)
 
 def get_model_parameters(col) -> Dict[str, Any]:
     """
-    Get model architecture and training parameters with enhanced validation
+    Get model architecture and training parameters with enhanced validation.
+
+    This function creates and manages the UI elements for configuring core model parameters
+    including architecture selection, batch size, and learning rate. It handles input
+    validation and provides helpful tooltips for each parameter.
 
     Args:
         col: Streamlit column object for layout
 
     Returns:
-        Dictionary containing validated model parameters
+        Dictionary containing validated model parameters with keys:
+        - model_type: Selected model architecture
+        - batch_size: Number of samples per training batch
+        - learning_rate: Learning rate for optimization
     """
     try:
         st.markdown("""
@@ -129,10 +136,16 @@ def get_training_parameters(col) -> Dict[str, Any]:
 
 def get_dataset_enhancement_options() -> Dict[str, Any]:
     """
-    Get dataset enhancement configuration with validation
+    Get dataset enhancement configuration with validation.
+
+    Manages UI elements for configuring dataset enhancement options including
+    amphigory examples generation and ratio settings. These options help improve
+    model robustness by introducing controlled variations in training data.
 
     Returns:
-        Dictionary containing dataset enhancement options
+        Dictionary containing dataset enhancement options with keys:
+        - include_amphigory: Boolean indicating whether to include amphigory examples
+        - amphigory_ratio: Float between 0.0 and 0.3 indicating ratio of examples
     """
     try:
         st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
@@ -168,10 +181,21 @@ def get_dataset_enhancement_options() -> Dict[str, Any]:
 
 def training_parameters() -> Optional[Dict[str, Any]]:
     """
-    Configure and validate training parameters with enhanced error handling
+    Configure and validate training parameters with enhanced error handling.
+
+    This is the main function that coordinates all parameter configuration including:
+    - Model architecture settings
+    - Training hyperparameters
+    - Dataset enhancement options
+    - Configuration validation
+
+    The function provides a user-friendly interface for configuring all training
+    aspects while ensuring parameter validity and compatibility.
 
     Returns:
-        Dictionary containing all validated parameters or None if validation fails
+        Dictionary containing all validated parameters or None if validation fails.
+        The dictionary includes combined parameters from model_params,
+        training_params, and enhancement_options.
     """
     st.header("Training Configuration")
 
