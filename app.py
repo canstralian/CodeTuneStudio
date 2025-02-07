@@ -16,6 +16,7 @@ from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
 from components.version_manager import version_manager
+from components.plugin_manager import plugin_manager  # Add this import
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
 from utils.plugins.registry import registry
@@ -208,6 +209,9 @@ class MLFineTuningApp:
         try:
             self.setup_sidebar()
             st.markdown("# ML Model Fine-tuning Platform")
+
+            # Add plugin manager section
+            plugin_manager()
 
             selected_dataset = dataset_browser()
             if not selected_dataset or not validate_dataset_name(selected_dataset):
