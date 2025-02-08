@@ -4,7 +4,7 @@ Welcome to the **ML Fine-Tuning Platform**! This application is designed to stre
 
 ---
 
-![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/ml-finetuning-platform)
+![GitHub last commit](https://img.shields.io/github/last-commit/canstralian/ml-finetuning-platform)
 ![GitHub issues](https://img.shields.io/github/issues/yourusername/ml-finetuning-platform)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/ml-finetuning-platform)
 ![GitHub contributors](https://img.shields.io/github/contributors/yourusername/ml-finetuning-platform)
