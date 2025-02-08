@@ -5,11 +5,11 @@ Welcome to the **ML Fine-Tuning Platform**! This application is designed to stre
 ---
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/canstralian/ml-finetuning-platform)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/ml-finetuning-platform)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/ml-finetuning-platform)
-![GitHub contributors](https://img.shields.io/github/contributors/yourusername/ml-finetuning-platform)
-![GitHub license](https://img.shields.io/github/license/yourusername/ml-finetuning-platform)
-![GitHub stars](https://img.shields.io/github/stars/yourusername/ml-finetuning-platform?style=social)
+![GitHub issues](https://img.shields.io/github/issues/canstralian/ml-finetuning-platform)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/canstralian/ml-finetuning-platform)
+![GitHub contributors](https://img.shields.io/github/contributors/canstralian/ml-finetuning-platform)
+![GitHub license](https://img.shields.io/github/license/canstralian/ml-finetuning-platform)
+![GitHub stars](https://img.shields.io/github/stars/canstralian/ml-finetuning-platform?style=social)
 
 ---
 
