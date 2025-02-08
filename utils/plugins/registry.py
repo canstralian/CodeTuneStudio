@@ -1,8 +1,9 @@
 from typing import Dict, List, Type, Optional
-import importlib
+import importlib.util
 import inspect
 import logging
 import os
+import sys
 from pathlib import Path
 from .base import AgentTool
 
@@ -67,24 +68,32 @@ class PluginRegistry:
             plugin_dir: Directory containing plugin files
         """
         try:
-            plugin_path = Path(plugin_dir)
+            # Convert to absolute path
+            plugin_path = Path(plugin_dir).resolve()
             if not plugin_path.exists():
                 logger.warning(f"Plugin directory {plugin_dir} does not exist")
                 return
+
+            # Add plugin directory to Python path if not already there
+            plugin_parent = str(plugin_path.parent)
+            if plugin_parent not in sys.path:
+                sys.path.insert(0, plugin_parent)
 
             for file_path in plugin_path.glob("*.py"):
                 if file_path.name.startswith("__"):
                     continue
 
                 try:
-                    # Import module
-                    module_name = f"{plugin_dir}.{file_path.stem}"
-                    spec = importlib.util.find_spec(module_name)
-                    if not spec:
+                    # Import module using spec
+                    module_name = file_path.stem
+                    spec = importlib.util.spec_from_file_location(module_name, str(file_path))
+
+                    if not spec or not spec.loader:
                         logger.warning(f"Could not find spec for module: {module_name}")
                         continue
 
-                    module = importlib.import_module(module_name)
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
 
                     # Find and register tool classes
                     for name, obj in inspect.getmembers(module):
@@ -95,9 +104,11 @@ class PluginRegistry:
 
                 except Exception as e:
                     logger.error(f"Failed to load plugin {file_path}: {str(e)}")
+                    logger.debug("Exception details:", exc_info=True)
 
         except Exception as e:
             logger.error(f"Error discovering plugins: {str(e)}")
+            logger.debug("Exception details:", exc_info=True)
             raise
 
 # Global plugin registry instance

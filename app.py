@@ -124,9 +124,10 @@ class MLFineTuningApp:
             raise RuntimeError(f"Failed to configure Streamlit: {e}")
 
     def _load_plugins(self) -> None:
-        """Load plugins with deduplication and improved error handling"""
+        """Load plugins with improved error handling and path management"""
         try:
-            plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
+            # Get absolute path to plugins directory
+            plugins_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "plugins"))
             logger.info(f"Loading plugins from: {plugins_dir}")
 
             try:
@@ -137,16 +138,23 @@ class MLFineTuningApp:
                 # Continue execution as this is not a critical error
 
             try:
+                # Discover and load plugins
                 registry.discover_tools(plugins_dir)
                 tools = registry.list_tools()
+
+                # Log successful plugin loading
                 logger.info("=== Plugin Loading Status ===")
-                logger.info(f"Successfully loaded {len(tools)} tools:")
-                for tool in tools:
-                    logger.info(f"- {tool}")
+                if tools:
+                    logger.info(f"Successfully loaded {len(tools)} tools:")
+                    for tool in tools:
+                        logger.info(f"- {tool}")
+                else:
+                    logger.info("No plugins were loaded")
                 logger.info("=========================")
+
             except Exception as e:
                 logger.error(f"Error during plugin discovery: {str(e)}", exc_info=True)
-                # Continue execution to allow application to run without plugins
+                # Continue execution with empty tools list
                 tools = []
 
         except Exception as e:
@@ -191,7 +199,7 @@ class MLFineTuningApp:
             logger.error(f"Invalid configuration type: {type(config)}")
             return None
 
-        required_fields = ['model_type', 'batch_size', 'learning_rate', 'epochs', 
+        required_fields = ['model_type', 'batch_size', 'learning_rate', 'epochs',
                          'max_seq_length', 'warmup_steps']
 
         missing_fields = [field for field in required_fields if field not in config]
