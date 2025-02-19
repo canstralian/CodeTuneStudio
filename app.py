@@ -260,11 +260,12 @@ class MLFineTuningApp:
                 st.session_state.current_config_id = config_id
 
                 with self.flask_app.app_context():
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        training_monitor()
-                    with col2:
-                        experiment_compare()
+                    # Restructured layout to avoid nested columns
+                    st.subheader("Training Progress")
+                    training_monitor()
+
+                    st.subheader("Experiment Analysis")
+                    experiment_compare()
 
                 if st.button("Export Configuration"):
                     st.json(config)
