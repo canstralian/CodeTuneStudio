@@ -18,6 +18,7 @@ from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
 from components.version_manager import version_manager
 from components.plugin_manager import plugin_manager
+from components.documentation_viewer import documentation_viewer # Added import
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
 from utils.plugins.registry import registry
@@ -179,8 +180,7 @@ class MLFineTuningApp:
             st.markdown("---")
             self._render_navigation()
 
-    @staticmethod
-    def _render_navigation() -> None:
+    def _render_navigation(self) -> None:
         """Render navigation section"""
         st.markdown("""
         ### Navigation
@@ -188,6 +188,7 @@ class MLFineTuningApp:
         - [Training Configuration](#training-configuration)
         - [Training Progress](#training-progress)
         - [Experiment Comparison](#experiment-comparison)
+        - [Documentation](#documentation)
         ---
         ### About
         Fine-tune ML models with advanced monitoring
@@ -232,9 +233,16 @@ class MLFineTuningApp:
             self.setup_sidebar()
             st.markdown("# ML Model Fine-tuning Platform")
 
-            # Add plugin manager section
-            with st.expander("Plugin Management", expanded=False):
-                plugin_manager()
+            if "page" not in st.session_state:
+                st.session_state.page = "main"
+
+            with st.expander("Documentation & Plugin Management", expanded=False):
+                tab1, tab2 = st.tabs(["Documentation", "Plugin Management"])
+                with tab1:
+                    documentation_viewer()
+                with tab2:
+                    plugin_manager()
+
 
             # Dataset selection with validation
             selected_dataset = dataset_browser()
