@@ -1,0 +1,12 @@
+streamlit
+torch
+transformers
+plotly
+sqlalchemy
+psycopg2-binary
+flask-sqlalchemy
+flask-migrate
+numpy
+datasets
+evaluate
+accelerate
