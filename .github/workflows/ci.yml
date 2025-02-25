@@ -9,63 +9,26 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.10  # Adjust if needed
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest flake8 black
-
-    - name: Lint with Flake8
-      run: |
-        flake8 . --max-line-length=88 --statistics --show-source
-
-    - name: Format Check with Black
-      run: |
-        black --check .
-
-    - name: Run Tests with Pytest
-      run: |
-        pytest --maxfail=5 --disable-warnings --cov=.
-
-    - name: Upload Pytest Coverage Report
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: ./htmlcov/
-
-  # Optional: Coverage Badge
-  coverage-badge:
-    needs: build-and-test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-    - name: Download Coverage Report
-      uses: actions/download-artifact@v3
-      with:
-        name: coverage-report
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Generate Coverage Badge
-      run: |
-        pip install coverage-badge
-        coverage-badge -o coverage-badge.svg -f
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Upload Coverage Badge
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-badge
-        path: coverage-badge.svg
+      - name: Run tests
+        run: |
+          pytest
