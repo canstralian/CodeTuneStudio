@@ -1,0 +1,19 @@
+title: CodeTuneStudio
+emoji: 🌍
+colorFrom: purple
+colorTo: purple
+sdk: gradio
+sdk_version: 5.18.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: this is a space
+models:
+- TheBloke/WizardCoder-Python-34B-V1.0-GGUF
+- shibing624/code-autocomplete-distilgpt2-python
+- sagard21/python-code-explainer
+- Salesforce/codet5-base-codexglue-sum-python
+- google/code_x_glue_ct_code_to_text
+- codellama/CodeLlama-7b-Python-hf
+datasets:
+- google/code_x_glue_ct_code_to_text
