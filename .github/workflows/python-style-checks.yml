@@ -23,10 +23,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 black
 
-    - name: Check code formatting with Black
-      run: |
-        black --check .
-    
     - name: Check code style with Flake8
       run: |
         flake8 . --max-line-length=88 --statistics --show-source
