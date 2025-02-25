@@ -4,12 +4,14 @@ Welcome to the **ML Fine-Tuning Platform**! This application is designed to stre
 
 ---
 
-![GitHub last commit](https://img.shields.io/github/last-commit/canstralian/ml-finetuning-platform)
-![GitHub issues](https://img.shields.io/github/issues/canstralian/ml-finetuning-platform)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/canstralian/ml-finetuning-platform)
-![GitHub contributors](https://img.shields.io/github/contributors/canstralian/ml-finetuning-platform)
-![GitHub license](https://img.shields.io/github/license/canstralian/ml-finetuning-platform)
-![GitHub stars](https://img.shields.io/github/stars/canstralian/ml-finetuning-platform?style=social)
+# CodeTuneStudio
+
+[![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-%3E%3D3.9-blue.svg)](https://www.python.org/downloads)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Workflow Status](https://github.com/canstralian/CodeTuneStudio/actions/workflows/ci.yml/badge.svg)](https://github.com/canstralian/CodeTuneStudio/actions)
+[![Documentation Status](https://readthedocs.org/projects/codetunestudio/badge/?version=latest)](https://codetunestudio.readthedocs.io/en/latest/)
 
 ---
 
