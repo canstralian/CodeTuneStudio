@@ -1,9 +1,3 @@
-# ML Fine-Tuning Platform
-
-Welcome to the **ML Fine-Tuning Platform**! This application is designed to streamline the process of fine-tuning machine learning models, providing an intuitive interface for efficient model customization.
-
----
-
 # CodeTuneStudio
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
