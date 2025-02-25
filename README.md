@@ -1,32 +1,9 @@
----
-title: CodeTuneStudio
-emoji: 🌍
-colorFrom: purple
-colorTo: purple
-sdk: gradio
-sdk_version: 5.18.0
-app_file: app.py
-pinned: false
-license: mit
-short_description: this is a space
-models:
-- TheBloke/WizardCoder-Python-34B-V1.0-GGUF
-- shibing624/code-autocomplete-distilgpt2-python
-- sagard21/python-code-explainer
-- Salesforce/codet5-base-codexglue-sum-python
-- google/code_x_glue_ct_code_to_text
-- codellama/CodeLlama-7b-Python-hf
-datasets:
-- google/code_x_glue_ct_code_to_text
-
----
 # 🎵💻 CodeTuneStudio
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-%3E%3D3.9-blue.svg)](https://www.python.org/downloads)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Workflow Status](https://github.com/canstralian/CodeTuneStudio/actions/workflows/ci.yml/badge.svg)](https://github.com/canstralian/CodeTuneStudio/actions)
 [![Documentation Status](https://readthedocs.org/projects/codetunestudio/badge/?version=latest)](https://codetunestudio.readthedocs.io/en/latest/)
 
 ---
