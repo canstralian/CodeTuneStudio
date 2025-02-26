@@ -11,6 +11,7 @@ This guide explains how to deploy the ML Fine-tuning Platform to HuggingFace Spa
 ## Configuration Files
 
 ### requirements.txt
+
 Ensure your `requirements.txt` includes all necessary dependencies:
 
 ```txt
@@ -29,6 +30,7 @@ accelerate
 ```
 
 ### Dockerfile
+
 Create a `Dockerfile` in your project root:
 
 ```dockerfile
@@ -48,12 +50,14 @@ CMD ["streamlit", "run", "app.py", "--server.port=5000", "--server.address=0.0.0
 ## Deployment Steps
 
 1. Create a new Space on HuggingFace:
+
    - Go to [HuggingFace Spaces](https://huggingface.co/spaces)
    - Click "Create new Space"
    - Choose "Streamlit" as the SDK
    - Name your space and set it to Public/Private
 
 2. Clone your Space:
+
 ```bash
 git clone https://huggingface.co/spaces/your-username/your-space-name
 ```
@@ -61,6 +65,7 @@ git clone https://huggingface.co/spaces/your-username/your-space-name
 3. Copy your project files to the cloned directory
 
 4. Push to HuggingFace:
+
 ```bash
 cd your-space-name
 git add .
@@ -78,6 +83,7 @@ Configure the following environment variables in your HuggingFace Space settings
 ## Monitoring
 
 After deployment:
+
 1. Monitor your Space's logs for any issues
 2. Check the Space's "Factory" tab for build status
 3. Visit your Space's URL to verify the application is running correctly
@@ -88,6 +94,7 @@ To update your deployed application:
 
 1. Make changes to your local code
 2. Commit and push to the Space repository:
+
 ```bash
 git add .
 git commit -m "Update description"
@@ -101,11 +108,13 @@ The Space will automatically rebuild and deploy your changes.
 Common issues and solutions:
 
 1. **Build Failures**
+
    - Check logs in the "Factory" tab
    - Verify all dependencies are in `requirements.txt`
    - Check for Python version compatibility
 
 2. **Runtime Errors**
+
    - Check the application logs
    - Verify environment variables are set correctly
    - Check database connectivity

@@ -1,26 +1,33 @@
 /* Custom styles for the app */
+body {
+  background-color: #f0f4f8; /* Light background */
+  font-family: "Roboto", sans-serif; /* Change font */
+}
+
 .stButton > button {
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    font-family: 'Inter', sans-serif;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: "Roboto", sans-serif;
+  background-color: #009688; /* Primary button color */
+  color: white; /* Button text color */
 }
 
 .card {
-    padding: 1rem;
-    border-radius: 8px;
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  margin: 1rem 0;
 }
 
 .success-text {
-    color: #09AB3B;
+  color: #4caf50; /* Green color for success */
 }
 
 .error-text {
-    color: #FF4B4B;
+  color: #f44336; /* Red color for errors */
 }
 
 .info-text {
-    color: #0068C9;
+  color: #2196f3; /* Blue color for information */
 }

@@ -10,76 +10,76 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'  # Adjust to match your local environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10" # Adjust to match your local environment
 
-    - name: Install dependencies
-      run: |
-        set -e  # Exit on first error
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install huggingface_hub
-        pip list  # Log installed packages
+      - name: Install dependencies
+        run: |
+          set -e  # Exit on first error
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install huggingface_hub
+          pip list  # Log installed packages
 
-    - name: Run tests
-      run: |
-        pytest
+      - name: Run tests
+        run: |
+          pytest
 
-    - name: Verify Hugging Face CLI version
-      run: |
-        huggingface-cli --version
+      - name: Verify Hugging Face CLI version
+        run: |
+          huggingface-cli --version
 
-    - name: Login to Hugging Face Hub
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        echo "$HF_TOKEN" | huggingface-cli login
+      - name: Login to Hugging Face Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "$HF_TOKEN" | huggingface-cli login
 
-    - name: Push model to Hugging Face Hub
-      if: success()
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        echo "$HF_TOKEN" | huggingface-cli login
-        huggingface-cli repo create my-model --type=model --yes
-        huggingface-cli upload ./path_to_model --repo my-model
+      - name: Push model to Hugging Face Hub
+        if: success()
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "$HF_TOKEN" | huggingface-cli login
+          huggingface-cli repo create my-model --type=model --yes
+          huggingface-cli upload ./path_to_model --repo my-model
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        set -e
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install huggingface_hub
-        pip list
+      - name: Install dependencies
+        run: |
+          set -e
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install huggingface_hub
+          pip list
 
-    - name: Login to Hugging Face Hub
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        echo "$HF_TOKEN" | huggingface-cli login
+      - name: Login to Hugging Face Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "$HF_TOKEN" | huggingface-cli login
 
-    - name: Push model to Hugging Face Hub
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        echo "$HF_TOKEN" | huggingface-cli login
-        huggingface-cli repo create my-model --type=model --yes
-        huggingface-cli upload ./path_to_model --repo my-model
+      - name: Push model to Hugging Face Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "$HF_TOKEN" | huggingface-cli login
+          huggingface-cli repo create my-model --type=model --yes
+          huggingface-cli upload ./path_to_model --repo my-model

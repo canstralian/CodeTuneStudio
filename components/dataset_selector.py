@@ -2,18 +2,18 @@ import re
 import streamlit as st
 from datasets import load_dataset
 from utils.argilla_dataset import ArgillaDatasetManager
-from typing import Optional
+from typing import Optional, Dict
 from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
 
 AVAILABLE_DATASETS = {
-    "code_search_net",
-    "python_code_instructions",
-    "github_code_snippets",
-    "argilla_code_dataset"
+    "code_search_net", "python_code_instructions", "github_code_snippets",
+    "argilla_code_dataset", "google/code_x_glue_ct_code_to_text",
+    "redashu/python_code_instructions"
 }
+
 
 @lru_cache(maxsize=32)
 def validate_dataset_name(name: str) -> bool:
@@ -21,10 +21,8 @@ def validate_dataset_name(name: str) -> bool:
         logger.error(f"Invalid dataset name: {name}")
         return False
     pattern = r'^[a-zA-Z0-9_\-]+$'
-    is_valid = bool(re.match(pattern, name))
-    if not is_valid:
-        logger.error(f"Invalid dataset name format: {name}")
-    return is_valid
+    return bool(re.match(pattern, name))
+
 
 def get_argilla_dataset_manager() -> Optional[ArgillaDatasetManager]:
     try:
@@ -33,14 +31,19 @@ def get_argilla_dataset_manager() -> Optional[ArgillaDatasetManager]:
         logger.error(f"Argilla initialization error: {e}")
         return None
 
+
 def display_preview_data(dataset_name: str):
     try:
         if dataset_name.startswith("argilla_"):
             argilla_manager = get_argilla_dataset_manager()
-            if argilla_manager and (dataset := argilla_manager.load_dataset(dataset_name)):
-                st.dataframe(dataset[:5])
+            if argilla_manager:
+                dataset = argilla_manager.load_dataset(dataset_name)
+                if dataset:
+                    st.dataframe(dataset[:5])
+                else:
+                    st.warning("No preview available")
             else:
-                st.warning("No preview available")
+                st.warning("Argilla connection failed")
         else:
             preview_data = {
                 "code": ["def hello():", "print('Hello World')"],
@@ -51,15 +54,22 @@ def display_preview_data(dataset_name: str):
         logger.error(f"Preview error: {e}")
         st.error("Error displaying preview")
 
+
 def display_dataset_info(dataset_name: str):
     try:
         with st.expander("Dataset Information"):
             if dataset_name.startswith("argilla_"):
                 argilla_manager = get_argilla_dataset_manager()
-                if argilla_manager and (dataset := argilla_manager.load_dataset(dataset_name)):
-                    st.write(f"Number of examples: {len(dataset)}")
-                    st.write("Source: Argilla")
-                    st.write("Type: Code Generation Dataset")
+                if argilla_manager:
+                    dataset = argilla_manager.load_dataset(dataset_name)
+                    if dataset:
+                        st.write(f"Number of examples: {len(dataset)}")
+                        st.write("Source: Argilla")
+                        st.write("Type: Code Generation Dataset")
+                    else:
+                        st.warning("No dataset information available")
+                else:
+                    st.warning("Argilla connection failed")
             else:
                 st.write("Number of examples: 1000")
                 st.write("Languages: Python, JavaScript")
@@ -68,17 +78,22 @@ def display_dataset_info(dataset_name: str):
         logger.error(f"Info display error: {e}")
         st.error("Error displaying information")
 
+
 @st.cache_data(ttl=3600)
-def get_dataset_info(dataset_name: str) -> dict:
+def get_dataset_info(dataset_name: str) -> Dict:
     try:
         if dataset_name.startswith("argilla_"):
             argilla_manager = get_argilla_dataset_manager()
-            if argilla_manager and (dataset := argilla_manager.load_dataset(dataset_name)):
-                return {
-                    "num_examples": len(dataset),
-                    "source": "Argilla",
-                    "type": "Code Generation"
-                }
+            if argilla_manager:
+                dataset = argilla_manager.load_dataset(dataset_name)
+                if dataset:
+                    return {
+                        "num_examples": len(dataset),
+                        "source": "Argilla",
+                        "type": "Code Generation"
+                    }
+            logger.warning("Argilla connection failed or no dataset available")
+            return {}
         return {
             "num_examples": 1000,
             "languages": ["Python", "JavaScript"],
@@ -87,6 +102,7 @@ def get_dataset_info(dataset_name: str) -> dict:
     except Exception as e:
         logger.error(f"Dataset info error: {e}")
         return {}
+
 
 def dataset_browser() -> Optional[str]:
     st.header("Dataset Selection")
@@ -98,13 +114,12 @@ def dataset_browser() -> Optional[str]:
                 <h3>Choose a Dataset</h3>
                 <p>Select from available datasets or connect to Argilla</p>
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                        unsafe_allow_html=True)
 
-            source = st.radio(
-                "Dataset Source",
-                ["Standard Datasets", "Argilla Datasets"],
-                help="Choose dataset source"
-            )
+            source = st.radio("Dataset Source",
+                              ["Standard Datasets", "Argilla Datasets"],
+                              help="Choose dataset source")
 
             if source == "Argilla Datasets":
                 argilla_manager = get_argilla_dataset_manager()
@@ -116,15 +131,10 @@ def dataset_browser() -> Optional[str]:
                     st.warning("No Argilla datasets found")
                     return None
             else:
-                available_datasets = [ds for ds in AVAILABLE_DATASETS 
-                                   if not ds.startswith("argilla_")]
+                available_datasets = list(AVAILABLE_DATASETS)
 
-            selected_dataset = st.selectbox(
-                "Select a dataset",
-                options=available_datasets,
-                help="Choose dataset for fine-tuning"
-            )
-
+            selected_dataset = st.selectbox("Select a dataset",
+                                            available_datasets)
             if selected_dataset:
                 st.info(f"Selected: {selected_dataset}")
                 display_preview_data(selected_dataset)

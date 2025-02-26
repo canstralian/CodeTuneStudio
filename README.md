@@ -1,3 +1,27 @@
+---
+title: CodeTuneStudio Documentation
+emoji: 🎵💻
+colorFrom: blue
+colorTo: green
+sdk: gradio
+pinned: true
+license: mit
+short_description: An intelligent platform for code optimization and best practices.
+models:
+  - replit/replit-code-v1_5-3b
+  - Salesforce/codet5p-220m-py
+  - TheBloke/WizardCoder-Python-34B-V1.0-GGUF
+  - shibing624/code-autocomplete-distilgpt2-python
+  - sagard21/python-code-explainer
+  - Salesforce/codet5-base-codexglue-sum-python
+  - google/code_x_glue_ct_code_to_text
+  - codellama/CodeLlama-7b-Python-hf
+datasets:
+  - google/code_x_glue_ct_code_to_text
+  - redashu/python_code_instructions
+  - code-search-net/code_search_net
+---
+
 # 🎵💻 CodeTuneStudio
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
@@ -35,12 +59,14 @@ Before you begin, ensure you have the following installed:
 ## 📥 Installation
 
 1. **🔄 Clone the Repository:**
+
    ```bash
    git clone https://github.com/canstralian/CodeTuneStudio.git
    cd CodeTuneStudio
    ```
 
 2. **📦 Install Dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -55,6 +81,7 @@ Before you begin, ensure you have the following installed:
 ## 🌐 Usage
 
 1. 🟢 **Start the Application:**
+
    ```bash
    python app.py
    ```
@@ -82,11 +109,11 @@ CodeTuneStudio/
 We welcome contributions! 🫶  
 Feel free to check out the [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get involved.
 
-1. 🍴 Fork the repository  
-2. 💡 Create your feature branch (`git checkout -b feature/AmazingFeature`)  
-3. ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)  
-4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)  
-5. 📬 Open a Pull Request  
+1. 🍴 Fork the repository
+2. 💡 Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
+5. 📬 Open a Pull Request
 
 ---
 

@@ -24,7 +24,7 @@ def show_training_animation(progress: Optional[float] = None):
         margin: 0 5px;
     }
     
-    .training-progress {
+    .training-message {
         margin-top: 1rem;
         text-align: center;
         font-size: 1.2rem;
@@ -33,33 +33,22 @@ def show_training_animation(progress: Optional[float] = None):
     </style>
     """, unsafe_allow_html=True)
     
-    # Animated emojis
-    emojis = ["🤖", "📚", "💡", "🔄"]
+    # Single animated emoji counting up
+    emoji = "🤖"
     
-    # Display emojis with animation
-    cols = st.columns(len(emojis))
-    for idx, (emoji, col) in enumerate(zip(emojis, cols)):
-        # Add delay to create a wave effect
-        col.markdown(
-            f"""<div class="training-emoji" style="animation-delay: {idx * 0.2}s">
-            {emoji}
-            </div>""",
-            unsafe_allow_html=True
-        )
+    # Display emoji and progress
+    progress_display = progress * 100 if progress is not None else 0
+    st.markdown(
+        f"""<div class="training-emoji">
+        {emoji} {progress_display:.2f}%
+        </div>""",
+        unsafe_allow_html=True
+    )
     
-    # Display progress message
-    if progress is not None:
-        progress_percentage = int(progress * 100)
-        st.markdown(
-            f"""<div class="training-progress">
-            Training Progress: {progress_percentage}%
-            </div>""",
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            """<div class="training-progress">
-            Preparing for training...
-            </div>""",
-            unsafe_allow_html=True
-        )
+    # Display a static message
+    st.markdown(
+        """<div class="training-message">
+        Model is training, please be patient...
+        </div>""",
+        unsafe_allow_html=True
+    )
