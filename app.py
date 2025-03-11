@@ -43,10 +43,8 @@ class MLFineTuningApp:
 
     def _configure_database(self) -> None:
         """Configure database with optimized settings and connection pooling"""
-        database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            raise ValueError("DATABASE_URL environment variable is not set")
-
+        database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
+        
         # Optimized database configuration
         self.flask_app.config.update({
             'SQLALCHEMY_DATABASE_URI': database_url,
@@ -61,6 +59,7 @@ class MLFineTuningApp:
                 'echo': bool(os.environ.get('SQL_DEBUG', False))
             }
         })
+        logger.info(f"Database configured with URL: {database_url}")
 
     def _initialize_database_with_retry(self, max_retries: int = 3, base_delay: float = 1.0) -> None:
         """Initialize database with exponential backoff retry strategy"""
@@ -74,7 +73,16 @@ class MLFineTuningApp:
                 delay = base_delay * (2 ** attempt)
                 if attempt == max_retries - 1:
                     logger.critical(f"Failed to initialize database after {max_retries} attempts: {e}")
-                    raise
+                    # Create fallback SQLite database if main DB fails
+                    try:
+                        self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fallback.db'
+                        with self.flask_app.app_context():
+                            init_db(self.flask_app)
+                            logger.warning("Fallback to SQLite database successful")
+                        return
+                    except Exception as fallback_error:
+                        logger.critical(f"Fallback database initialization failed: {fallback_error}")
+                        raise
                 logger.warning(f"Database initialization attempt {attempt + 1} failed: {e}")
                 time.sleep(delay)
 
