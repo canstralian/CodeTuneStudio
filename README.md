@@ -20,6 +20,9 @@ datasets:
   - google/code_x_glue_ct_code_to_text
   - redashu/python_code_instructions
   - code-search-net/code_search_net
+spaces:
+  - whackthejacker/GenAI_Code_Checker
+  - whackthejacker/ibm-granite-granite-3b-code-base-128k
 ---
 
 # 🎵💻 CodeTuneStudio

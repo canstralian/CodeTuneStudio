@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 import os
 import logging
 import time
@@ -8,7 +8,6 @@ from functools import lru_cache
 # Third-party imports
 import streamlit as st
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.pool import QueuePool
 
 # Local imports
@@ -16,7 +15,6 @@ from components.dataset_selector import dataset_browser, validate_dataset_name
 from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
-from components.version_manager import version_manager
 from components.plugin_manager import plugin_manager
 from components.documentation_viewer import documentation_viewer # Added import
 from utils.config_validator import validate_config
