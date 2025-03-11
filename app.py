@@ -16,7 +16,8 @@ from components.parameter_config import training_parameters
 from components.training_monitor import training_monitor
 from components.experiment_compare import experiment_compare
 from components.plugin_manager import plugin_manager
-from components.documentation_viewer import documentation_viewer # Added import
+from components.documentation_viewer import documentation_viewer
+from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
 from utils.plugins.registry import registry
@@ -234,12 +235,14 @@ class MLFineTuningApp:
             if "page" not in st.session_state:
                 st.session_state.page = "main"
 
-            with st.expander("Documentation & Plugin Management", expanded=False):
-                tab1, tab2 = st.tabs(["Documentation", "Plugin Management"])
+            with st.expander("Documentation, Plugins & Tools", expanded=False):
+                tab1, tab2, tab3 = st.tabs(["Documentation", "Plugin Management", "Tokenizer Builder"])
                 with tab1:
                     documentation_viewer()
                 with tab2:
                     plugin_manager()
+                with tab3:
+                    tokenizer_builder()
 
 
             # Dataset selection with validation
