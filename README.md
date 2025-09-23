@@ -1,30 +1,3 @@
----
-title: CodeTuneStudio Documentation
-emoji: 🎵💻
-colorFrom: blue
-colorTo: green
-sdk: gradio
-pinned: true
-license: mit
-short_description: An intelligent platform for code optimization and best practices.
-models:
-  - replit/replit-code-v1_5-3b
-  - Salesforce/codet5p-220m-py
-  - TheBloke/WizardCoder-Python-34B-V1.0-GGUF
-  - shibing624/code-autocomplete-distilgpt2-python
-  - sagard21/python-code-explainer
-  - Salesforce/codet5-base-codexglue-sum-python
-  - google/code_x_glue_ct_code_to_text
-  - codellama/CodeLlama-7b-Python-hf
-datasets:
-  - google/code_x_glue_ct_code_to_text
-  - redashu/python_code_instructions
-  - code-search-net/code_search_net
-spaces:
-  - whackthejacker/GenAI_Code_Checker
-  - whackthejacker/ibm-granite-granite-3b-code-base-128k
----
-
 # 🎵💻 CodeTuneStudio
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
