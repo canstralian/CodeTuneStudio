@@ -15,18 +15,19 @@ This guide explains how to deploy the ML Fine-tuning Platform to HuggingFace Spa
 Ensure your `requirements.txt` includes all necessary dependencies:
 
 ```txt
-streamlit
-torch
-transformers
-plotly
-sqlalchemy
-psycopg2-binary
-flask-sqlalchemy
-flask-migrate
-numpy
-datasets
-evaluate
-accelerate
+streamlit==1.26.0
+torch==2.0.1
+transformers==4.33.0
+plotly==5.17.0
+sqlalchemy==2.0.22
+psycopg2-binary==2.9.7
+flask-sqlalchemy==3.0.5
+flask-migrate==4.0.4
+numpy==1.25.2
+datasets==2.14.5
+evaluate==0.5.1
+accelerate==0.23.0
+flask==3.0.0
 ```
 
 ### Dockerfile
