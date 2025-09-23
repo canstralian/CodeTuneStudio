@@ -10,76 +10,79 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
+      # Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.10" # Adjust to match your local environment
+          python-version: "3.10"
 
+      # Cache dependencies for faster builds
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Install dependencies
       - name: Install dependencies
         run: |
-          set -e  # Exit on first error
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install huggingface_hub
-          pip list  # Log installed packages
+          pip list
 
-      - name: Run tests
-        run: |
-          pytest
-
-      - name: Verify Hugging Face CLI version
-        run: |
-          huggingface-cli --version
-
-      - name: Login to Hugging Face Hub
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          echo "$HF_TOKEN" | huggingface-cli login
-
-      - name: Push model to Hugging Face Hub
-        if: success()
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          echo "$HF_TOKEN" | huggingface-cli login
-          huggingface-cli repo create my-model --type=model --yes
-          huggingface-cli upload ./path_to_model --repo my-model
+      # Run tests
+      - name: Run tests with pytest
+        run: pytest
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
+      # Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
+      # Cache dependencies for faster builds
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Install dependencies
       - name: Install dependencies
         run: |
-          set -e
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install huggingface_hub
           pip list
 
+      # Login to Hugging Face Hub
       - name: Login to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          echo "$HF_TOKEN" | huggingface-cli login
+        run: huggingface-cli login --token $HF_TOKEN
 
+      # Push model to Hugging Face Hub
       - name: Push model to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          echo "$HF_TOKEN" | huggingface-cli login
-          huggingface-cli repo create my-model --type=model --yes
-          huggingface-cli upload ./path_to_model --repo my-model
+          huggingface-cli repo create my-model --type=model --yes || echo "Repo already exists."
+          huggingface-cli upload ./path_to_model --repo my-model --include-metadata
