@@ -1,27 +1,30 @@
 import torch
 from accelerate import init_empty_weights
 from transformers import (
-    AutoModelForCausalLM, 
+    AutoModelForCausalLM,
     AutoTokenizer,
     LogitsProcessorList,
     MinLengthLogitsProcessor,
     TemperatureLogitsWarper,
     TopKLogitsWarper,
-    TopPLogitsWarper
+    TopPLogitsWarper,
 )
 from transformers.generation import GenerationConfig
 from typing import Dict, Set, Tuple, Optional, Union, Any, List
 import logging
 from .peft_trainer import PEFTTrainer
-from .reddit_dataset import RedditDatasetManager # Added import
+from .reddit_dataset import RedditDatasetManager  # Added import
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class RedditDatasetManager: # Minimal implementation for runnable code
-    def get_training_data(self, min_score: int = 100, max_samples: int = 1000) -> List[str]:
+
+class RedditDatasetManager:  # Minimal implementation for runnable code
+    def get_training_data(
+        self, min_score: int = 100, max_samples: int = 1000
+    ) -> List[str]:
         # Replace this with your actual Reddit data retrieval logic
         return ["Sample Reddit Post 1", "Sample Reddit Post 2"]
 
@@ -35,13 +38,15 @@ class ModelInference:
         self.model: Optional[AutoModelForCausalLM] = None
         self.tokenizer: Optional[AutoTokenizer] = None
         self.peft_trainer: Optional[PEFTTrainer] = None
-        self.reddit_manager = RedditDatasetManager() # Added reddit_manager instance
+        self.reddit_manager = RedditDatasetManager()  # Added reddit_manager instance
 
-    def get_default_logits_processors(self, 
-                                   min_length: int = 10,
-                                   temperature: float = 0.7,
-                                   top_k: int = 50,
-                                   top_p: float = 0.9) -> LogitsProcessorList:
+    def get_default_logits_processors(
+        self,
+        min_length: int = 10,
+        temperature: float = 0.7,
+        top_k: int = 50,
+        top_p: float = 0.9,
+    ) -> LogitsProcessorList:
         """Get default set of logits processors for controlled generation"""
         try:
             processors = LogitsProcessorList()
@@ -67,12 +72,14 @@ class ModelInference:
             logger.error(f"Error creating logits processors: {str(e)}")
             raise
 
-    def generate_text(self, 
-                     prompt: str,
-                     max_length: int = 100,
-                     generation_config: Optional[GenerationConfig] = None,
-                     logits_processors: Optional[LogitsProcessorList] = None,
-                     return_full_output: bool = False) -> Union[str, Dict[str, Any]]:
+    def generate_text(
+        self,
+        prompt: str,
+        max_length: int = 100,
+        generation_config: Optional[GenerationConfig] = None,
+        logits_processors: Optional[LogitsProcessorList] = None,
+        return_full_output: bool = False,
+    ) -> Union[str, Dict[str, Any]]:
         """
         Generate text using the loaded model with enhanced control and output options
 
@@ -103,7 +110,7 @@ class ModelInference:
                     return_dict_in_generate=return_full_output,
                     output_scores=return_full_output,
                     output_attentions=return_full_output,
-                    output_hidden_states=return_full_output
+                    output_hidden_states=return_full_output,
                 )
 
             # Initialize default logits processors if none provided
@@ -112,7 +119,7 @@ class ModelInference:
                     min_length=generation_config.min_length,
                     temperature=generation_config.temperature,
                     top_k=generation_config.top_k,
-                    top_p=generation_config.top_p
+                    top_p=generation_config.top_p,
                 )
 
             inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True)
@@ -123,13 +130,17 @@ class ModelInference:
                 outputs = self.model.generate(
                     **inputs,
                     generation_config=generation_config,
-                    logits_processor=logits_processors
+                    logits_processor=logits_processors,
                 )
 
             if not return_full_output:
                 return self.tokenizer.decode(
-                    outputs[0] if isinstance(outputs, torch.Tensor) else outputs.sequences[0],
-                    skip_special_tokens=True
+                    (
+                        outputs[0]
+                        if isinstance(outputs, torch.Tensor)
+                        else outputs.sequences[0]
+                    ),
+                    skip_special_tokens=True,
                 )
             return outputs
 
@@ -143,8 +154,7 @@ class ModelInference:
             logger.info(f"Initializing empty model: {self.model_name}")
             with init_empty_weights():
                 self.model = AutoModelForCausalLM.from_pretrained(
-                    self.model_name,
-                    torch_dtype=torch.float16
+                    self.model_name, torch_dtype=torch.float16
                 )
             logger.info("Empty model initialization successful")
         except Exception as e:
@@ -159,11 +169,7 @@ class ModelInference:
                 raise ValueError("Model not initialized. Call initialize_model first.")
 
             # Use weights_only=True to prevent arbitrary code execution
-            state_dict = torch.load(
-                weights_path, 
-                map_location="cpu",
-                weights_only=True
-            )
+            state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
             self.model.load_state_dict(state_dict)
             logger.info("Model weights loaded successfully")
         except Exception as e:
@@ -175,9 +181,7 @@ class ModelInference:
         try:
             logger.info(f"Loading pre-trained model: {self.model_name}")
             self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_name,
-                device_map=self.device_map,
-                torch_dtype=torch.float16
+                self.model_name, device_map=self.device_map, torch_dtype=torch.float16
             )
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             logger.info("Pre-trained model loaded successfully")
@@ -211,9 +215,9 @@ class ModelInference:
             logger.error(f"Error cleaning up resources: {str(e)}")
             raise
 
-    def prepare_reddit_data_for_training(self, 
-                                       min_score: int = 100,
-                                       max_samples: int = 1000) -> List[str]:
+    def prepare_reddit_data_for_training(
+        self, min_score: int = 100, max_samples: int = 1000
+    ) -> List[str]:
         """
         Prepare Reddit data for model training or fine-tuning
 
@@ -227,8 +231,7 @@ class ModelInference:
         try:
             logger.info("Preparing Reddit data for training")
             training_data = self.reddit_manager.get_training_data(
-                min_score=min_score,
-                max_samples=max_samples
+                min_score=min_score, max_samples=max_samples
             )
 
             if not training_data:

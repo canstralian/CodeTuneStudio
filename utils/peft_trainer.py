@@ -5,7 +5,7 @@ from peft import (
     TaskType,
     get_peft_model,
     PeftModel,
-    prepare_model_for_kbit_training
+    prepare_model_for_kbit_training,
 )
 from transformers import PreTrainedModel
 import logging
@@ -13,10 +13,10 @@ from contextlib import contextmanager
 
 # Configure logging with more detailed format
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 class PEFTTrainer:
     """
@@ -24,10 +24,12 @@ class PEFTTrainer:
     and resource management.
     """
 
-    def __init__(self, 
-                 model: PreTrainedModel,
-                 peft_config: Optional[Dict[str, Any]] = None,
-                 device: Optional[str] = None):
+    def __init__(
+        self,
+        model: PreTrainedModel,
+        peft_config: Optional[Dict[str, Any]] = None,
+        device: Optional[str] = None,
+    ):
         """
         Initialize PEFT trainer with improved configuration options
 
@@ -38,7 +40,7 @@ class PEFTTrainer:
         """
         self.base_model = model
         self.peft_config = peft_config or self.get_default_peft_config()
-        self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.peft_model: Optional[PeftModel] = None
 
         logger.info(f"Initializing PEFT trainer on device: {self.device}")
@@ -56,7 +58,7 @@ class PEFTTrainer:
             "target_modules": ["q_proj", "v_proj"],  # Which modules to apply PEFT
             "lora_dropout": 0.05,
             "bias": "none",
-            "task_type": TaskType.CAUSAL_LM
+            "task_type": TaskType.CAUSAL_LM,
         }
 
     @contextmanager
@@ -87,8 +89,7 @@ class PEFTTrainer:
             # Prepare for 8-bit training if using quantization
             if getattr(self.base_model, "is_quantized", False):
                 self.base_model = prepare_model_for_kbit_training(
-                    self.base_model,
-                    use_gradient_checkpointing=True
+                    self.base_model, use_gradient_checkpointing=True
                 )
 
             # Create LoRA config with validated parameters
@@ -98,7 +99,7 @@ class PEFTTrainer:
                 target_modules=self.peft_config["target_modules"],
                 lora_dropout=self.peft_config["lora_dropout"],
                 bias=self.peft_config["bias"],
-                task_type=self.peft_config["task_type"]
+                task_type=self.peft_config["task_type"],
             )
 
             # Get PEFT model with proper device placement
@@ -127,7 +128,9 @@ class PEFTTrainer:
                 all_param += num_params
                 if param.requires_grad:
                     trainable_params += num_params
-                    logger.debug(f"Trainable parameter: {name} ({num_params:,d} params)")
+                    logger.debug(
+                        f"Trainable parameter: {name} ({num_params:,d} params)"
+                    )
 
             logger.info(
                 f"trainable params: {trainable_params:,d} || "
@@ -169,9 +172,7 @@ class PEFTTrainer:
                 raise ValueError("Base model not initialized")
 
             self.peft_model = PeftModel.from_pretrained(
-                self.base_model,
-                load_path,
-                device_map=self.device
+                self.base_model, load_path, device_map=self.device
             )
             logger.info("PEFT model loaded successfully")
         except Exception as e:
