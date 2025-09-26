@@ -20,7 +20,7 @@ def valid_training_config():
         "max_seq_length": 512,
         "warmup_steps": 100,
         "include_amphigory": False,
-        "amphigory_ratio": 0.1
+        "amphigory_ratio": 0.1,
     }
 
 
@@ -34,7 +34,7 @@ def invalid_training_config():
         "learning_rate": -1.0,
         "epochs": 0,
         "max_seq_length": 32,
-        "warmup_steps": -1
+        "warmup_steps": -1,
     }
 
 
@@ -47,5 +47,5 @@ def sample_plugin_metadata():
         "version": "1.0.0",
         "author": "Test Author",
         "tags": ["test", "validation"],
-        "requires_api_key": False
+        "requires_api_key": False,
     }

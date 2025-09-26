@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def mock_training_step():
     """
     Generate mock training metrics and convert to native Python types
