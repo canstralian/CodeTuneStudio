@@ -15,32 +15,15 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v4
 
       # Set up Python environment with a specific version
       - name: Set up Python
-        uses: actions/setup-python@v4.0.0
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
-      # Install dependencies (combine into a single step)
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt flake8
-
-      # Lint code with Flake8
-      - name: Run Flake8
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || exit 1
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
-
-      # Run Gradio interface test
-      - name: Test Gradio app
-        run: |
-          python -m unittest discover -s tests
-
-      # (Optional) Cache dependencies
+      # Cache dependencies
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -49,17 +32,60 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 black bandit safety pytest pytest-cov
+
+      # Code formatting check
+      - name: Check code formatting with Black
+        run: |
+          black --check --diff .
+
+      # Lint code with Flake8
+      - name: Run Flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --max-complexity=10 --max-line-length=88 --statistics
+
+      # Security scanning
+      - name: Run Bandit security scan
+        run: |
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . --severity-level medium
+
+      # Dependency vulnerability scanning
+      - name: Run Safety check
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check
+
+      # Run tests with coverage
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=. --cov-report=xml --cov-report=term-missing
+
+      # Upload coverage reports
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
   deploy:
     runs-on: ubuntu-latest
     needs: lint-and-test
+    if: github.ref == 'refs/heads/main'
 
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v4
 
-      # Add your deployment steps here (e.g., deploy to AWS, Heroku, etc.)
-      - name: Deploy to Cloud (example)
+      # Add your deployment steps here
+      - name: Deploy to Cloud
         run: |
           echo "Deploying application..."
-          # Add your deployment command here, such as for AWS, GCP, or any other platform
+          # Add deployment commands here

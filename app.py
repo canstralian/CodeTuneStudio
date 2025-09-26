@@ -25,9 +25,11 @@ from utils.plugins.registry import registry
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - '
+           '%(pathname)s:%(lineno)d'
 )
 logger = logging.getLogger(__name__)
+
 
 class MLFineTuningApp:
     def __init__(self):
@@ -44,7 +46,7 @@ class MLFineTuningApp:
     def _configure_database(self) -> None:
         """Configure database with optimized settings and connection pooling"""
         database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
-        
+
         # Optimized database configuration
         self.flask_app.config.update({
             'SQLALCHEMY_DATABASE_URI': database_url,
@@ -61,7 +63,9 @@ class MLFineTuningApp:
         })
         logger.info(f"Database configured with URL: {database_url}")
 
-    def _initialize_database_with_retry(self, max_retries: int = 3, base_delay: float = 1.0) -> None:
+    def _initialize_database_with_retry(
+        self, max_retries: int = 3, base_delay: float = 1.0
+    ) -> None:
         """Initialize database with exponential backoff retry strategy"""
         for attempt in range(max_retries):
             try:
@@ -72,18 +76,28 @@ class MLFineTuningApp:
             except Exception as e:
                 delay = base_delay * (2 ** attempt)
                 if attempt == max_retries - 1:
-                    logger.critical(f"Failed to initialize database after {max_retries} attempts: {e}")
+                    logger.critical(
+                        f"Failed to initialize database after {max_retries} "
+                        f"attempts: {e}"
+                    )
                     # Create fallback SQLite database if main DB fails
                     try:
-                        self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fallback.db'
+                        self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = (
+                            'sqlite:///fallback.db'
+                        )
                         with self.flask_app.app_context():
                             init_db(self.flask_app)
                             logger.warning("Fallback to SQLite database successful")
                         return
                     except Exception as fallback_error:
-                        logger.critical(f"Fallback database initialization failed: {fallback_error}")
+                        logger.critical(
+                            f"Fallback database initialization failed: "
+                            f"{fallback_error}"
+                        )
                         raise
-                logger.warning(f"Database initialization attempt {attempt + 1} failed: {e}")
+                logger.warning(
+                    f"Database initialization attempt {attempt + 1} failed: {e}"
+                )
                 time.sleep(delay)
 
     @contextmanager
@@ -295,6 +309,7 @@ class MLFineTuningApp:
             if hasattr(st.session_state, 'current_config_id'):
                 del st.session_state.current_config_id
 
+
 def main():
     """Application entry point with improved error handling"""
     try:
@@ -302,7 +317,11 @@ def main():
         app.run()
     except Exception as e:
         logger.critical(f"Fatal error: {e}", exc_info=True)
-        st.error("A critical error occurred. Please reload the page or contact support.")
+        st.error(
+            "A critical error occurred. Please reload the page or "
+            "contact support."
+        )
+
 
 if __name__ == "__main__":
     main()
