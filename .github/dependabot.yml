@@ -13,7 +13,7 @@ updates:
       - dependency-type: "all" # update both direct and indirect dependencies
     ignore:
       - dependency-name: "django"
-        versions: ["<3.2"] # example: ignore Django versions below 3.2
+        versions: ["<3.2"] # Ignore Django versions below 3.2
     assignees:
       - "canstralian"
     reviewers:
