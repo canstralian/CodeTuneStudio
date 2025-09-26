@@ -15,7 +15,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v5
 
       # Set up Python environment with a specific version
       - name: Set up Python
@@ -56,7 +56,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v5
 
       # Add your deployment steps here (e.g., deploy to AWS, Heroku, etc.)
       - name: Deploy to Cloud (example)
