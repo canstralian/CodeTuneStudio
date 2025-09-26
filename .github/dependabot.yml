@@ -45,6 +45,6 @@ updates:
       - "github-actions"
       - "auto-update"
     commit-message:
-      prefix: "ci"
+      prefix: "ci:"
       include: "scope"
     rebase-strategy: "auto"
