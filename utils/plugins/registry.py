@@ -2,7 +2,6 @@ from typing import Dict, List, Type, Optional
 import importlib.util
 import inspect
 import logging
-import os
 import sys
 from pathlib import Path
 from .base import AgentTool
@@ -10,6 +9,7 @@ from .base import AgentTool
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class PluginRegistry:
     """Registry for managing agent tools"""
@@ -86,7 +86,9 @@ class PluginRegistry:
                 try:
                     # Import module using spec
                     module_name = file_path.stem
-                    spec = importlib.util.spec_from_file_location(module_name, str(file_path))
+                    spec = importlib.util.spec_from_file_location(
+                        module_name, str(file_path)
+                    )
 
                     if not spec or not spec.loader:
                         logger.warning(f"Could not find spec for module: {module_name}")
@@ -97,9 +99,11 @@ class PluginRegistry:
 
                     # Find and register tool classes
                     for name, obj in inspect.getmembers(module):
-                        if (inspect.isclass(obj) and 
-                            issubclass(obj, AgentTool) and 
-                            obj != AgentTool):
+                        if (
+                            inspect.isclass(obj)
+                            and issubclass(obj, AgentTool)
+                            and obj != AgentTool
+                        ):
                             self.register_tool(obj)
 
                 except Exception as e:
@@ -110,6 +114,7 @@ class PluginRegistry:
             logger.error(f"Error discovering plugins: {str(e)}")
             logger.debug("Exception details:", exc_info=True)
             raise
+
 
 # Global plugin registry instance
 registry = PluginRegistry()

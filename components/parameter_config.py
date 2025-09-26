@@ -5,10 +5,10 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def get_model_parameters(col) -> Dict[str, Any]:
     """
@@ -28,7 +28,8 @@ def get_model_parameters(col) -> Dict[str, Any]:
         - learning_rate: Learning rate for optimization
     """
     try:
-        st.markdown("""
+        st.markdown(
+            """
         <style>
         .parameter-help {
             font-size: 14px;
@@ -42,18 +43,22 @@ def get_model_parameters(col) -> Dict[str, Any]:
             margin-bottom: 20px;
         }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         with st.container():
             st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
             st.subheader("🤖 Model Architecture")
-            st.markdown('<p class="parameter-help">Select the base model and configure its core parameters.</p>', 
-                       unsafe_allow_html=True)
+            st.markdown(
+                '<p class="parameter-help">Select the base model and configure its core parameters.</p>',
+                unsafe_allow_html=True,
+            )
 
             model_type = st.selectbox(
                 "Model Architecture",
                 ["CodeT5", "Replit-v1.5"],
-                help="Select the base model architecture for fine-tuning. Each architecture is optimized for different tasks."
+                help="Select the base model architecture for fine-tuning. Each architecture is optimized for different tasks.",
             )
 
             batch_size = st.number_input(
@@ -61,7 +66,7 @@ def get_model_parameters(col) -> Dict[str, Any]:
                 min_value=1,
                 max_value=128,
                 value=16,
-                help="Number of samples processed in each training step. Larger values use more memory but can train faster."
+                help="Number of samples processed in each training step. Larger values use more memory but can train faster.",
             )
 
             learning_rate = st.number_input(
@@ -70,18 +75,19 @@ def get_model_parameters(col) -> Dict[str, Any]:
                 max_value=1e-2,
                 value=2e-5,
                 format="%.0e",
-                help="Step size for gradient updates. Too high can cause unstable training, too low can make training very slow."
+                help="Step size for gradient updates. Too high can cause unstable training, too low can make training very slow.",
             )
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         return {
             "model_type": sanitize_string(model_type),
             "batch_size": int(batch_size),
-            "learning_rate": float(learning_rate)
+            "learning_rate": float(learning_rate),
         }
     except Exception as e:
         logger.error(f"Error getting model parameters: {str(e)}")
         raise
+
 
 def get_training_parameters(col) -> Dict[str, Any]:
     """
@@ -97,15 +103,17 @@ def get_training_parameters(col) -> Dict[str, Any]:
         with st.container():
             st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
             st.subheader("⚙️ Training Configuration")
-            st.markdown('<p class="parameter-help">Configure the training process parameters.</p>', 
-                       unsafe_allow_html=True)
+            st.markdown(
+                '<p class="parameter-help">Configure the training process parameters.</p>',
+                unsafe_allow_html=True,
+            )
 
             epochs = st.number_input(
                 "Number of Epochs",
                 min_value=1,
                 max_value=100,
                 value=3,
-                help="Number of complete passes through the dataset. More epochs can improve results but take longer to train."
+                help="Number of complete passes through the dataset. More epochs can improve results but take longer to train.",
             )
 
             max_seq_length = st.number_input(
@@ -113,7 +121,7 @@ def get_training_parameters(col) -> Dict[str, Any]:
                 min_value=64,
                 max_value=512,
                 value=128,
-                help="Maximum length of input sequences. Longer sequences provide more context but require more memory."
+                help="Maximum length of input sequences. Longer sequences provide more context but require more memory.",
             )
 
             warmup_steps = st.number_input(
@@ -121,18 +129,19 @@ def get_training_parameters(col) -> Dict[str, Any]:
                 min_value=0,
                 max_value=1000,
                 value=100,
-                help="Number of steps for learning rate warmup. Helps stabilize early training."
+                help="Number of steps for learning rate warmup. Helps stabilize early training.",
             )
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         return {
             "epochs": int(epochs),
             "max_seq_length": int(max_seq_length),
-            "warmup_steps": int(warmup_steps)
+            "warmup_steps": int(warmup_steps),
         }
     except Exception as e:
         logger.error(f"Error getting training parameters: {str(e)}")
         raise
+
 
 def get_dataset_enhancement_options() -> Dict[str, Any]:
     """
@@ -150,13 +159,15 @@ def get_dataset_enhancement_options() -> Dict[str, Any]:
     try:
         st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
         st.subheader("🔄 Data Enhancement")
-        st.markdown('<p class="parameter-help">Configure additional data enhancement options.</p>', 
-                   unsafe_allow_html=True)
+        st.markdown(
+            '<p class="parameter-help">Configure additional data enhancement options.</p>',
+            unsafe_allow_html=True,
+        )
 
         include_amphigory = st.checkbox(
             "Include Amphigory Examples",
             value=True,
-            help="Include nonsensical but syntactically valid code examples to enhance model robustness"
+            help="Include nonsensical but syntactically valid code examples to enhance model robustness",
         )
 
         amphigory_ratio = 0.1
@@ -167,17 +178,18 @@ def get_dataset_enhancement_options() -> Dict[str, Any]:
                 max_value=0.3,
                 value=0.1,
                 step=0.05,
-                help="Ratio of amphigory examples to include in training data"
+                help="Ratio of amphigory examples to include in training data",
             )
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
         return {
             "include_amphigory": include_amphigory,
-            "amphigory_ratio": float(amphigory_ratio)
+            "amphigory_ratio": float(amphigory_ratio),
         }
     except Exception as e:
         logger.error(f"Error getting enhancement options: {str(e)}")
         raise
+
 
 def training_parameters() -> Optional[Dict[str, Any]]:
     """
@@ -213,11 +225,7 @@ def training_parameters() -> Optional[Dict[str, Any]]:
             training_params = get_training_parameters(col2)
 
         # Combine all parameters
-        config = {
-            **model_params,
-            **training_params,
-            **enhancement_options
-        }
+        config = {**model_params, **training_params, **enhancement_options}
 
         # Validate complete configuration
         errors = validate_config(config)
