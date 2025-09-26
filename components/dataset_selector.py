@@ -1,6 +1,5 @@
 import re
 import streamlit as st
-from datasets import load_dataset
 from utils.argilla_dataset import ArgillaDatasetManager
 from typing import Optional, Dict
 from functools import lru_cache
@@ -17,11 +16,21 @@ AVAILABLE_DATASETS = {
 
 @lru_cache(maxsize=32)
 def validate_dataset_name(name: str) -> bool:
+    """
+    Validate dataset name format.
+    
+    Allows alphanumeric characters, hyphens, underscores, dots, and forward slashes
+    to support HuggingFace dataset names like 'user/dataset-name'.
+    """
     if not name or not isinstance(name, str):
         logger.error(f"Invalid dataset name: {name}")
         return False
-    pattern = r'^[a-zA-Z0-9_\-]+$'
-    return bool(re.match(pattern, name))
+    # Updated pattern to allow forward slashes and dots for HF datasets
+    pattern = r'^[\w\-\/\.]+$'
+    if not re.match(pattern, name):
+        logger.error(f"Dataset name '{name}' contains invalid characters")
+        return False
+    return True
 
 
 def get_argilla_dataset_manager() -> Optional[ArgillaDatasetManager]:

@@ -26,7 +26,10 @@ class ModelVersion:
     def save_version(self, model_path: str, config: Dict[str, Any]) -> str:
         """Save a model version with its configuration"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        config_hash = hashlib.md5(json.dumps(config, sort_keys=True).encode()).hexdigest()[:8]
+        # Use SHA256 instead of MD5 for better security, but mark as safe for performance
+        config_hash = hashlib.sha256(
+            json.dumps(config, sort_keys=True).encode()
+        ).hexdigest()[:8]
         version_id = f"{timestamp}_{config_hash}"
         
         version_path = os.path.join(self.version_dir, version_id)
