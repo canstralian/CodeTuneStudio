@@ -1,11 +1,50 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
+
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "pip"
+    directory: "/" # Root directory for Python dependencies
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-type: "all" # update both direct and indirect dependencies
+    ignore:
+      - dependency-name: "django"
+        versions: ["<3.2"] # example: ignore Django versions below 3.2
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
+    commit-message:
+      prefix: "build(deps):"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "auto-update"
+    rebase-strategy: "auto"
+    pull-request-branch-name:
+      separator: "-"
+
+# Enable security updates (GitHub Advisory Database)
+  - package-ecosystem: "github-actions"
+    directory: "/" # Location of GitHub Actions workflows
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 3
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
+    labels:
+      - "github-actions"
+      - "auto-update"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    rebase-strategy: "auto"
