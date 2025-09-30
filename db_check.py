@@ -5,6 +5,19 @@ from flask import Flask
 from utils.database import init_db, db
 
 def check_database():
+    """
+    Check the database connection by setting up a Flask application with SQLAlchemy configuration.
+    This function retrieves the database URL from the environment variable 'DATABASE_URL',
+    defaulting to 'sqlite:///database.db' if not set. It configures a Flask app with SQLAlchemy,
+    initializes the database, and attempts to execute a simple query ("SELECT 1") to verify
+    the connection. It prints status messages to the console and returns True if the connection
+    is successful, or False if it fails or returns an unexpected result.
+    Returns:
+        bool: True if the database connection is successful, False otherwise.
+    Raises:
+        Exception: Any exception encountered during the connection attempt is caught,
+        printed, and results in a False return value.
+    """
     """Utility to check database connection"""
     print("Checking database connection...")
     

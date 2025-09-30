@@ -30,6 +30,36 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class MLFineTuningApp:
+    """
+    MLFineTuningApp: A comprehensive application for fine-tuning machine learning models.
+    This class integrates Flask for backend operations, Streamlit for the user interface,
+    and provides robust database management, plugin loading, and training configuration
+    handling. It supports dataset selection, model training monitoring, experiment comparison,
+    and plugin-based extensibility.
+    Attributes:
+        flask_app (Flask): The Flask application instance for backend operations.
+        (Other attributes are managed internally via configuration and initialization methods.)
+    Methods:
+        __init__(): Initializes the app with database, Streamlit, and plugin configurations.
+        _configure_database(): Sets up database connection with optimized pooling and settings.
+        _initialize_database_with_retry(max_retries=3, base_delay=1.0): Initializes the database
+            with retry logic and fallback to SQLite if needed.
+        session_scope(): Context manager for database sessions with error handling.
+        _load_custom_css(): Caches and loads custom CSS for Streamlit UI.
+        _configure_streamlit(): Configures Streamlit page settings and applies custom CSS.
+        _load_plugins(): Discovers and loads plugins from the plugins directory.
+        setup_sidebar(): Sets up the Streamlit sidebar with plugin info and navigation.
+        _render_navigation(): Renders navigation links in the sidebar.
+        save_training_config(config, dataset): Validates and saves training configuration to DB.
+        run(): Main method to run the Streamlit app, handling UI, validation, and training flow.
+    Usage:
+        Instantiate the class and call run() to start the application. Ensure environment
+        variables like DATABASE_URL are set for proper configuration. Plugins should be placed
+        in the 'plugins' directory for automatic loading.
+    Raises:
+        RuntimeError: If Streamlit configuration fails.
+        Various exceptions during database or plugin operations, logged and handled gracefully.
+    """
     def __init__(self):
         """Initialize the application with improved error handling and caching"""
         self.flask_app = Flask(__name__)
