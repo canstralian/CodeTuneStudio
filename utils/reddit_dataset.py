@@ -1,29 +1,30 @@
 import logging
-from typing import Optional, Dict, List, Any, Tuple
 import os
 import random
-from datasets import load_dataset
-import torch
-from tqdm import tqdm
-import numpy as np
 from datetime import datetime
 from functools import lru_cache
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+import torch
+from datasets import load_dataset
+from tqdm import tqdm
 
 # Configure logging with more detailed format
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 class RedditDatasetManager:
     """
     Handle Reddit dataset operations with enhanced validation and performance optimization
     """
 
-    def __init__(self, 
-                 cache_dir: Optional[str] = None,
-                 max_cache_size: int = 1000):
+    def __init__(
+        self, cache_dir: str | None = None, max_cache_size: int = 1000
+    ) -> None:
         """
         Initialize Reddit dataset manager with improved caching
 
@@ -31,7 +32,7 @@ class RedditDatasetManager:
             cache_dir: Optional directory for caching datasets
             max_cache_size: Maximum number of items to cache in memory
         """
-        self.cache_dir = cache_dir or os.path.join(os.getcwd(), 'dataset_cache')
+        self.cache_dir = cache_dir or os.path.join(os.getcwd(), "dataset_cache")
         self.max_cache_size = max_cache_size
         os.makedirs(self.cache_dir, exist_ok=True)
         logger.info(f"Initialized RedditDatasetManager with cache at {self.cache_dir}")
@@ -55,10 +56,10 @@ class RedditDatasetManager:
         text_length = len(text)
 
         return (
-            text_length >= min_length and
-            text_length <= max_length and
-            text.strip() != "" and
-            not text.isspace()
+            text_length >= min_length
+            and text_length <= max_length
+            and text.strip() != ""
+            and not text.isspace()
         )
 
     def generate_amphigory_code(self, language: str) -> str:
@@ -72,25 +73,25 @@ class RedditDatasetManager:
             Generated code snippet
         """
         templates = {
-            'python': [
+            "python": [
                 "def dance_with_bytes(rainbow_bits):\n    return ''.join([chr((ord(b) << 2) >> 1) for b in rainbow_bits])",
                 "class QuantumPancake:\n    def flip_in_time(self, syrup_waves):\n        return float('inf') if syrup_waves else None",
                 "async def dream_compiler(thoughts):\n    return await sorted(thoughts, key=lambda x: hash(str(x)))",
             ],
-            'javascript': [
+            "javascript": [
                 "function whisperToPromises(dreamState) {\n    return new Promise(resolve => setTimeout(() => resolve(undefined ?? dreamState), Infinity))}",
                 "const floatingPixels = bytes => bytes.map(b => typeof b === 'number' ? String.fromCharCode(b) : '🌈')",
                 "class TimeTravel {\n    static async rewind(memories) {\n        return [...memories].reverse().filter(Boolean)}",
-            ]
+            ],
         }
 
-        available_templates = templates.get(language.lower(), templates['python'])
+        available_templates = templates.get(language.lower(), templates["python"])
         return random.choice(available_templates)
 
     @lru_cache(maxsize=128)
-    def augment_with_amphigory(self, 
-                              texts: Tuple[str, ...],
-                              ratio: float = 0.1) -> List[str]:
+    def augment_with_amphigory(
+        self, texts: tuple[str, ...], ratio: float = 0.1
+    ) -> list[str]:
         """
         Augment dataset with nonsensical but syntactically valid code
 
@@ -102,14 +103,15 @@ class RedditDatasetManager:
             Augmented list of texts
         """
         if not 0 <= ratio <= 1:
-            raise ValueError("Ratio must be between 0 and 1")
+            msg = "Ratio must be between 0 and 1"
+            raise ValueError(msg)
 
         augmented_texts = list(texts)
         num_amphigory = int(len(texts) * ratio)
 
         logger.info(f"Generating {num_amphigory} amphigory samples")
 
-        languages = ['python', 'javascript']
+        languages = ["python", "javascript"]
         for _ in range(num_amphigory):
             language = random.choice(languages)
             amphigory = self.generate_amphigory_code(language)
@@ -118,11 +120,13 @@ class RedditDatasetManager:
         random.shuffle(augmented_texts)
         return augmented_texts
 
-    def get_training_data(self, 
-                         min_score: int = 100,
-                         max_samples: Optional[int] = None,
-                         include_amphigory: bool = True,
-                         amphigory_ratio: float = 0.1) -> List[str]:
+    def get_training_data(
+        self,
+        min_score: int = 100,
+        max_samples: int | None = None,
+        include_amphigory: bool = True,
+        amphigory_ratio: float = 0.1,
+    ) -> list[str]:
         """
         Get processed data ready for model training with enhanced filtering
 
@@ -137,7 +141,7 @@ class RedditDatasetManager:
         """
         try:
             filtered_data = self.get_filtered_data(min_score=min_score)
-            texts = filtered_data['texts']
+            texts = filtered_data["texts"]
 
             # Validate and clean texts
             texts = [text for text in texts if self.validate_text(text)]
@@ -147,19 +151,16 @@ class RedditDatasetManager:
 
             if include_amphigory:
                 # Convert to tuple for caching
-                texts = self.augment_with_amphigory(
-                    tuple(texts),
-                    amphigory_ratio
-                )
+                texts = self.augment_with_amphigory(tuple(texts), amphigory_ratio)
 
             logger.info(f"Prepared {len(texts)} samples for training")
             return texts
 
         except Exception as e:
-            logger.error(f"Error preparing training data: {str(e)}")
+            logger.exception(f"Error preparing training data: {e!s}")
             return []
 
-    def load_reddit_updates_dataset(self) -> Optional[Dict[str, Any]]:
+    def load_reddit_updates_dataset(self) -> dict[str, Any] | None:
         """
         Load and process the Reddit dataset with batched processing
 
@@ -171,38 +172,38 @@ class RedditDatasetManager:
             dataset = load_dataset(
                 "reddit-tools-HF/dataset-creator-reddit-bestofredditorupdates",
                 cache_dir=self.cache_dir,
-                split='train'
+                split="train",
             )
 
-            processed_data = {
-                'texts': [],
-                'metadata': []
-            }
+            processed_data = {"texts": [], "metadata": []}
 
             # Process in batches for better memory efficiency
             batch_size = 1000
             for i in tqdm(range(0, len(dataset), batch_size)):
-                batch = dataset[i:i + batch_size]
+                batch = dataset[i : i + batch_size]
 
-                processed_data['texts'].extend(
-                    [item.get('text', '') for item in batch]
+                processed_data["texts"].extend([item.get("text", "") for item in batch])
+                processed_data["metadata"].extend(
+                    [
+                        {
+                            "score": item.get("score"),
+                            "subreddit": item.get("subreddit"),
+                            "created_utc": item.get("created_utc"),
+                        }
+                        for item in batch
+                    ]
                 )
-                processed_data['metadata'].extend([{
-                    'score': item.get('score'),
-                    'subreddit': item.get('subreddit'),
-                    'created_utc': item.get('created_utc')
-                } for item in batch])
 
             logger.info(f"Successfully loaded {len(processed_data['texts'])} records")
             return processed_data
 
         except Exception as e:
-            logger.error(f"Failed to load Reddit dataset: {str(e)}")
+            logger.exception(f"Failed to load Reddit dataset: {e!s}")
             return None
 
-    def get_filtered_data(self, 
-                         min_score: Optional[int] = None,
-                         date_range: Optional[Tuple[int, int]] = None) -> Dict[str, List]:
+    def get_filtered_data(
+        self, min_score: int | None = None, date_range: tuple[int, int] | None = None
+    ) -> dict[str, list]:
         """
         Get filtered dataset with improved validation
 
@@ -216,14 +217,14 @@ class RedditDatasetManager:
         try:
             data = self.load_reddit_updates_dataset()
             if not data:
-                return {'texts': [], 'metadata': []}
+                return {"texts": [], "metadata": []}
 
             filtered_texts = []
             filtered_metadata = []
 
             # Use numpy for faster filtering
-            scores = np.array([meta['score'] for meta in data['metadata']])
-            dates = np.array([meta['created_utc'] for meta in data['metadata']])
+            scores = np.array([meta["score"] for meta in data["metadata"]])
+            dates = np.array([meta["created_utc"] for meta in data["metadata"]])
 
             mask = np.ones(len(scores), dtype=bool)
             if min_score is not None:
@@ -235,15 +236,12 @@ class RedditDatasetManager:
 
             filtered_indices = np.where(mask)[0]
 
-            filtered_texts = [data['texts'][i] for i in filtered_indices]
-            filtered_metadata = [data['metadata'][i] for i in filtered_indices]
+            filtered_texts = [data["texts"][i] for i in filtered_indices]
+            filtered_metadata = [data["metadata"][i] for i in filtered_indices]
 
             logger.info(f"Filtered dataset contains {len(filtered_texts)} records")
-            return {
-                'texts': filtered_texts,
-                'metadata': filtered_metadata
-            }
+            return {"texts": filtered_texts, "metadata": filtered_metadata}
 
         except Exception as e:
-            logger.error(f"Error filtering dataset: {str(e)}")
-            return {'texts': [], 'metadata': []}
+            logger.exception(f"Error filtering dataset: {e!s}")
+            return {"texts": [], "metadata": []}

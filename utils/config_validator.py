@@ -1,13 +1,13 @@
-import re
-from typing import Dict, List, Union, Any
 import logging
+import re
+from typing import Any, Dict, List, Union
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def sanitize_string(value: str) -> str:
     """
@@ -20,13 +20,14 @@ def sanitize_string(value: str) -> str:
         Sanitized string
     """
     if not isinstance(value, str):
-        raise ValueError("Input must be a string")
-    return re.sub(r'[^a-zA-Z0-9_\-\.]', '', value.strip())
+        msg = "Input must be a string"
+        raise ValueError(msg)
+    return re.sub(r"[^a-zA-Z0-9_\-\.]", "", value.strip())
 
-def validate_numeric_range(value: Union[int, float], 
-                         min_val: Union[int, float], 
-                         max_val: Union[int, float],
-                         param_name: str) -> List[str]:
+
+def validate_numeric_range(
+    value: int | float, min_val: int | float, max_val: int | float, param_name: str
+) -> list[str]:
     """
     Validate numeric parameter within specified range
 
@@ -46,11 +47,12 @@ def validate_numeric_range(value: Union[int, float],
         elif value < min_val or value > max_val:
             errors.append(f"{param_name} must be between {min_val} and {max_val}")
     except Exception as e:
-        logger.error(f"Error validating {param_name}: {str(e)}")
+        logger.exception(f"Error validating {param_name}: {e!s}")
         errors.append(f"Invalid value for {param_name}")
     return errors
 
-def validate_config(config: Dict[str, Any]) -> List[str]:
+
+def validate_config(config: dict[str, Any]) -> list[str]:
     """
     Validate training configuration parameters with comprehensive checks
 
@@ -70,7 +72,7 @@ def validate_config(config: Dict[str, Any]) -> List[str]:
             "learning_rate": float,
             "epochs": int,
             "max_seq_length": int,
-            "warmup_steps": int
+            "warmup_steps": int,
         }
 
         for field, expected_type in required_fields.items():
@@ -90,30 +92,31 @@ def validate_config(config: Dict[str, Any]) -> List[str]:
             ("learning_rate", 1e-6, 1e-2),
             ("epochs", 1, 100),
             ("max_seq_length", 64, 512),
-            ("warmup_steps", 0, 1000)
+            ("warmup_steps", 0, 1000),
         ]
 
         for param, min_val, max_val in validations:
             if param in config:
-                errors.extend(validate_numeric_range(
-                    config[param], min_val, max_val, param
-                ))
+                errors.extend(
+                    validate_numeric_range(config[param], min_val, max_val, param)
+                )
 
         # Dataset enhancement options validation
         if "include_amphigory" in config:
             if not isinstance(config["include_amphigory"], bool):
                 errors.append("include_amphigory must be a boolean")
 
-        if "amphigory_ratio" in config:
-            if config["include_amphigory"]:
-                errors.extend(validate_numeric_range(
+        if "amphigory_ratio" in config and config["include_amphigory"]:
+            errors.extend(
+                validate_numeric_range(
                     config["amphigory_ratio"], 0.0, 0.3, "amphigory_ratio"
-                ))
+                )
+            )
 
         logger.info(f"Configuration validation completed with {len(errors)} errors")
         return errors
 
     except Exception as e:
-        logger.error(f"Error during configuration validation: {str(e)}")
-        errors.append(f"Configuration validation error: {str(e)}")
+        logger.exception(f"Error during configuration validation: {e!s}")
+        errors.append(f"Configuration validation error: {e!s}")
         return errors

@@ -1,9 +1,9 @@
-from typing import Optional, Dict, Any
-import os
 import logging
+import os
 import time
 from contextlib import contextmanager
 from functools import lru_cache
+from typing import Any, Dict, Optional
 
 # Third-party imports
 import streamlit as st
@@ -12,22 +12,23 @@ from sqlalchemy.pool import QueuePool
 
 # Local imports
 from components.dataset_selector import dataset_browser, validate_dataset_name
-from components.parameter_config import training_parameters
-from components.training_monitor import training_monitor
-from components.experiment_compare import experiment_compare
-from components.plugin_manager import plugin_manager
 from components.documentation_viewer import documentation_viewer
+from components.experiment_compare import experiment_compare
+from components.parameter_config import training_parameters
+from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
+from components.training_monitor import training_monitor
 from utils.config_validator import validate_config
-from utils.database import init_db, TrainingConfig, db
+from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
 
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
 )
 logger = logging.getLogger(__name__)
+
 
 class MLFineTuningApp:
     """
@@ -60,7 +61,8 @@ class MLFineTuningApp:
         RuntimeError: If Streamlit configuration fails.
         Various exceptions during database or plugin operations, logged and handled gracefully.
     """
-    def __init__(self):
+
+    def __init__(self) -> None:
         """Initialize the application with improved error handling and caching"""
         self.flask_app = Flask(__name__)
         self._configure_database()
@@ -73,25 +75,29 @@ class MLFineTuningApp:
 
     def _configure_database(self) -> None:
         """Configure database with optimized settings and connection pooling"""
-        database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
-        
+        database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+
         # Optimized database configuration
-        self.flask_app.config.update({
-            'SQLALCHEMY_DATABASE_URI': database_url,
-            'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-            'SQLALCHEMY_ENGINE_OPTIONS': {
-                'poolclass': QueuePool,
-                'pool_size': 10,
-                'max_overflow': 20,
-                'pool_timeout': 30,
-                'pool_recycle': 1800,
-                'pool_pre_ping': True,
-                'echo': bool(os.environ.get('SQL_DEBUG', False))
+        self.flask_app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": database_url,
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "SQLALCHEMY_ENGINE_OPTIONS": {
+                    "poolclass": QueuePool,
+                    "pool_size": 10,
+                    "max_overflow": 20,
+                    "pool_timeout": 30,
+                    "pool_recycle": 1800,
+                    "pool_pre_ping": True,
+                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
+                },
             }
-        })
+        )
         logger.info(f"Database configured with URL: {database_url}")
 
-    def _initialize_database_with_retry(self, max_retries: int = 3, base_delay: float = 1.0) -> None:
+    def _initialize_database_with_retry(
+        self, max_retries: int = 3, base_delay: float = 1.0
+    ) -> None:
         """Initialize database with exponential backoff retry strategy"""
         for attempt in range(max_retries):
             try:
@@ -100,20 +106,28 @@ class MLFineTuningApp:
                     logger.info("Database initialized successfully")
                 return
             except Exception as e:
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2**attempt)
                 if attempt == max_retries - 1:
-                    logger.critical(f"Failed to initialize database after {max_retries} attempts: {e}")
+                    logger.critical(
+                        f"Failed to initialize database after {max_retries} attempts: {e}"
+                    )
                     # Create fallback SQLite database if main DB fails
                     try:
-                        self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fallback.db'
+                        self.flask_app.config["SQLALCHEMY_DATABASE_URI"] = (
+                            "sqlite:///fallback.db"
+                        )
                         with self.flask_app.app_context():
                             init_db(self.flask_app)
                             logger.warning("Fallback to SQLite database successful")
                         return
                     except Exception as fallback_error:
-                        logger.critical(f"Fallback database initialization failed: {fallback_error}")
+                        logger.critical(
+                            f"Fallback database initialization failed: {fallback_error}"
+                        )
                         raise
-                logger.warning(f"Database initialization attempt {attempt + 1} failed: {e}")
+                logger.warning(
+                    f"Database initialization attempt {attempt + 1} failed: {e}"
+                )
                 time.sleep(delay)
 
     @contextmanager
@@ -132,7 +146,7 @@ class MLFineTuningApp:
 
     @staticmethod
     @lru_cache(maxsize=1)
-    def _load_custom_css() -> Optional[str]:
+    def _load_custom_css() -> str | None:
         """Load and cache custom CSS with improved error handling"""
         css_path = "styles/custom.css"
         try:
@@ -142,7 +156,7 @@ class MLFineTuningApp:
             logger.warning(f"CSS file not found: {css_path}")
             return None
         except Exception as e:
-            logger.error(f"Failed to load CSS: {e}")
+            logger.exception(f"Failed to load CSS: {e}")
             return None
 
     def _configure_streamlit(self) -> None:
@@ -152,27 +166,32 @@ class MLFineTuningApp:
                 page_title="ML Model Fine-tuning",
                 page_icon="🚀",
                 layout="wide",
-                initial_sidebar_state="expanded" if os.environ.get('SPACE_ID') else "auto"
+                initial_sidebar_state="expanded"
+                if os.environ.get("SPACE_ID")
+                else "auto",
             )
             css_content = self._load_custom_css()
             if css_content:
                 st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
         except Exception as e:
             logger.error(f"Streamlit configuration failed: {e}", exc_info=True)
-            raise RuntimeError(f"Failed to configure Streamlit: {e}")
+            msg = f"Failed to configure Streamlit: {e}"
+            raise RuntimeError(msg)
 
     def _load_plugins(self) -> None:
         """Load plugins with improved error handling and path management"""
         try:
             # Get absolute path to plugins directory
-            plugins_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "plugins"))
+            plugins_dir = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "plugins")
+            )
             logger.info(f"Loading plugins from: {plugins_dir}")
 
             try:
                 # Clear existing registrations to prevent duplicates
                 registry.clear_tools()
             except Exception as e:
-                logger.warning(f"Failed to clear tools registry: {str(e)}")
+                logger.warning(f"Failed to clear tools registry: {e!s}")
                 # Continue execution as this is not a critical error
 
             try:
@@ -191,14 +210,13 @@ class MLFineTuningApp:
                 logger.info("=========================")
 
             except Exception as e:
-                logger.error(f"Error during plugin discovery: {str(e)}", exc_info=True)
+                logger.error(f"Error during plugin discovery: {e!s}", exc_info=True)
                 # Continue execution with empty tools list
                 tools = []
 
         except Exception as e:
-            logger.error(f"Plugin loading system error: {str(e)}", exc_info=True)
+            logger.error(f"Plugin loading system error: {e!s}", exc_info=True)
             # Allow application to continue without plugins
-            pass
 
     def setup_sidebar(self) -> None:
         """Configure sidebar with cached plugin information"""
@@ -231,14 +249,20 @@ class MLFineTuningApp:
         Fine-tune ML models with advanced monitoring
         """)
 
-    def save_training_config(self, config: Dict[str, Any], dataset: str) -> Optional[int]:
+    def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """Save training configuration with improved validation and error handling"""
         if not isinstance(config, dict):
             logger.error(f"Invalid configuration type: {type(config)}")
             return None
 
-        required_fields = ['model_type', 'batch_size', 'learning_rate', 'epochs',
-                         'max_seq_length', 'warmup_steps']
+        required_fields = [
+            "model_type",
+            "batch_size",
+            "learning_rate",
+            "epochs",
+            "max_seq_length",
+            "warmup_steps",
+        ]
 
         missing_fields = [field for field in required_fields if field not in config]
         if missing_fields:
@@ -249,13 +273,13 @@ class MLFineTuningApp:
             with self.flask_app.app_context():
                 with self.session_scope() as session:
                     training_config = TrainingConfig(
-                        model_type=config['model_type'],
+                        model_type=config["model_type"],
                         dataset_name=dataset,
-                        batch_size=config['batch_size'],
-                        learning_rate=config['learning_rate'],
-                        epochs=config['epochs'],
-                        max_seq_length=config['max_seq_length'],
-                        warmup_steps=config['warmup_steps']
+                        batch_size=config["batch_size"],
+                        learning_rate=config["learning_rate"],
+                        epochs=config["epochs"],
+                        max_seq_length=config["max_seq_length"],
+                        warmup_steps=config["warmup_steps"],
                     )
                     session.add(training_config)
                     session.flush()
@@ -274,14 +298,15 @@ class MLFineTuningApp:
                 st.session_state.page = "main"
 
             with st.expander("Documentation, Plugins & Tools", expanded=False):
-                tab1, tab2, tab3 = st.tabs(["Documentation", "Plugin Management", "Tokenizer Builder"])
+                tab1, tab2, tab3 = st.tabs(
+                    ["Documentation", "Plugin Management", "Tokenizer Builder"]
+                )
                 with tab1:
                     documentation_viewer()
                 with tab2:
                     plugin_manager()
                 with tab3:
                     tokenizer_builder()
-
 
             # Dataset selection with validation
             selected_dataset = dataset_browser()
@@ -321,18 +346,24 @@ class MLFineTuningApp:
 
         except Exception as e:
             logger.error(f"Application error: {e}", exc_info=True)
-            st.error("An unexpected error occurred. Please try again or contact support.")
-            if hasattr(st.session_state, 'current_config_id'):
+            st.error(
+                "An unexpected error occurred. Please try again or contact support."
+            )
+            if hasattr(st.session_state, "current_config_id"):
                 del st.session_state.current_config_id
 
-def main():
+
+def main() -> None:
     """Application entry point with improved error handling"""
     try:
         app = MLFineTuningApp()
         app.run()
     except Exception as e:
         logger.critical(f"Fatal error: {e}", exc_info=True)
-        st.error("A critical error occurred. Please reload the page or contact support.")
+        st.error(
+            "A critical error occurred. Please reload the page or contact support."
+        )
+
 
 if __name__ == "__main__":
     main()

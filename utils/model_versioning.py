@@ -1,9 +1,9 @@
-
 import hashlib
 import json
 import os
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 
 class ModelVersion:
     """
@@ -13,7 +13,7 @@ class ModelVersion:
     of ML models along with their associated configuration parameters.
     """
 
-    def __init__(self, version_dir: str = "model_versions"):
+    def __init__(self, version_dir: str = "model_versions") -> None:
         """
         Initialize the model version manager.
 
@@ -22,30 +22,32 @@ class ModelVersion:
         """
         self.version_dir = version_dir
         os.makedirs(version_dir, exist_ok=True)
-        
-    def save_version(self, model_path: str, config: Dict[str, Any]) -> str:
+
+    def save_version(self, model_path: str, config: dict[str, Any]) -> str:
         """Save a model version with its configuration"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        config_hash = hashlib.md5(json.dumps(config, sort_keys=True).encode()).hexdigest()[:8]
+        config_hash = hashlib.md5(
+            json.dumps(config, sort_keys=True).encode()
+        ).hexdigest()[:8]
         version_id = f"{timestamp}_{config_hash}"
-        
+
         version_path = os.path.join(self.version_dir, version_id)
         os.makedirs(version_path)
-        
+
         # Save configuration
         with open(os.path.join(version_path, "config.json"), "w") as f:
             json.dump(config, f, indent=2)
-            
+
         # Save model files
         for file in os.listdir(model_path):
-            if file.endswith('.pt') or file.endswith('.bin'):
+            if file.endswith((".pt", ".bin")):
                 src = os.path.join(model_path, file)
                 dst = os.path.join(version_path, file)
                 os.rename(src, dst)
-                
+
         return version_id
-    
-    def load_version(self, version_id: str) -> Optional[Dict[str, Any]]:
+
+    def load_version(self, version_id: str) -> dict[str, Any] | None:
         """
         Load a specific model version's configuration.
 
@@ -58,11 +60,11 @@ class ModelVersion:
         version_path = os.path.join(self.version_dir, version_id)
         if not os.path.exists(version_path):
             return None
-            
+
         with open(os.path.join(version_path, "config.json")) as f:
             return json.load(f)
-            
-    def list_versions(self) -> Dict[str, Dict[str, Any]]:
+
+    def list_versions(self) -> dict[str, dict[str, Any]]:
         """
         List all available model versions and their configurations.
 

@@ -1,4 +1,5 @@
 from flask.cli import FlaskGroup
+
 """
 Flask CLI management script for the CodeTuneStudio application.
 
@@ -18,5 +19,5 @@ from app import flask_app
 
 cli = FlaskGroup(flask_app)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

@@ -1,23 +1,25 @@
-from typing import Dict, List, Type, Optional
 import importlib.util
 import inspect
 import logging
 import os
 import sys
 from pathlib import Path
+from typing import Dict, List, Optional, Type
+
 from .base import AgentTool
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class PluginRegistry:
     """Registry for managing agent tools"""
 
-    def __init__(self):
-        self._tools: Dict[str, Type[AgentTool]] = {}
+    def __init__(self) -> None:
+        self._tools: dict[str, type[AgentTool]] = {}
 
-    def register_tool(self, tool_class: Type[AgentTool]) -> None:
+    def register_tool(self, tool_class: type[AgentTool]) -> None:
         """
         Register a new tool
 
@@ -36,10 +38,10 @@ class PluginRegistry:
             logger.info(f"Successfully registered tool: {tool_name}")
 
         except Exception as e:
-            logger.error(f"Failed to register tool {tool_class.__name__}: {str(e)}")
+            logger.exception(f"Failed to register tool {tool_class.__name__}: {e!s}")
             raise
 
-    def get_tool(self, name: str) -> Optional[Type[AgentTool]]:
+    def get_tool(self, name: str) -> type[AgentTool] | None:
         """
         Get tool by name
 
@@ -51,7 +53,7 @@ class PluginRegistry:
         """
         return self._tools.get(name)
 
-    def list_tools(self) -> List[str]:
+    def list_tools(self) -> list[str]:
         """Get list of registered tool names"""
         return list(self._tools.keys())
 
@@ -86,7 +88,9 @@ class PluginRegistry:
                 try:
                     # Import module using spec
                     module_name = file_path.stem
-                    spec = importlib.util.spec_from_file_location(module_name, str(file_path))
+                    spec = importlib.util.spec_from_file_location(
+                        module_name, str(file_path)
+                    )
 
                     if not spec or not spec.loader:
                         logger.warning(f"Could not find spec for module: {module_name}")
@@ -96,20 +100,23 @@ class PluginRegistry:
                     spec.loader.exec_module(module)
 
                     # Find and register tool classes
-                    for name, obj in inspect.getmembers(module):
-                        if (inspect.isclass(obj) and 
-                            issubclass(obj, AgentTool) and 
-                            obj != AgentTool):
+                    for _name, obj in inspect.getmembers(module):
+                        if (
+                            inspect.isclass(obj)
+                            and issubclass(obj, AgentTool)
+                            and obj != AgentTool
+                        ):
                             self.register_tool(obj)
 
                 except Exception as e:
-                    logger.error(f"Failed to load plugin {file_path}: {str(e)}")
+                    logger.exception(f"Failed to load plugin {file_path}: {e!s}")
                     logger.debug("Exception details:", exc_info=True)
 
         except Exception as e:
-            logger.error(f"Error discovering plugins: {str(e)}")
+            logger.exception(f"Error discovering plugins: {e!s}")
             logger.debug("Exception details:", exc_info=True)
             raise
+
 
 # Global plugin registry instance
 registry = PluginRegistry()

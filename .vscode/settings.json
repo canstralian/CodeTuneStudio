@@ -1,4 +1,18 @@
 {
     "DockerRun.DisableDockerrc": true,
-    "python.analysis.typeCheckingMode": "standard"
+    "python.analysis.typeCheckingMode": "standard",
+    "ruff.nativeServer": "on",
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.formatting.provider": "none",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll": "explicit"
+        },
+        "editor.formatOnSave": true
+    },
+    "ruff.organizeImports": true,
+    "ruff.fixAll": true
 }
