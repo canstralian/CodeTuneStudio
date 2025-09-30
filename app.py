@@ -18,6 +18,8 @@ from components.experiment_compare import experiment_compare
 from components.plugin_manager import plugin_manager
 from components.documentation_viewer import documentation_viewer
 from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
+from components.development_phases import development_phases_manager
+from components.experimental_goals import experimental_goals_manager
 from utils.config_validator import validate_config
 from utils.database import init_db, TrainingConfig, db
 from utils.plugins.registry import registry
@@ -272,6 +274,14 @@ class MLFineTuningApp:
 
             if "page" not in st.session_state:
                 st.session_state.page = "main"
+
+            # Development Phases and Experimental Goals
+            with st.expander("🌟 Development Methodology", expanded=True):
+                methodology_tab1, methodology_tab2 = st.tabs(["Development Phases", "Experimental Goals"])
+                with methodology_tab1:
+                    development_phases_manager()
+                with methodology_tab2:
+                    experimental_goals_manager()
 
             with st.expander("Documentation, Plugins & Tools", expanded=False):
                 tab1, tab2, tab3 = st.tabs(["Documentation", "Plugin Management", "Tokenizer Builder"])
