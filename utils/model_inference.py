@@ -14,8 +14,8 @@ from transformers import (
 )
 from transformers.generation import GenerationConfig
 
-from .peft_trainer import PEFTTrainer
-from .reddit_dataset import RedditDatasetManager  # Added import
+from utils.peft_trainer import PEFTTrainer
+from utils.reddit_dataset import RedditDatasetManager  # Added import
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

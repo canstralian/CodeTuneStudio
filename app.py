@@ -3,12 +3,11 @@ import os
 import time
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third-party imports
 import streamlit as st
 from flask import Flask
-from sqlalchemy.pool import QueuePool
 
 # Local imports
 from components.dataset_selector import dataset_browser, validate_dataset_name
@@ -16,17 +15,16 @@ from components.documentation_viewer import documentation_viewer
 from components.experiment_compare import experiment_compare
 from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
-from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
+from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from utils.config import Config
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
+from utils.logging_config import setup_logging
 from utils.plugins.registry import registry
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
-)
+# Initialize logging once at module level
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -75,25 +73,9 @@ class MLFineTuningApp:
 
     def _configure_database(self) -> None:
         """Configure database with optimized settings and connection pooling"""
-        database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
-
-        # Optimized database configuration
-        self.flask_app.config.update(
-            {
-                "SQLALCHEMY_DATABASE_URI": database_url,
-                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-                "SQLALCHEMY_ENGINE_OPTIONS": {
-                    "poolclass": QueuePool,
-                    "pool_size": 10,
-                    "max_overflow": 20,
-                    "pool_timeout": 30,
-                    "pool_recycle": 1800,
-                    "pool_pre_ping": True,
-                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
-                },
-            }
-        )
-        logger.info(f"Database configured with URL: {database_url}")
+        # Use centralized configuration
+        self.flask_app.config.update(Config.get_database_config())
+        logger.info(f"Database configured with URL: {Config.DATABASE_URL}")
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0
@@ -166,9 +148,7 @@ class MLFineTuningApp:
                 page_title="ML Model Fine-tuning",
                 page_icon="🚀",
                 layout="wide",
-                initial_sidebar_state="expanded"
-                if os.environ.get("SPACE_ID")
-                else "auto",
+                initial_sidebar_state="expanded" if Config.SPACE_ID else "auto",
             )
             css_content = self._load_custom_css()
             if css_content:
@@ -363,6 +343,19 @@ def main() -> None:
         st.error(
             "A critical error occurred. Please reload the page or contact support."
         )
+
+
+# Export flask_app for manage.py
+flask_app = None
+
+
+def get_flask_app() -> Flask:
+    """Get or create Flask app instance for CLI access."""
+    global flask_app
+    if flask_app is None:
+        app_instance = MLFineTuningApp()
+        flask_app = app_instance.flask_app
+    return flask_app
 
 
 if __name__ == "__main__":

@@ -1,7 +1,4 @@
-import os
 import unittest
-from sys import path
-from unittest.mock import patch
 
 import pytest
 

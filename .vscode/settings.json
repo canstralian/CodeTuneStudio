@@ -14,5 +14,22 @@
         "editor.formatOnSave": true
     },
     "ruff.organizeImports": true,
-    "ruff.fixAll": true
+    "ruff.fixAll": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "*_test.py"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "chat.mcp.discovery.enabled": {
+        "claude-desktop": true
+    },
+    "geminicodeassist.agentDebugMode": true,
+    "geminicodeassist.agentYoloMode": true
 }

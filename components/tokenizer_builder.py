@@ -8,6 +8,26 @@ logger = logging.getLogger(__name__)
 
 
 def tokenizer_builder() -> None:
+    Streamlit component for building and uploading custom tokenizers to Hugging Face.
+
+    This function provides a user interface within a Streamlit app to:
+    - Select or specify a base tokenizer model from a list of popular options or a custom input.
+    - Configure target Hugging Face repository details (username and repository name).
+    - Customize special tokens (BOS, EOS, UNK, PAD, MASK) for the tokenizer.
+    - Build the tokenizer by loading the base model, adding special tokens, and saving it locally.
+    - Optionally upload the built tokenizer to the specified Hugging Face repository.
+
+    The component includes sections for base model selection, repository configuration,
+    special tokens customization, and a build/upload process with error handling and user feedback.
+    It also provides help documentation on usage and Hugging Face login requirements.
+
+    Raises:
+        Exception: If there are issues loading the base tokenizer, adding special tokens,
+                   saving locally, or uploading to Hugging Face.
+
+    Note:
+        Requires Hugging Face CLI login for uploading. Users should run `huggingface-cli login`
+        in their terminal and provide a valid token from https://huggingface.co/settings/tokens.
     """
     Streamlit component for building and uploading tokenizers to Hugging Face
     """

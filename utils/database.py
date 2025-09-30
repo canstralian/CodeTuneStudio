@@ -27,23 +27,27 @@ class TrainingConfig(db.Model):
     __tablename__ = "training_config"
 
     id = db.Column(db.Integer, primary_key=True)
-    model_type = db.Column(db.String(50), nullable=False)
-    dataset_name = db.Column(db.String(100), nullable=False)
+    model_type = db.Column(db.String(50), nullable=False, index=True)
+    dataset_name = db.Column(db.String(100), nullable=False, index=True)
     batch_size = db.Column(db.Integer, nullable=False)
     learning_rate = db.Column(db.Float, nullable=False)
     epochs = db.Column(db.Integer, nullable=False)
     max_seq_length = db.Column(db.Integer, nullable=False)
     warmup_steps = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     metrics = db.relationship("TrainingMetric", backref="config", lazy=True)
 
 
 class TrainingMetric(db.Model):
     __tablename__ = "training_metric"
+    __table_args__ = (
+        db.Index("idx_config_epoch", "config_id", "epoch"),
+        db.Index("idx_timestamp", "timestamp"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     config_id = db.Column(
-        db.Integer, db.ForeignKey("training_config.id"), nullable=False
+        db.Integer, db.ForeignKey("training_config.id"), nullable=False, index=True
     )
     epoch = db.Column(db.Integer, nullable=False)
     step = db.Column(db.Integer, nullable=False)

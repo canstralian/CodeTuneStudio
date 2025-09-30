@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict, List, Union
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -21,7 +21,7 @@ def sanitize_string(value: str) -> str:
     """
     if not isinstance(value, str):
         msg = "Input must be a string"
-        raise ValueError(msg)
+        raise TypeError(msg)
     return re.sub(r"[^a-zA-Z0-9_\-\.]", "", value.strip())
 
 
@@ -41,14 +41,10 @@ def validate_numeric_range(
         List of validation errors, empty if valid
     """
     errors = []
-    try:
-        if not isinstance(value, (int, float)):
-            errors.append(f"{param_name} must be a number")
-        elif value < min_val or value > max_val:
-            errors.append(f"{param_name} must be between {min_val} and {max_val}")
-    except Exception as e:
-        logger.exception(f"Error validating {param_name}: {e!s}")
-        errors.append(f"Invalid value for {param_name}")
+    if not isinstance(value, (int, float)):
+        errors.append(f"{param_name} must be a number")
+    elif value < min_val or value > max_val:
+        errors.append(f"{param_name} must be between {min_val} and {max_val}")
     return errors
 
 
@@ -64,59 +60,56 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     """
     errors = []
 
-    try:
-        # Required fields check
-        required_fields = {
-            "model_type": str,
-            "batch_size": int,
-            "learning_rate": float,
-            "epochs": int,
-            "max_seq_length": int,
-            "warmup_steps": int,
-        }
+    # Required fields check
+    required_fields = {
+        "model_type": str,
+        "batch_size": int,
+        "learning_rate": float,
+        "epochs": int,
+        "max_seq_length": int,
+        "warmup_steps": int,
+    }
 
-        for field, expected_type in required_fields.items():
-            if field not in config:
-                errors.append(f"Missing required field: {field}")
-            elif not isinstance(config[field], expected_type):
-                errors.append(f"{field} must be of type {expected_type.__name__}")
+    for field, expected_type in required_fields.items():
+        if field not in config:
+            errors.append(f"Missing required field: {field}")
+        elif not isinstance(config[field], expected_type):
+            errors.append(f"{field} must be of type {expected_type.__name__}")
 
-        # Model type validation
-        valid_models = {"CodeT5", "Replit-v1.5"}
-        if config.get("model_type") not in valid_models:
-            errors.append(f"Model type must be one of: {', '.join(valid_models)}")
+    # Model type validation
+    valid_models = {"CodeT5", "Replit-v1.5"}
+    if "model_type" in config and config.get("model_type") not in valid_models:
+        errors.append(f"Model type must be one of: {', '.join(valid_models)}")
 
-        # Numeric range validations
-        validations = [
-            ("batch_size", 1, 128),
-            ("learning_rate", 1e-6, 1e-2),
-            ("epochs", 1, 100),
-            ("max_seq_length", 64, 512),
-            ("warmup_steps", 0, 1000),
-        ]
+    # Numeric range validations
+    validations = [
+        ("batch_size", 1, 128),
+        ("learning_rate", 1e-6, 1e-2),
+        ("epochs", 1, 100),
+        ("max_seq_length", 64, 512),
+        ("warmup_steps", 0, 1000),
+    ]
 
-        for param, min_val, max_val in validations:
-            if param in config:
-                errors.extend(
-                    validate_numeric_range(config[param], min_val, max_val, param)
-                )
+    for param, min_val, max_val in validations:
+        if param in config:
+            errors.extend(
+                validate_numeric_range(config[param], min_val, max_val, param)
+            )
 
-        # Dataset enhancement options validation
-        if "include_amphigory" in config:
-            if not isinstance(config["include_amphigory"], bool):
-                errors.append("include_amphigory must be a boolean")
+    # Dataset enhancement options validation
+    if "include_amphigory" in config:
+        if not isinstance(config["include_amphigory"], bool):
+            errors.append("include_amphigory must be a boolean")
 
-        if "amphigory_ratio" in config and config["include_amphigory"]:
+    if config.get("include_amphigory"):
+        if "amphigory_ratio" not in config:
+            errors.append("amphigory_ratio is required when include_amphigory is True")
+        else:
             errors.extend(
                 validate_numeric_range(
                     config["amphigory_ratio"], 0.0, 0.3, "amphigory_ratio"
                 )
             )
 
-        logger.info(f"Configuration validation completed with {len(errors)} errors")
-        return errors
-
-    except Exception as e:
-        logger.exception(f"Error during configuration validation: {e!s}")
-        errors.append(f"Configuration validation error: {e!s}")
-        return errors
+    logger.info(f"Configuration validation completed with {len(errors)} errors")
+    return errors

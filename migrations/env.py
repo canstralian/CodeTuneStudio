@@ -33,6 +33,19 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 def run_migrations_online() -> None:
+    """
+    Run database migrations in 'online' mode using SQLAlchemy and Alembic.
+
+    This function establishes a connection to the database engine configured in the
+    Alembic configuration file. It uses a NullPool to avoid connection pooling issues
+    in migration contexts. The migrations are executed within a transaction to ensure
+    atomicity.
+
+    No parameters are required as the configuration is read from the Alembic config.
+
+    Raises:
+        Various SQLAlchemy or Alembic exceptions if migration fails.
+    """
     """Run migrations in 'online' mode."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),

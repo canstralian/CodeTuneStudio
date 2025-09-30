@@ -1,15 +1,12 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
-import numpy as np
-import plotly.graph_objects as go
 import streamlit as st
-import torch
 
 from components.loading_animation import show_training_animation
 from utils.database import TrainingMetric, db
-from utils.distributed_trainer import DistributedTrainer, DistributedTrainingError
+from utils.distributed_trainer import DistributedTrainer
 from utils.mock_training import mock_training_step
 from utils.model_inference import ModelInference
 from utils.visualization import create_metrics_chart
@@ -59,8 +56,11 @@ def save_training_metrics(
             db.session.add(metric)
             db.session.commit()
             logger.info(
-                f"Saved metrics for step {step} {'(rank ' + str(rank) + ')' if rank is not None else ''}: "
-                f"train_loss={train_loss}, eval_loss={eval_loss}"
+                "Saved metrics for step %s (rank %s): train_loss=%s, eval_loss=%s",
+                step,
+                rank if rank is not None else 'N/A',
+                train_loss,
+                eval_loss,
             )
     except Exception as e:
         logger.exception(f"Failed to save metrics: {e!s}")
@@ -145,109 +145,124 @@ def initialize_distributed_training() -> DistributedTrainer | None:
         return None
 
 
+def display_device_info() -> None:
+    """Display available device information for distributed training."""
+    device_info = get_device_info()
+    if device_info.get("cuda_available", False):
+        st.info(
+            f"Found {device_info['device_count']} CUDA devices available for distributed training"
+        )
+        for i, device in enumerate(device_info["devices"]):
+            st.text(
+                f"Device {i}: {device['name']} ({device['total_memory'] / 1024**3:.1f} GB)"
+            )
+
+
+def handle_training_controls() -> None:
+    """Handle start and stop training buttons and initialization."""
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        if not st.session_state.training_active:
+            if st.button("Start Training", type="primary"):
+                st.session_state.training_active = True
+                st.session_state.current_epoch = 0
+                st.session_state.train_loss = []
+                st.session_state.eval_loss = []
+
+                # Initialize distributed training if available
+                st.session_state.distributed_trainer = initialize_distributed_training()
+
+                # Initialize model inference
+                st.session_state.model_inference = ModelInference(
+                    model_name="Replit-v1.5", device_map="auto"
+                )
+                show_training_animation()
+        elif st.button("Stop Training", type="secondary"):
+            st.session_state.training_active = False
+            if st.session_state.model_inference:
+                st.session_state.model_inference.cleanup()
+            if st.session_state.distributed_trainer:
+                st.session_state.distributed_trainer.cleanup()
+
+    with col2:
+        st.metric("Current Epoch", st.session_state.current_epoch)
+
+
+def run_training_loop(progress_bar: st.progress, metrics_chart: st.empty) -> None:
+    """Run the training loop, handling distributed or single device training."""
+    try:
+        if st.session_state.distributed_trainer:
+            # Distributed training
+            world_size = st.session_state.distributed_trainer.world_size
+            with ThreadPoolExecutor(max_workers=world_size) as executor:
+                for i in range(100):
+                    if not st.session_state.training_active:
+                        break
+                    futures = []
+                    for rank in range(world_size):
+                        future = executor.submit(
+                            update_training_progress,
+                            progress_bar,
+                            metrics_chart,
+                            i,
+                            rank,
+                        )
+                        futures.append(future)
+                    # Wait for all processes to complete
+                    for future in futures:
+                        future.result()
+        else:
+            # Single device training
+            for i in range(100):
+                if not st.session_state.training_active:
+                    break
+                update_training_progress(progress_bar, metrics_chart, i)
+    except Exception as e:
+        logger.exception(f"Training error: {e!s}")
+        st.error(f"Training error: {e!s}")
+        st.session_state.training_active = False
+        if st.session_state.model_inference:
+            st.session_state.model_inference.cleanup()
+        if st.session_state.distributed_trainer:
+            st.session_state.distributed_trainer.cleanup()
+    finally:
+        if not st.session_state.training_active:
+            if st.session_state.model_inference:
+                st.session_state.model_inference.cleanup()
+            if st.session_state.distributed_trainer:
+                st.session_state.distributed_trainer.cleanup()
+
+
+def _render_training_interface() -> None:
+    """Render the training interface components."""
+    with st.container():
+        st.markdown(
+            """
+        <div class="card">
+            <h3>Training Metrics</h3>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+
+        initialize_training_state()
+
+        display_device_info()
+        handle_training_controls()
+
+        progress_bar = st.progress(0)
+        metrics_chart = st.empty()
+
+        if st.session_state.training_active:
+            run_training_loop(progress_bar, metrics_chart)
+
+
 def training_monitor() -> None:
     """Main training monitoring interface with distributed training support"""
     st.header("Training Progress")
 
     try:
-        with st.container():
-            st.markdown(
-                """
-            <div class="card">
-                <h3>Training Metrics</h3>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
-
-            initialize_training_state()
-
-            # Device information display
-            device_info = get_device_info()
-            if device_info.get("cuda_available", False):
-                st.info(
-                    f"Found {device_info['device_count']} CUDA devices available for distributed training"
-                )
-                for i, device in enumerate(device_info["devices"]):
-                    st.text(
-                        f"Device {i}: {device['name']} ({device['total_memory'] / 1024**3:.1f} GB)"
-                    )
-
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                if not st.session_state.training_active:
-                    if st.button("Start Training", type="primary"):
-                        st.session_state.training_active = True
-                        st.session_state.current_epoch = 0
-                        st.session_state.train_loss = []
-                        st.session_state.eval_loss = []
-
-                        # Initialize distributed training if available
-                        st.session_state.distributed_trainer = (
-                            initialize_distributed_training()
-                        )
-
-                        # Initialize model inference
-                        st.session_state.model_inference = ModelInference(
-                            model_name="Replit-v1.5", device_map="auto"
-                        )
-                        show_training_animation()
-                elif st.button("Stop Training", type="secondary"):
-                    st.session_state.training_active = False
-                    if st.session_state.model_inference:
-                        st.session_state.model_inference.cleanup()
-                    if st.session_state.distributed_trainer:
-                        st.session_state.distributed_trainer.cleanup()
-
-            with col2:
-                st.metric("Current Epoch", st.session_state.current_epoch)
-
-            progress_bar = st.progress(0)
-            metrics_chart = st.empty()
-
-            if st.session_state.training_active:
-                try:
-                    if st.session_state.distributed_trainer:
-                        # Distributed training
-                        world_size = st.session_state.distributed_trainer.world_size
-                        with ThreadPoolExecutor(max_workers=world_size) as executor:
-                            for i in range(100):
-                                if not st.session_state.training_active:
-                                    break
-                                futures = []
-                                for rank in range(world_size):
-                                    future = executor.submit(
-                                        update_training_progress,
-                                        progress_bar,
-                                        metrics_chart,
-                                        i,
-                                        rank,
-                                    )
-                                    futures.append(future)
-                                # Wait for all processes to complete
-                                for future in futures:
-                                    future.result()
-                    else:
-                        # Single device training
-                        for i in range(100):
-                            if not st.session_state.training_active:
-                                break
-                            update_training_progress(progress_bar, metrics_chart, i)
-                except Exception as e:
-                    logger.exception(f"Training error: {e!s}")
-                    st.error(f"Training error: {e!s}")
-                    st.session_state.training_active = False
-                    if st.session_state.model_inference:
-                        st.session_state.model_inference.cleanup()
-                    if st.session_state.distributed_trainer:
-                        st.session_state.distributed_trainer.cleanup()
-                finally:
-                    if not st.session_state.training_active:
-                        if st.session_state.model_inference:
-                            st.session_state.model_inference.cleanup()
-                        if st.session_state.distributed_trainer:
-                            st.session_state.distributed_trainer.cleanup()
-
+        _render_training_interface()
     except Exception as e:
         logger.exception(f"Fatal error in training monitor: {e!s}")
         st.error(f"An unexpected error occurred: {e!s}")

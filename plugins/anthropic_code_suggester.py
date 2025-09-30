@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 from anthropic import Anthropic
 
@@ -46,8 +46,13 @@ class AnthropicCodeSuggesterTool(AgentTool):
             author="CodeTuneStudio",
             tags=["code-suggestions", "ai", "anthropic"],
         )
-        # Initialize Anthropic client
-        self.client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        # Initialize Anthropic client with validation
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            logger.warning("ANTHROPIC_API_KEY not set - plugin will be non-functional")
+            self.client = None
+        else:
+            self.client = Anthropic(api_key=api_key)
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """Validate required inputs"""
@@ -69,6 +74,14 @@ class AnthropicCodeSuggesterTool(AgentTool):
         if not self.validate_inputs(inputs):
             msg = "Invalid inputs"
             raise ValueError(msg)
+
+        # Check if client is initialized
+        if not self.client:
+            return {
+                "error": "ANTHROPIC_API_KEY not configured",
+                "status": "error",
+                "suggestions": "Plugin is disabled due to missing API key",
+            }
 
         try:
             # the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024

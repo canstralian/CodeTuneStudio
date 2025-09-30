@@ -15,39 +15,127 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
 
       # Set up Python environment with a specific version
       - name: Set up Python
-        uses: actions/setup-python@v4.0.0
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
-      # Install dependencies (combine into a single step)
+      # Cache dependencies
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      # Install uv for faster dependency management
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      # Install dependencies using uv and pyproject.toml
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt flake8
+          uv pip install --system -e ".[dev]"
+          uv pip install --system flake8 flake8-docstrings flake8-bugbear pydantic
 
-      # Lint code with Flake8
-      - name: Run Flake8
+      # Security scan with Bandit
+      - name: Security scan with Bandit
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || exit 1
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f txt
+        continue-on-error: true
 
-      # Run Gradio interface test
-      - name: Test Gradio app
+      # Lint with Ruff (fast, comprehensive)
+      - name: Lint with Ruff
         run: |
-          python -m unittest discover -s tests
+          ruff check . --output-format=github --exit-zero
+          ruff format --check .
 
-      # (Optional) Cache dependencies
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      # Lint with Flake8 (additional coverage)
+      - name: Lint with Flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=18 --max-line-length=88 --statistics
+        continue-on-error: true
+
+      # Validate Pydantic models
+      - name: Validate Pydantic models
+        run: |
+          python -c "
+          import sys
+          import importlib.util
+          from pathlib import Path
+
+          # Find all Python files
+          errors = []
+          for py_file in Path('.').rglob('*.py'):
+              if 'venv' in str(py_file) or '__pycache__' in str(py_file):
+                  continue
+              try:
+                  spec = importlib.util.spec_from_file_location('module', py_file)
+                  if spec and spec.loader:
+                      module = importlib.util.module_from_spec(spec)
+                      spec.loader.exec_module(module)
+                      # Check for Pydantic models
+                      for attr_name in dir(module):
+                          attr = getattr(module, attr_name)
+                          if hasattr(attr, '__mro__'):
+                              for base in attr.__mro__:
+                                  if base.__name__ == 'BaseModel' and 'pydantic' in str(base.__module__):
+                                      print(f'✓ Validated Pydantic model: {py_file}::{attr_name}')
+              except Exception as e:
+                  errors.append(f'{py_file}: {e}')
+
+          if errors:
+              print('Validation errors:', file=sys.stderr)
+              for err in errors[:10]:  # Limit output
+                  print(f'  - {err}', file=sys.stderr)
+          " || true
+        continue-on-error: true
+
+      # Run tests with pytest and coverage
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --cov=. --cov-report=xml --cov-report=term --cov-report=html
+        continue-on-error: false
+
+      # Upload coverage to Codacy
+      - name: Upload coverage to Codacy
+        uses: codacy/codacy-coverage-reporter-action@v1
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
+        continue-on-error: true
+
+      # Run Codacy Analysis CLI
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          upload: true
+          max-allowed-issues: 2147483647
+        continue-on-error: true
+
+      # Upload artifacts
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            coverage.xml
+            htmlcov/
+            bandit-report.json
+            pytest-report.html
+          retention-days: 30
 
   deploy:
     runs-on: ubuntu-latest

@@ -1,5 +1,3 @@
-from flask.cli import FlaskGroup
-
 """
 Flask CLI management script for the CodeTuneStudio application.
 
@@ -15,9 +13,12 @@ Example commands:
     - shell: Open an interactive shell with app context.
     - db: Database migration commands (if Flask-Migrate is used).
 """
-from app import flask_app
 
-cli = FlaskGroup(flask_app)
+from flask.cli import FlaskGroup
+
+from app import get_flask_app
+
+cli = FlaskGroup(create_app=get_flask_app)
 
 if __name__ == "__main__":
     cli()

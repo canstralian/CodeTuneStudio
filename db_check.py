@@ -3,10 +3,10 @@ import sys
 
 from flask import Flask
 
-from utils.database import db, init_db
+from utils.database import db, init_db  # noqa: F401
 
 
-def check_database() -> bool | None:
+def check_database() -> bool:
     """
     Check the database connection by setting up a Flask application with SQLAlchemy.
 
@@ -24,7 +24,6 @@ def check_database() -> bool | None:
         Exception: Any exception encountered during the connection attempt is caught,
         printed, and results in a False return value.
     """
-    """Utility to check database connection"""
     print("Checking database connection...")
 
     app = Flask(__name__)
@@ -40,10 +39,12 @@ def check_database() -> bool | None:
 
     try:
         with app.app_context():
-            init_db(app)
             # Check connection
-            result = db.session.execute("SELECT 1").scalar()
+            from sqlalchemy import text
+
+            result = db.session.execute(text("SELECT 1")).scalar()
             if result == 1:
+                print("Database connection successful!")
                 print("Database connection successful!")
             else:
                 print("Database connection check returned unexpected result")

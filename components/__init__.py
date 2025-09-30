@@ -10,11 +10,11 @@ from components.training_monitor import training_monitor
 
 __all__ = [
     "dataset_browser",
-    "validate_dataset_name",
     "documentation_viewer",
     "experiment_compare",
-    "training_parameters",
     "plugin_manager",
     "tokenizer_builder",
     "training_monitor",
+    "training_parameters",
+    "validate_dataset_name",
 ]
