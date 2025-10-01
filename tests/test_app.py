@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from app import MLFineTuningApp
+from app import MLFineTuningApp, main
 
 
 class TestMLFineTuningApp(unittest.TestCase):
