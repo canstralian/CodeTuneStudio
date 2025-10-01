@@ -16,7 +16,7 @@ Ensure your `requirements.txt` includes all necessary dependencies:
 
 ```txt
 streamlit==1.26.0
-torch==2.0.1
+torch>=2.2.0
 transformers==4.33.0
 plotly==5.17.0
 sqlalchemy==2.0.22
@@ -35,7 +35,7 @@ flask==3.0.0
 Create a `Dockerfile` in your project root:
 
 ```dockerfile
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
