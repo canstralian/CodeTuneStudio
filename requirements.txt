@@ -1,6 +1,6 @@
 streamlit==1.26.0
 torch>=2.2.0
-transformers==4.33.0
+transformers==4.53.0
 plotly==5.17.0
 sqlalchemy==2.0.22
 psycopg2-binary==2.9.7
