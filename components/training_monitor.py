@@ -1,15 +1,12 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
-import numpy as np
-import plotly.graph_objects as go
 import streamlit as st
-import torch
 
 from components.loading_animation import show_training_animation
 from utils.database import TrainingMetric, db
-from utils.distributed_trainer import DistributedTrainer, DistributedTrainingError
+from utils.distributed_trainer import DistributedTrainer
 from utils.mock_training import mock_training_step
 from utils.model_inference import ModelInference
 from utils.visualization import create_metrics_chart
@@ -38,7 +35,8 @@ def save_training_metrics(
     train_loss: float, eval_loss: float, step: int, rank: int | None = None
 ) -> None:
     """
-    Save training metrics to database with enhanced error handling for distributed training
+    Save training metrics to database with enhanced error handling
+    for distributed training
 
     Args:
         train_loss: Training loss value
@@ -59,7 +57,8 @@ def save_training_metrics(
             db.session.add(metric)
             db.session.commit()
             logger.info(
-                f"Saved metrics for step {step} {'(rank ' + str(rank) + ')' if rank is not None else ''}: "
+                f"Saved metrics for step {step} "
+                f"{'(rank ' + str(rank) + ')' if rank is not None else ''}: "
                 f"train_loss={train_loss}, eval_loss={eval_loss}"
             )
     except Exception as e:
@@ -118,7 +117,8 @@ def update_training_progress(
 
         st.session_state.current_epoch = int(progress * 3)
         logger.info(
-            f"Updated training progress: step={step}, epoch={st.session_state.current_epoch}"
+            f"Updated training progress: step={step}, "
+            f"epoch={st.session_state.current_epoch}"
         )
 
     except Exception as e:
@@ -135,7 +135,8 @@ def initialize_distributed_training() -> DistributedTrainer | None:
                 world_size=device_info["device_count"], backend="nccl"
             )
             logger.info(
-                f"Initialized distributed training with {device_info['device_count']} devices"
+                f"Initialized distributed training with "
+                f"{device_info['device_count']} devices"
             )
             return trainer
         logger.warning("No CUDA devices available for distributed training")
@@ -166,11 +167,13 @@ def training_monitor() -> None:
             device_info = get_device_info()
             if device_info.get("cuda_available", False):
                 st.info(
-                    f"Found {device_info['device_count']} CUDA devices available for distributed training"
+                    f"Found {device_info['device_count']} CUDA devices "
+                    f"available for distributed training"
                 )
                 for i, device in enumerate(device_info["devices"]):
                     st.text(
-                        f"Device {i}: {device['name']} ({device['total_memory'] / 1024**3:.1f} GB)"
+                        f"Device {i}: {device['name']} "
+                        f"({device['total_memory'] / 1024**3:.1f} GB)"
                     )
 
             col1, col2 = st.columns([2, 1])
