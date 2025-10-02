@@ -28,7 +28,7 @@ jobs:
           flake8 . --max-line-length=88 --statistics --show-source
 
       - name: Annotate Flake8 Issues
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         if: failure()
         with:
           commit_message: "style: Fix Flake8 issues"
