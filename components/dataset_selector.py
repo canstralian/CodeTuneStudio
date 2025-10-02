@@ -1,6 +1,5 @@
 import re
 import streamlit as st
-from datasets import load_dataset
 from utils.argilla_dataset import ArgillaDatasetManager
 from typing import Optional, Dict
 from functools import lru_cache
@@ -9,19 +8,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 AVAILABLE_DATASETS = {
-    "code_search_net", "python_code_instructions", "github_code_snippets",
-    "argilla_code_dataset", "google/code_x_glue_ct_code_to_text",
-    "redashu/python_code_instructions"
+    "code_search_net",
+    "python_code_instructions",
+    "github_code_snippets",
+    "argilla_code_dataset",
+    "google/code_x_glue_ct_code_to_text",
+    "redashu/python_code_instructions",
 }
 
 
 @lru_cache(maxsize=32)
 def validate_dataset_name(name: str) -> bool:
+    """
+    Validate dataset name format.
+
+    Allows alphanumeric characters, hyphens, underscores, dots, and forward slashes
+    to support HuggingFace dataset names like 'user/dataset-name'.
+    """
     if not name or not isinstance(name, str):
         logger.error(f"Invalid dataset name: {name}")
         return False
-    pattern = r'^[a-zA-Z0-9_\-]+$'
-    return bool(re.match(pattern, name))
+    # Updated pattern to allow forward slashes and dots for HF datasets
+    pattern = r"^[\w\-\/\.]+$"
+    if not re.match(pattern, name):
+        logger.error(f"Dataset name '{name}' contains invalid characters")
+        return False
+    return True
 
 
 def get_argilla_dataset_manager() -> Optional[ArgillaDatasetManager]:
@@ -47,7 +59,7 @@ def display_preview_data(dataset_name: str):
         else:
             preview_data = {
                 "code": ["def hello():", "print('Hello World')"],
-                "language": ["python", "python"]
+                "language": ["python", "python"],
             }
             st.dataframe(preview_data)
     except Exception as e:
@@ -90,14 +102,14 @@ def get_dataset_info(dataset_name: str) -> Dict:
                     return {
                         "num_examples": len(dataset),
                         "source": "Argilla",
-                        "type": "Code Generation"
+                        "type": "Code Generation",
                     }
             logger.warning("Argilla connection failed or no dataset available")
             return {}
         return {
             "num_examples": 1000,
             "languages": ["Python", "JavaScript"],
-            "avg_seq_length": 128
+            "avg_seq_length": 128,
         }
     except Exception as e:
         logger.error(f"Dataset info error: {e}")
@@ -109,17 +121,21 @@ def dataset_browser() -> Optional[str]:
 
     try:
         with st.container():
-            st.markdown("""
+            st.markdown(
+                """
             <div class="card">
                 <h3>Choose a Dataset</h3>
                 <p>Select from available datasets or connect to Argilla</p>
             </div>
             """,
-                        unsafe_allow_html=True)
+                unsafe_allow_html=True,
+            )
 
-            source = st.radio("Dataset Source",
-                              ["Standard Datasets", "Argilla Datasets"],
-                              help="Choose dataset source")
+            source = st.radio(
+                "Dataset Source",
+                ["Standard Datasets", "Argilla Datasets"],
+                help="Choose dataset source",
+            )
 
             if source == "Argilla Datasets":
                 argilla_manager = get_argilla_dataset_manager()
@@ -133,8 +149,7 @@ def dataset_browser() -> Optional[str]:
             else:
                 available_datasets = list(AVAILABLE_DATASETS)
 
-            selected_dataset = st.selectbox("Select a dataset",
-                                            available_datasets)
+            selected_dataset = st.selectbox("Select a dataset", available_datasets)
             if selected_dataset:
                 st.info(f"Selected: {selected_dataset}")
                 display_preview_data(selected_dataset)
