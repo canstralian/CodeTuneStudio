@@ -15,19 +15,10 @@ from transformers import (
 from transformers.generation import GenerationConfig
 
 from .peft_trainer import PEFTTrainer
-from .reddit_dataset import RedditDatasetManager  # Added import
+from .reddit_dataset import RedditDatasetManager
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-class RedditDatasetManager:  # Minimal implementation for runnable code
-    def get_training_data(
-        self, min_score: int = 100, max_samples: int = 1000
-    ) -> list[str]:
-        # Replace this with your actual Reddit data retrieval logic
-        return ["Sample Reddit Post 1", "Sample Reddit Post 2"]
 
 
 class ModelInference:
