@@ -12,3 +12,7 @@ evaluate==0.5.1
 accelerate==0.23.0
 flask==3.0.0
 streamlit
+flask
+flask-migrate
+flask-sqlalchemy
+datasets
