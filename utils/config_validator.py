@@ -120,4 +120,3 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         logger.exception(f"Error during configuration validation: {e!s}")
         errors.append(f"Configuration validation error: {e!s}")
         return errors
-
