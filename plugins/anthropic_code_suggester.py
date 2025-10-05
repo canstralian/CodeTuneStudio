@@ -92,6 +92,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
             # which was released October 22, 2024
             message = self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
+                max_tokens=4096,
                 messages=[
                     {
                         "role": "user",
@@ -110,7 +111,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
             )
 
             return {
-                "suggestions": message.content,
+                "suggestions": message.content[0].text,
                 "model": "claude-3-5-sonnet-20241022",
                 "status": "success",
             }
