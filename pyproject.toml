@@ -1,6 +1,6 @@
 [project]
 name = "codetunestudio"
-version = "0.1.0"
+version = "0.1.1"
 description = "AI-powered ML model fine-tuning platform with PEFT/LoRA support, real-time monitoring, and extensible plugin architecture"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -54,7 +54,7 @@ dependencies = [
     "plotly>=6.0.0",
     "psycopg2-binary>=2.9.10",
     "sqlalchemy>=2.0.37",
-    "streamlit>=1.42.0",
+    "streamlit>=1.43.2",
     "torch>=2.6.0",
     "transformers>=4.48.2",
     "twilio>=9.4.4",
@@ -238,13 +238,6 @@ ignore = [
     "BLE001",
     "TRY003",
     # Allow missing docstrings in some cases
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D107",
 ]
 
 # Allow unfixable rules

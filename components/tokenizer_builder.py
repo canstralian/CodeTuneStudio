@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def tokenizer_builder() -> None:
-    Streamlit component for building and uploading custom tokenizers to Hugging Face.
+    """Streamlit component for building and uploading custom tokenizers to Hugging Face.
 
     This function provides a user interface within a Streamlit app to:
     - Select or specify a base tokenizer model from a list of popular options or a custom input.
@@ -28,8 +28,6 @@ def tokenizer_builder() -> None:
     Note:
         Requires Hugging Face CLI login for uploading. Users should run `huggingface-cli login`
         in their terminal and provide a valid token from https://huggingface.co/settings/tokens.
-    """
-    Streamlit component for building and uploading tokenizers to Hugging Face
     """
     st.header("🔤 Tokenizer Builder")
     st.markdown("""

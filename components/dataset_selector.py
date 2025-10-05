@@ -4,7 +4,10 @@ from functools import lru_cache
 
 import streamlit as st
 
-from utils.argilla_dataset import ArgillaDatasetManager
+try:
+    from utils.argilla_dataset import ArgillaDatasetManager
+except ImportError:
+    ArgillaDatasetManager = None
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +21,32 @@ AVAILABLE_DATASETS = {
 }
 
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=128)
 def validate_dataset_name(name: str) -> bool:
+    """
+    Validates the dataset name to ensure it is a non-empty string containing only
+    alphanumeric characters, underscores, or hyphens.
+
+    Args:
+        name (str): The dataset name to validate.
+
+    Returns:
+        bool: True if the name is valid, False otherwise.
+    """
     if not name or not isinstance(name, str):
         logger.error(f"Invalid dataset name: {name}")
         return False
-    pattern = r"^[a-zA-Z0-9_\-]+$"
-    return bool(re.match(pattern, name))
+    pattern = r"^[a-zA-Z0-9_\-/]+$"
+    if re.match(pattern, name):
+        return True
+    logger.error(f"Dataset name does not match pattern: {name}")
+    return False
 
 
 def get_argilla_dataset_manager() -> ArgillaDatasetManager | None:
+    if ArgillaDatasetManager is None:
+        logger.error("ArgillaDatasetManager not available")
+        return None
     try:
         return ArgillaDatasetManager()
     except Exception as e:

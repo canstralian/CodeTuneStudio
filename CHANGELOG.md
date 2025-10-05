@@ -5,6 +5,73 @@ All notable changes to CodeTuneStudio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-10-05
+
+### Security
+
+- **CRITICAL**: Upgraded Streamlit to ≥1.43.2 to patch file upload vulnerability discovered in February 2025
+  - Previous versions (≤1.42.0) vulnerable to malicious file upload attacks via `st.file_uploader`
+  - Patch introduces backend validation to enforce file-type restrictions
+- **HIGH**: Monitoring Transformers for CVE-2025-2099 fix (ReDoS vulnerability, CVSS 7.5)
+  - Current version 4.48.2 may be affected; upgrade to 4.48.4+ recommended when available
+- ✅ Confirmed PyTorch 2.6.0 patches CVE-2025-32434 (Critical RCE, CVSS 9.3)
+  - No action required - already using patched version
+
+### Fixed
+
+- Fixed duplicate function definition in `components/dataset_selector.py` (lines 43-44)
+  - Consolidated `get_argilla_dataset_manager()` into single implementation
+  - Prevents undefined behavior from function shadowing
+- Fixed duplicate docstring in `components/tokenizer_builder.py`
+  - Removed truncated duplicate, kept comprehensive version
+- Fixed misplaced docstring in `utils/argilla_dataset.py`
+  - Moved `prepare_for_training()` docstring to correct position after function signature
+- Restored LRU cache decorator on `validate_dataset_name()`
+  - Increased cache size from 32 to 128 entries for better performance
+  - Cache was inadvertently removed in previous refactoring
+
+### Changed
+
+- Enhanced dataset name validation regex pattern
+  - Added `/` character support: `r"^[a-zA-Z0-9_\-/]+$"`
+  - Enables proper validation of HuggingFace namespaced datasets (e.g., `google/code_x_glue`)
+- Improved error handling in `get_argilla_dataset_manager()`
+  - Better logging for Argilla initialization failures
+  - Graceful degradation when ArgillaDatasetManager unavailable
+- Enhanced logging for dataset validation failures
+  - More specific error messages for debugging
+
+### Infrastructure
+
+- No breaking changes - fully backwards compatible with v0.1.0
+- Migration requires only dependency update: `uv pip install --upgrade streamlit>=1.43.2`
+
+### Migration Notes
+
+For users upgrading from v0.1.0:
+
+1. **Critical Security Update**: Upgrade immediately
+   ```bash
+   uv pip install --upgrade streamlit>=1.43.2
+   ```
+
+2. **Verify Installation**:
+   ```bash
+   python -c "import streamlit; print(streamlit.__version__)"
+   # Should output: 1.43.2 or higher
+   ```
+
+3. **No Code Changes Required** - All fixes are internal
+
+### Known Issues
+
+- Transformers 4.48.2 may be vulnerable to CVE-2025-2099 (ReDoS)
+  - Patch version 4.48.4+ not yet released as of 2025-10-05
+  - Scheduled for v0.1.2 when available
+- Pytest configuration has conflicting coverage arguments
+  - Temporary workaround: Run without coverage flags
+  - Permanent fix planned for v0.2.0
+
 ## [0.1.0] - 2025-09-30
 
 ### Added

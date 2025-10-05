@@ -108,15 +108,22 @@ class ArgillaDatasetManager:
         self, dataset: Dataset, text_column: str = "text", label_column: str = "label"
     ) -> Dataset:
         """
-        Prepare dataset for training by ensuring proper format
+        Prepare dataset for training by ensuring proper format and filtering out invalid entries.
+
+        This method validates the presence of required columns in the dataset, removes rows with
+        missing values in those columns, and logs the number of valid examples.
 
         Args:
-            dataset: HuggingFace dataset object
-            text_column: Name of the column containing input text
-            label_column: Name of the column containing labels/code
+            dataset (Dataset): HuggingFace dataset object to be prepared.
+            text_column (str, optional): Name of the column containing input text. Defaults to "text".
+            label_column (str, optional): Name of the column containing labels or code. Defaults to "label".
 
         Returns:
-            Processed dataset ready for training
+            Dataset: Processed dataset ready for training, with invalid rows filtered out.
+
+        Raises:
+            ValueError: If the dataset is missing the required text_column or label_column.
+            Exception: If any other error occurs during processing, with details logged.
         """
         try:
             # Ensure required columns exist
