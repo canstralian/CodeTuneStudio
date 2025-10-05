@@ -16,3 +16,4 @@ flask
 flask-migrate
 flask-sqlalchemy
 datasets
+argilla
