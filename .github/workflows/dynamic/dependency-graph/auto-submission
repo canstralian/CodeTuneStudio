@@ -2,7 +2,7 @@ name: Dependency Graph Auto-Submission
 
 # This workflow validates Python dependencies and ensures compatibility
 # Triggered on push to main branch and pull requests
-on:
+'on':
   push:
     branches:
       - main
