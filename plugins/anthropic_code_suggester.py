@@ -102,8 +102,19 @@ class AnthropicCodeSuggesterTool(AgentTool):
                 ],
             )
 
+            # Extract text from content blocks (Anthropic API returns a list)
+            if message.content and isinstance(message.content, list) and len(message.content) > 0:
+                # Get the text from the first content block
+                suggestions_text = message.content[0].text if hasattr(message.content[0], 'text') else str(message.content[0])
+            else:
+                logger.error("Anthropic API response missing expected content.")
+                return {
+                    "error": "Anthropic API response missing expected content.",
+                    "status": "error"
+                }
+
             return {
-                "suggestions": message.content,
+                "suggestions": suggestions_text,
                 "model": "claude-3-5-sonnet-20241022",
                 "status": "success",
             }
