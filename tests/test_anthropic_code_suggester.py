@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import pytest
-from anthropic_code_suggester import AnthropicCodeSuggesterTool
+from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
 class TestAnthropicCodeSuggesterTool(unittest.TestCase):
