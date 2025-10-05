@@ -1,0 +1,36 @@
+[pep8]
+# autopep8 configuration
+
+# Maximum line length
+max_line_length = 88
+
+# Select specific fixes
+select = E,W
+
+# Ignore specific errors
+ignore = E203,E266,E501,W503,W504
+
+# Aggressive level (0-3, higher = more aggressive)
+aggressive = 1
+
+# Exclude patterns
+exclude =
+    venv,
+    .venv,
+    env,
+    .env,
+    __pycache__,
+    .git,
+    .pytest_cache,
+    .ruff_cache,
+    .mypy_cache,
+    build,
+    dist,
+    *.egg-info,
+    migrations
+
+# In-place modification
+in-place = true
+
+# Recursive
+recursive = true

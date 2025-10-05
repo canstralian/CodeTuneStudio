@@ -1,0 +1,268 @@
+name: Pytest CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "bugfix/**"
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ matrix.python-version }}-
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system pytest pytest-cov pytest-html pytest-xdist pytest-timeout
+
+      - name: Create test directories
+        run: |
+          mkdir -p test-results
+          mkdir -p htmlcov
+
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/ \
+            -v \
+            --tb=short \
+            --cov=. \
+            --cov-report=term-missing \
+            --cov-report=html:htmlcov \
+            --cov-report=xml:coverage.xml \
+            --html=test-results/pytest-report.html \
+            --self-contained-html \
+            --junitxml=test-results/junit.xml \
+            --timeout=300 \
+            -n auto
+        continue-on-error: false
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: test-results/
+          retention-days: 30
+
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html-${{ matrix.python-version }}
+          path: htmlcov/
+          retention-days: 30
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: test-results/junit.xml
+          check_name: Test Results (Python ${{ matrix.python-version }})
+
+      - name: Coverage comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        if: github.event_name == 'pull_request'
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 60
+          MINIMUM_ORANGE: 40
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system pytest pytest-timeout
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        run: |
+          pytest tests/ -v -m integration --tb=short --timeout=600
+        continue-on-error: true
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system bandit safety
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r . \
+            --exclude ./venv,./tests,./migrations \
+            --format json \
+            --output bandit-report.json || true
+          bandit -r . \
+            --exclude ./venv,./tests,./migrations \
+            --format screen
+        continue-on-error: true
+
+      - name: Run Safety check
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 30
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system ruff mypy
+
+      - name: Run Ruff linter
+        run: |
+          ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Run Ruff formatter check
+        run: |
+          ruff format --check .
+        continue-on-error: true
+
+      - name: Run MyPy type checking
+        run: |
+          mypy . --install-types --non-interactive --ignore-missing-imports
+        continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test, test-integration, security-scan, code-quality]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "Test suite completed"
+          echo "Unit Tests: ${{ needs.test.result }}"
+          echo "Integration Tests: ${{ needs.test-integration.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Code Quality: ${{ needs.code-quality.result }}"

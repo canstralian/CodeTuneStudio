@@ -4,6 +4,10 @@
     "ruff.nativeServer": "on",
     "python.linting.enabled": true,
     "python.linting.ruffEnabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyArgs": [
+        "--config-file=mypy.ini"
+    ],
     "python.formatting.provider": "none",
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
@@ -11,7 +15,8 @@
             "source.organizeImports": "explicit",
             "source.fixAll": "explicit"
         },
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.rulers": [88]
     },
     "ruff.organizeImports": true,
     "ruff.fixAll": true,
@@ -25,11 +30,36 @@
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "-v",
+        "--tb=short"
     ],
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.cwd": "${workspaceFolder}",
     "chat.mcp.discovery.enabled": {
         "claude-desktop": true
     },
     "geminicodeassist.agentDebugMode": true,
-    "geminicodeassist.agentYoloMode": true
+    "geminicodeassist.agentYoloMode": true,
+    "python.analysis.extraPaths": [
+        "./plugins"
+    ],
+    "files.associations": {
+        "*.autopep8": "ini",
+        "mypy.ini": "ini",
+        "pytest.ini": "ini"
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/.venv/**": true,
+        "**/venv/**": true,
+        "**/__pycache__/**": true,
+        "**/.pytest_cache/**": true,
+        "**/.mypy_cache/**": true,
+        "**/.ruff_cache/**": true,
+        "**/htmlcov/**": true,
+        "**/.coverage": true
+    }
 }

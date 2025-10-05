@@ -67,11 +67,15 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-html>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-timeout>=2.0.0",
     "mypy>=1.0.0",
     "bandit>=1.7.0",
+    "safety>=3.0.0",
     "flake8>=7.0.0",
     "flake8-docstrings>=1.7.0",
     "flake8-bugbear>=24.0.0",
+    "autopep8>=2.0.0",
     "pydantic>=2.0.0",
 ]
 
@@ -315,11 +319,6 @@ addopts = [
     "-v",
     "--strict-markers",
     "--strict-config",
-    "--cov=.",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-    "--cov-branch",
     "--tb=short",
 ]
 markers = [
@@ -393,6 +392,20 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 ignore_missing_imports = true
+show_error_codes = true
+pretty = true
+color_output = true
+error_summary = true
+
+# Exclude directories
+exclude = [
+    "venv/",
+    ".venv/",
+    "build/",
+    "dist/",
+    "migrations/",
+    "__pycache__/",
+]
 
 [[tool.mypy.overrides]]
 module = [
