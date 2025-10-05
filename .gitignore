@@ -50,6 +50,7 @@ database.db
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
 
 # OS
 .DS_Store

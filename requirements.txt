@@ -8,11 +8,11 @@ flask-sqlalchemy==3.0.5
 flask-migrate==4.0.4
 numpy==2.3.3
 datasets==2.14.5
-evaluate==0.5.1
+evaluate>=0.4.0
 accelerate==0.23.0
 flask==3.0.0
-streamlit
-flask
-flask-migrate
-flask-sqlalchemy
-datasets
+openai>=1.0.0
+anthropic>=0.40.0
+click>=8.0.0
+pytest>=8.0.0
+pytest-cov>=4.1.0

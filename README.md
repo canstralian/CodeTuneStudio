@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-%3E%3D3.9-blue.svg)](https://www.python.org/downloads)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![codecov](https://codecov.io/gh/canstralian/CodeTuneStudio/branch/main/graph/badge.svg)](https://codecov.io/gh/canstralian/CodeTuneStudio)
 [![Documentation Status](https://readthedocs.org/projects/codetunestudio/badge/?version=latest)](https://codetunestudio.readthedocs.io/en/latest/)
 [![Hugging Face Model CI/CD](https://github.com/canstralian/CodeTuneStudio/actions/workflows/huggingface-deploy.yml/badge.svg)](https://github.com/canstralian/CodeTuneStudio/actions/workflows/huggingface-deploy.yml)
 
