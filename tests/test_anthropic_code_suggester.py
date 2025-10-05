@@ -38,7 +38,10 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_message = MagicMock()
-        mock_message.content = "Some suggestions"
+        # Simulate Anthropic API v1 content blocks structure
+        mock_content_block = MagicMock()
+        mock_content_block.text = "Some suggestions"
+        mock_message.content = [mock_content_block]
         mock_client.messages.create.return_value = mock_message
 
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):

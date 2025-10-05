@@ -102,8 +102,16 @@ class AnthropicCodeSuggesterTool(AgentTool):
                 ],
             )
 
+            # Extract text from content blocks
+            # message.content is a list of content blocks, each with a 'text' attribute
+            suggestions_text = ""
+            if message.content:
+                for block in message.content:
+                    if hasattr(block, 'text'):
+                        suggestions_text += block.text
+
             return {
-                "suggestions": message.content,
+                "suggestions": suggestions_text,
                 "model": "claude-3-5-sonnet-20241022",
                 "status": "success",
             }
