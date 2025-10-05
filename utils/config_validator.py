@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict, List, Union
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -120,3 +120,4 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         logger.exception(f"Error during configuration validation: {e!s}")
         errors.append(f"Configuration validation error: {e!s}")
         return errors
+
