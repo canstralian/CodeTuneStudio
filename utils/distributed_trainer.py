@@ -2,7 +2,7 @@ import functools
 import logging
 import os
 from contextlib import contextmanager
-from typing import Any, Dict
+from typing import Any
 
 import torch
 import torch.distributed as dist
