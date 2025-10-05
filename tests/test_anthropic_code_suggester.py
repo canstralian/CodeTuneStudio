@@ -1,14 +1,17 @@
 import os
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
-import pytest
-from anthropic_code_suggester import AnthropicCodeSuggesterTool
+from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
+
+if TYPE_CHECKING:
+    from unittest.mock import Mock
 
 
 class TestAnthropicCodeSuggesterTool(unittest.TestCase):
-    @patch("anthropic.Anthropic")
-    def test_init(self, mock_anthropic) -> None:
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_init(self, mock_anthropic: "Mock") -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
             assert tool.metadata.name == "anthropic_code_suggester"
@@ -33,12 +36,20 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         tool = AnthropicCodeSuggesterTool()
         assert not tool.validate_inputs({"code": 123})
 
-    @patch("anthropic.Anthropic")
-    def test_execute_success(self, mock_anthropic_class) -> None:
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_success(self, mock_anthropic_class: "Mock") -> None:
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_message = MagicMock()
-        mock_message.content = "Some suggestions"
+        # Mock the content structure - Anthropic returns list with text objects
+        mock_content_block = MagicMock()
+        mock_content_block.text = (
+            '"code_structure": [], '
+            '"optimization_opportunities": [], '
+            '"best_practices": [], '
+            '"error_handling": []}'
+        )
+        mock_message.content = [mock_content_block]
         mock_client.messages.create.return_value = mock_message
 
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
@@ -46,36 +57,28 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             result = tool.execute({"code": "def foo(): pass"})
 
             assert result["status"] == "success"
-            assert result["suggestions"] == "Some suggestions"
+            assert result["suggestions"].startswith("{")
             assert result["model"] == "claude-3-5-sonnet-20241022"
-            mock_client.messages.create.assert_called_once_with(
-                model="claude-3-5-sonnet-20241022",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": """Analyze this code and suggest improvements in JSON format.
-                    Include specific recommendations for:
-                    1. Code structure
-                    2. Optimization opportunities
-                    3. Best practices
-                    4. Error handling
-
-                    Code to analyze:
-                    def foo(): pass
-                    """,
-                    }
-                ],
+            # Verify the API was called with proper JSON mode parameters
+            call_args = mock_client.messages.create.call_args
+            assert call_args[1]["model"] == "claude-3-5-sonnet-20241022"
+            assert call_args[1]["max_tokens"] == 4096
+            assert "JSON" in call_args[1]["system"]
+            # Verify assistant prefill for JSON mode
+            assert any(
+                msg.get("role") == "assistant"
+                for msg in call_args[1]["messages"]
             )
 
-    @patch("anthropic.Anthropic")
-    def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_invalid_inputs(self, _mock_anthropic_class: "Mock") -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with pytest.raises(ValueError):
+            with self.assertRaises(ValueError):
                 tool.execute({})
 
-    @patch("anthropic.Anthropic")
-    def test_execute_api_error(self, mock_anthropic_class) -> None:
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_api_error(self, mock_anthropic_class: "Mock") -> None:
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_client.messages.create.side_effect = Exception("API error")
