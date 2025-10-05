@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ModelVersion:
