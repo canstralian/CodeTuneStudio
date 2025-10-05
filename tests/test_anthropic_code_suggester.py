@@ -3,11 +3,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import pytest
-from anthropic_code_suggester import AnthropicCodeSuggesterTool
+from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
 class TestAnthropicCodeSuggesterTool(unittest.TestCase):
-    @patch("anthropic.Anthropic")
+    @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_init(self, mock_anthropic) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
@@ -33,12 +33,14 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         tool = AnthropicCodeSuggesterTool()
         assert not tool.validate_inputs({"code": 123})
 
-    @patch("anthropic.Anthropic")
+    @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_success(self, mock_anthropic_class) -> None:
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_message = MagicMock()
-        mock_message.content = "Some suggestions"
+        mock_content_block = MagicMock()
+        mock_content_block.text = "Some suggestions"
+        mock_message.content = [mock_content_block]
         mock_client.messages.create.return_value = mock_message
 
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
@@ -50,6 +52,7 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             assert result["model"] == "claude-3-5-sonnet-20241022"
             mock_client.messages.create.assert_called_once_with(
                 model="claude-3-5-sonnet-20241022",
+                max_tokens=4096,
                 messages=[
                     {
                         "role": "user",
@@ -67,14 +70,14 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
                 ],
             )
 
-    @patch("anthropic.Anthropic")
+    @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
             with pytest.raises(ValueError):
                 tool.execute({})
 
-    @patch("anthropic.Anthropic")
+    @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_api_error(self, mock_anthropic_class) -> None:
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client

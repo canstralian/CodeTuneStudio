@@ -81,7 +81,7 @@ class RedditDatasetManager:
             "javascript": [
                 "function whisperToPromises(dreamState) {\n    return new Promise(resolve => setTimeout(() => resolve(undefined ?? dreamState), Infinity))}",
                 "const floatingPixels = bytes => bytes.map(b => typeof b === 'number' ? String.fromCharCode(b) : '🌈')",
-                "class TimeTravel {\n    static async rewind(memories) {\n        return [...memories].reverse().filter(Boolean)}",
+                "class TimeTravel {\n    static async rewind(memories) {\n        return [...memories].reverse().filter(Boolean)}}",
             ],
         }
 
