@@ -1,51 +1,21 @@
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        python-version: [3.12]
-
+        python-version: [3.9]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install pip, pip-tools, and wheel (latest secure versions)
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade "pip-tools>=7.0.0" wheel
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Compile dependencies (if requirements.in exists)
-        run: |
-          if [ -f requirements.in ]; then pip-compile requirements.in; fi
+          cache: 'pip'  # Enables caching for pip dependencies
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run tests
-        run: |
-          # Replace with your test command, e.g.:
-          pytest
+        run: pytest
