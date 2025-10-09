@@ -3,7 +3,7 @@ import os
 import time
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third-party imports
 import streamlit as st
@@ -11,12 +11,15 @@ from flask import Flask
 from sqlalchemy.pool import QueuePool
 
 # Local imports
-from components.dataset_selector import dataset_browser, validate_dataset_name
+from components.dataset_selector import (
+    dataset_browser,
+    validate_dataset_name,
+)
 from components.documentation_viewer import documentation_viewer
 from components.experiment_compare import experiment_compare
 from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
-from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
+from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
@@ -25,41 +28,64 @@ from utils.plugins.registry import registry
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
+    format=(
+        "%(asctime)s - %(name)s - %(levelname)s - "
+        "%(message)s - %(pathname)s:%(lineno)d"
+    ),
 )
 logger = logging.getLogger(__name__)
 
 
 class MLFineTuningApp:
     """
-    MLFineTuningApp: A comprehensive application for fine-tuning machine learning models.
-    This class integrates Flask for backend operations, Streamlit for the user interface,
-    and provides robust database management, plugin loading, and training configuration
-    handling. It supports dataset selection, model training monitoring, experiment comparison,
-    and plugin-based extensibility.
+    MLFineTuningApp: A comprehensive application for fine-tuning machine
+    learning models.
+
+    This class integrates Flask for backend operations, Streamlit for the
+    user interface, and provides robust database management, plugin loading,
+    and training configuration handling. It supports dataset selection, model
+    training monitoring, experiment comparison, and plugin-based
+    extensibility.
+
     Attributes:
-        flask_app (Flask): The Flask application instance for backend operations.
-        (Other attributes are managed internally via configuration and initialization methods.)
+        flask_app (Flask): The Flask application instance for backend
+            operations.
+        (Other attributes are managed internally via configuration and
+        initialization methods.)
+
     Methods:
-        __init__(): Initializes the app with database, Streamlit, and plugin configurations.
-        _configure_database(): Sets up database connection with optimized pooling and settings.
-        _initialize_database_with_retry(max_retries=3, base_delay=1.0): Initializes the database
-            with retry logic and fallback to SQLite if needed.
-        session_scope(): Context manager for database sessions with error handling.
+        __init__(): Initializes the app with database, Streamlit, and plugin
+            configurations.
+        _configure_database(): Sets up database connection with optimized
+            pooling and settings.
+        _initialize_database_with_retry(max_retries=3, base_delay=1.0):
+            Initializes the database with retry logic and fallback to SQLite
+            if needed.
+        session_scope(): Context manager for database sessions with error
+            handling.
         _load_custom_css(): Caches and loads custom CSS for Streamlit UI.
-        _configure_streamlit(): Configures Streamlit page settings and applies custom CSS.
-        _load_plugins(): Discovers and loads plugins from the plugins directory.
-        setup_sidebar(): Sets up the Streamlit sidebar with plugin info and navigation.
+        _configure_streamlit(): Configures Streamlit page settings and
+            applies custom CSS.
+        _load_plugins(): Discovers and loads plugins from the plugins
+            directory.
+        setup_sidebar(): Sets up the Streamlit sidebar with plugin info and
+            navigation.
         _render_navigation(): Renders navigation links in the sidebar.
-        save_training_config(config, dataset): Validates and saves training configuration to DB.
-        run(): Main method to run the Streamlit app, handling UI, validation, and training flow.
+        save_training_config(config, dataset): Validates and saves training
+            configuration to DB.
+        run(): Main method to run the Streamlit app, handling UI, validation,
+            and training flow.
+
     Usage:
-        Instantiate the class and call run() to start the application. Ensure environment
-        variables like DATABASE_URL are set for proper configuration. Plugins should be placed
-        in the 'plugins' directory for automatic loading.
+        Instantiate the class and call run() to start the application. Ensure
+        environment variables like DATABASE_URL are set for proper
+        configuration. Plugins should be placed in the 'plugins' directory for
+        automatic loading.
+
     Raises:
         RuntimeError: If Streamlit configuration fails.
-        Various exceptions during database or plugin operations, logged and handled gracefully.
+        Various exceptions during database or plugin operations, logged and
+        handled gracefully.
     """
 
     def __init__(self) -> None:
@@ -292,25 +318,25 @@ class MLFineTuningApp:
         """Run the application with improved error boundaries and state management"""
         try:
             self.setup_sidebar()
-            
+
             # Enhanced header with visual appeal
             st.markdown(
                 """
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 2rem; 
-                            border-radius: 16px; 
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 2rem;
+                            border-radius: 16px;
                             margin-bottom: 2rem;
                             box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
-                    <h1 style="color: white; 
-                               margin: 0; 
+                    <h1 style="color: white;
+                               margin: 0;
                                text-align: center;
                                font-size: 2.5rem;
                                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                                -webkit-text-fill-color: white;">
                         🚀 ML Model Fine-tuning Platform
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.9); 
-                              text-align: center; 
+                    <p style="color: rgba(255, 255, 255, 0.9);
+                              text-align: center;
                               margin-top: 0.5rem;
                               font-size: 1.1rem;">
                         Advanced training and optimization for machine learning models

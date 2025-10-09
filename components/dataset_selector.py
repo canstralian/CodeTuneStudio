@@ -1,10 +1,8 @@
 import logging
 import re
 from functools import lru_cache
-from typing import Dict, Optional
 
 import streamlit as st
-from datasets import load_dataset
 
 from utils.argilla_dataset import ArgillaDatasetManager
 
