@@ -10,17 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      # Cache dependencies for faster builds
       - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
@@ -29,7 +26,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -37,7 +33,6 @@ jobs:
           pip install huggingface_hub
           pip list
 
-      # Run tests
       - name: Run tests with pytest
         run: pytest
 
@@ -46,17 +41,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      # Cache dependencies for faster builds
       - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
@@ -65,7 +57,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -73,13 +64,11 @@ jobs:
           pip install huggingface_hub
           pip list
 
-      # Login to Hugging Face Hub
       - name: Login to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: huggingface-cli login --token $HF_TOKEN
 
-      # Push model to Hugging Face Hub
       - name: Push model to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
