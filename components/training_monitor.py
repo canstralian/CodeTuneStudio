@@ -38,7 +38,8 @@ def save_training_metrics(
     train_loss: float, eval_loss: float, step: int, rank: int | None = None
 ) -> None:
     """
-    Save training metrics to database with enhanced error handling for distributed training
+    Save training metrics to database with enhanced error handling for
+    distributed training
 
     Args:
         train_loss: Training loss value

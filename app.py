@@ -109,7 +109,8 @@ class MLFineTuningApp:
                 delay = base_delay * (2**attempt)
                 if attempt == max_retries - 1:
                     logger.critical(
-                        f"Failed to initialize database after {max_retries} attempts: {e}"
+                        f"Failed to initialize database after "
+                        f"{max_retries} attempts: {e}"
                     )
                     # Create fallback SQLite database if main DB fails
                     try:
@@ -292,7 +293,7 @@ class MLFineTuningApp:
         """Run the application with improved error boundaries and state management"""
         try:
             self.setup_sidebar()
-            
+
             # Enhanced header with visual appeal
             st.markdown(
                 """
