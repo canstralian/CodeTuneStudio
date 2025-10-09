@@ -2,7 +2,7 @@ import functools
 import logging
 import os
 from contextlib import contextmanager
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 import torch.distributed as dist
@@ -10,7 +10,8 @@ from torch.nn.parallel import DistributedDataParallel
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
