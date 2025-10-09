@@ -82,7 +82,6 @@ class MLFineTuningApp:
             and handled gracefully.
     """
 
-
     def __init__(self) -> None:
         """Initialize the application with improved error handling and caching"""
         self.flask_app = Flask(__name__)

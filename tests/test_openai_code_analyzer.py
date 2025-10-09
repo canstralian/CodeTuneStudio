@@ -61,10 +61,12 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
         """
         Test the execute method with invalid inputs.
         """
-        # This test is based on the current implementation where execute calls validate_inputs.
+        # This test is based on the current implementation where execute
+        # calls validate_inputs.
         # If the logic changes, this test might need adjustment.
-        # The current implementation proceeds to the API call even if validate_inputs is false,
-        # which seems like a bug. Let's test the actual behavior.
+        # The current implementation proceeds to the API call even if
+        # validate_inputs is false, which seems like a bug. Let's test
+        # the actual behavior.
 
         # To properly test this, we'd expect a return like:
         # {'error': 'Invalid input: missing code field', 'status': 'error'}

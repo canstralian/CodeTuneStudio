@@ -96,7 +96,8 @@ class ArgillaDatasetManager:
             )
 
             logger.info(
-                f"Successfully loaded dataset '{dataset_name}' with {len(hf_dataset)} records"
+                f"Successfully loaded dataset '{dataset_name}' with "
+                f"{len(hf_dataset)} records"
             )
             return hf_dataset
 

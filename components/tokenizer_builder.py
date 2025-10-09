@@ -111,7 +111,8 @@ def tokenizer_builder() -> None:
                                 f"🚀 Tokenizer successfully uploaded to {full_repo_path}"
                             )
                             st.markdown(
-                                f"[View your tokenizer on Hugging Face](https://huggingface.co/{full_repo_path})"
+                                "[View your tokenizer on Hugging Face]"
+                                f"(https://huggingface.co/{full_repo_path})"
                             )
                         except Exception as e:
                             st.error(f"⚠️ Upload failed: {e!s}")
@@ -133,11 +134,15 @@ def tokenizer_builder() -> None:
         st.markdown("""
         ### How to use this tool
 
-        1. **Select a base tokenizer** - Choose from popular pre-trained tokenizers or specify a custom one
-        2. **Enter your Hugging Face details** - Provide your username and repository name
-        3. **Customize special tokens** - Modify the special tokens if needed
+        1. **Select a base tokenizer** - Choose from popular pre-trained
+           tokenizers or specify a custom one
+        2. **Enter your Hugging Face details** - Provide your username
+           and repository name
+        3. **Customize special tokens** - Modify the special tokens if
+           needed
         4. **Build the tokenizer** - Generate tokenizer files locally
-        5. **Upload to Hugging Face** - Optionally push the tokenizer to your model repository
+        5. **Upload to Hugging Face** - Optionally push the tokenizer to
+           your model repository
 
         ### Hugging Face Login
 
