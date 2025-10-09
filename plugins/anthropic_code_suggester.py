@@ -49,7 +49,10 @@ class AnthropicCodeSuggesterTool(AgentTool):
         # Initialize Anthropic client with validation
         api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not api_key:
-            logger.warning("ANTHROPIC_API_KEY not set. Anthropic code suggestions will not be available.")
+            logger.warning(
+                "ANTHROPIC_API_KEY not set. Anthropic code suggestions "
+                "will not be available."
+            )
             self.client = None
         else:
             self.client = Anthropic(api_key=api_key)
@@ -77,12 +80,16 @@ class AnthropicCodeSuggesterTool(AgentTool):
 
         if not self.client:
             return {
-                "error": "ANTHROPIC_API_KEY not configured. Please set the API key to use this tool.",
+                "error": (
+                    "ANTHROPIC_API_KEY not configured. Please set the "
+                    "API key to use this tool."
+                ),
                 "status": "error"
             }
 
         try:
-            # the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
+            # the newest Anthropic model is "claude-3-5-sonnet-20241022"
+            # which was released October 22, 2024
             message = self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
                 messages=[
