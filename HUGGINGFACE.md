@@ -25,7 +25,7 @@ flask-sqlalchemy==3.0.5
 flask-migrate==4.0.4
 numpy==1.25.2
 datasets==2.14.5
-evaluate==0.5.1
+evaluate==0.4.6
 accelerate==0.23.0
 flask==3.0.0
 ```

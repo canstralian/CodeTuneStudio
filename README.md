@@ -2,7 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-%3E%3D3.9-blue.svg)](https://www.python.org/downloads)
+[![Python 3.10+](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://www.python.org/downloads)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Documentation Status](https://readthedocs.org/projects/codetunestudio/badge/?version=latest)](https://codetunestudio.readthedocs.io/en/latest/)
 [![Hugging Face Model CI/CD](https://github.com/canstralian/CodeTuneStudio/actions/workflows/huggingface-deploy.yml/badge.svg)](https://github.com/canstralian/CodeTuneStudio/actions/workflows/huggingface-deploy.yml)
@@ -28,7 +28,7 @@ CodeTuneStudio is your all-in-one platform for intelligent code analysis, perfor
 
 Before you begin, ensure you have the following installed:
 
-- 🐍 **Python** 3.8 or higher
+- 🐍 **Python** 3.10 or 3.11 (Python 3.12 is not currently supported due to dependency compatibility)
 
 ---
 
