@@ -1,6 +1,6 @@
 import logging
 from contextlib import contextmanager
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import torch
 from peft import (
@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 class PEFTTrainer:
     """
-    Handle Parameter-Efficient Fine-Tuning (PEFT) operations with enhanced error handling
+    Handle Parameter-Efficient Fine-Tuning (PEFT) operations with
+    enhanced error handling
     and resource management.
     """
 
@@ -37,7 +38,8 @@ class PEFTTrainer:
         Args:
             model: Base model to apply PEFT
             peft_config: Configuration for PEFT setup
-            device: Target device for training ('cpu', 'cuda', or None for auto-detection)
+            device: Target device for training ('cpu', 'cuda', or None
+            for auto-detection)
         """
         self.base_model = model
         self.peft_config = peft_config or self.get_default_peft_config()
