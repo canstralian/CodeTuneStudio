@@ -1,3 +1,5 @@
+import os
+
 import requests
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -7,7 +9,9 @@ CHECKLIST_PATH = "PR_REVIEW_CHECKLIST.md"
 headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 # Fetch PRs
-response = requests.get(f"https://api.github.com/repos/{REPO}/pulls?state=closed", headers=headers)
+response = requests.get(
+    f"https://api.github.com/repos/{REPO}/pulls?state=closed", headers=headers
+)
 response.raise_for_status()
 prs = response.json()
 

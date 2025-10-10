@@ -128,9 +128,11 @@ class ModelInference:
 
             if not return_full_output:
                 return self.tokenizer.decode(
-                    outputs[0]
-                    if isinstance(outputs, torch.Tensor)
-                    else outputs.sequences[0],
+                    (
+                        outputs[0]
+                        if isinstance(outputs, torch.Tensor)
+                        else outputs.sequences[0]
+                    ),
                     skip_special_tokens=True,
                 )
             return outputs
