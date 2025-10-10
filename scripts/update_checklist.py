@@ -1,6 +1,6 @@
 import requests
 
-GITHUB_TOKEN = "YOUR_TOKEN"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 REPO = "canstralian/CodeTuneStudio"
 CHECKLIST_PATH = "PR_Checklist.md"
 
