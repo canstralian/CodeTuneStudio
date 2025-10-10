@@ -1,6 +1,3 @@
-import time
-from typing import Optional
-
 import streamlit as st
 
 
@@ -128,24 +125,24 @@ def show_training_animation(progress: float | None = None) -> None:
     # Display emoji and progress
     progress_display = progress * 100 if progress is not None else 0
     progress_deg = progress_display * 3.6 if progress is not None else 0
-    
+
     st.markdown(
         f"""
         <div class="training-container">
             <div class="training-emoji">🤖</div>
             <div class="training-emoji">⚡</div>
             <div class="training-emoji">🚀</div>
-            
+
             <div class="progress-circle" style="--progress: {progress_deg}deg;">
                 <div class="progress-inner">
                     {progress_display:.1f}%
                 </div>
             </div>
-            
+
             <div class="training-message">
                 Training in Progress...
             </div>
-            
+
             <div class="training-stats">
                 <div class="stat-item">
                     <div>Progress</div>
