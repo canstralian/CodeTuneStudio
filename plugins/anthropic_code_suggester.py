@@ -103,6 +103,21 @@ class AnthropicCodeSuggesterTool(AgentTool):
                 ],
             )
 
+            # Validate response structure before accessing
+            if not message.content or len(message.content) == 0:
+                logger.error("Anthropic API returned empty content")
+                return {
+                    "error": "API returned empty response",
+                    "status": "error"
+                }
+            
+            if not hasattr(message.content[0], 'text'):
+                logger.error("Anthropic API response missing text attribute")
+                return {
+                    "error": "Invalid API response format",
+                    "status": "error"
+                }
+
             return {
                 "suggestions": message.content[0].text,
                 "model": "claude-3-5-sonnet-20241022",
