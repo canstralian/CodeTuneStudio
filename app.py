@@ -297,21 +297,21 @@ class MLFineTuningApp:
             # Enhanced header with visual appeal
             st.markdown(
                 """
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 2rem; 
-                            border-radius: 16px; 
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 2rem;
+                            border-radius: 16px;
                             margin-bottom: 2rem;
                             box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
-                    <h1 style="color: white; 
-                               margin: 0; 
+                    <h1 style="color: white;
+                               margin: 0;
                                text-align: center;
                                font-size: 2.5rem;
                                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                                -webkit-text-fill-color: white;">
                         🚀 ML Model Fine-tuning Platform
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.9); 
-                              text-align: center; 
+                    <p style="color: rgba(255, 255, 255, 0.9);
+                              text-align: center;
                               margin-top: 0.5rem;
                               font-size: 1.1rem;">
                         Advanced training and optimization for machine learning models
