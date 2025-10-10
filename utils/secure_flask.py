@@ -321,7 +321,8 @@ def create_example_secure_endpoint(app):
             return jsonify(result), 200
             
         except ValueError as e:
-            return jsonify({'error': str(e)}), 400
+            logger.warning(f"ValueError in secure endpoint: {e}", exc_info=True)
+            return jsonify({'error': 'Invalid request data'}), 400
         except Exception as e:
             logger.error(f"Error in secure endpoint: {e}", exc_info=True)
             return jsonify({'error': 'An internal error occurred'}), 500
