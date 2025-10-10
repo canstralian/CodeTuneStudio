@@ -7,7 +7,9 @@ CHECKLIST_PATH = "PR_REVIEW_CHECKLIST.md"
 headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 # Fetch PRs
-prs = requests.get(f"https://api.github.com/repos/{REPO}/pulls?state=closed", headers=headers).json()
+response = requests.get(f"https://api.github.com/repos/{REPO}/pulls?state=closed", headers=headers)
+response.raise_for_status()
+prs = response.json()
 
 # Open checklist file
 with open(CHECKLIST_PATH, "r") as f:
