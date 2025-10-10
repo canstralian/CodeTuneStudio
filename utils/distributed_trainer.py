@@ -175,9 +175,9 @@ class DistributedTrainer:
         try:
             info = {
                 "cuda_available": torch.cuda.is_available(),
-                "device_count": torch.cuda.device_count()
-                if torch.cuda.is_available()
-                else 0,
+                "device_count": (
+                    torch.cuda.device_count() if torch.cuda.is_available() else 0
+                ),
                 "devices": [],
             }
 

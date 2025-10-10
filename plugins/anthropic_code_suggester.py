@@ -84,7 +84,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
                     "ANTHROPIC_API_KEY not configured. Please set the "
                     "API key to use this tool."
                 ),
-                "status": "error"
+                "status": "error",
             }
 
         try:
