@@ -6,8 +6,25 @@
   <title>CodeTune Studio Lite - AI Code Optimizer & Refactoring Tool</title>
   <meta name="description" content="Boost your productivity with CodeTune Studio Lite — the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.">
   <meta name="keywords" content="AI code optimizer, code refactoring tool, Python optimization, JavaScript refactor, automated code improvement, code security scanner">
-  <link rel="canonical" href="https://codetunestudio.app">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="canonical" href="https://codetunestudio.app/">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Open Graph & Twitter Card for better previews -->
+  <meta property="og:title" content="CodeTune Studio Lite — AI Code Optimizer">
+  <meta property="og:description" content="Automatically refactor, debug, and optimize Python, JavaScript, and Bash with CodeTune Studio Lite.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://codetunestudio.app/">
+  <meta property="og:image" content="https://codetunestudio.app/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CodeTune Studio Lite">
+  <meta name="twitter:description" content="AI-powered code optimizer for developers.">
+
+  <!-- NOTE: Set a strict Content-Security-Policy as an HTTP response header on your server.
+       Example header (adjust to your needs):
+       Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.codetunestudio.app
+       Avoid using 'unsafe-inline' in production for scripts. -->
+  
+  <link rel="manifest" href="/manifest.json">
   
   <!-- Structured Data JSON-LD -->
   <script type="application/ld+json">
@@ -92,13 +109,16 @@
   </script>
 </head>
 <body>
-  <header class="header">
+  <!-- Skip link for keyboard users -->
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="header" role="banner">
     <div class="container">
-      <div class="nav">
-        <div class="logo">
+      <div class="nav" role="navigation" aria-label="Primary navigation">
+        <div class="logo" aria-hidden="false">
           <h1>CodeTune Studio Lite</h1>
         </div>
-        <nav class="nav-links">
+        <nav class="nav-links" aria-label="Main links">
           <a href="#features">Features</a>
           <a href="#pricing">Pricing</a>
           <a href="#about">About</a>
@@ -111,7 +131,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main-content">
     <!-- Hero Section -->
     <section class="hero">
       <div class="container">
@@ -119,16 +139,16 @@
           <h1 class="hero-title">AI Code Optimizer That Actually Works</h1>
           <p class="hero-subtitle">Boost your productivity with CodeTune Studio Lite — the AI-powered code refactoring tool that automatically debugs, optimizes, and improves your Python, JavaScript, and Bash scripts.</p>
           
-          <div class="hero-stats">
-            <div class="stat">
+          <div class="hero-stats" role="list" aria-label="Hero statistics">
+            <div class="stat" role="listitem">
               <span class="stat-number">87%</span>
               <span class="stat-label">Faster Debugging</span>
             </div>
-            <div class="stat">
+            <div class="stat" role="listitem">
               <span class="stat-number">4.9★</span>
               <span class="stat-label">Developer Rating</span>
             </div>
-            <div class="stat">
+            <div class="stat" role="listitem">
               <span class="stat-number">1,200+</span>
               <span class="stat-label">Scripts Optimized Daily</span>
             </div>
@@ -140,7 +160,7 @@
           </div>
         </div>
 
-        <div class="hero-demo">
+        <div class="hero-demo" aria-hidden="false">
           <div class="demo-window">
             <div class="demo-header">
               <span class="demo-title">Before & After AI Optimization</span>
@@ -177,37 +197,37 @@
 
         <div class="features-grid">
           <div class="feature-card">
-            <div class="feature-icon">🔍</div>
+            <div class="feature-icon" aria-hidden="true">🔍</div>
             <h3>Code Security Scanner</h3>
             <p>Automatically detect vulnerabilities, SQL injection risks, and security anti-patterns before they reach production.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">⚡</div>
+            <div class="feature-icon" aria-hidden="true">⚡</div>
             <h3>Performance Optimization</h3>
             <p>AI-powered analysis identifies bottlenecks and suggests optimizations that can improve your code speed by up to 87%.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">✨</div>
+            <div class="feature-icon" aria-hidden="true">✨</div>
             <h3>PEP 8 Style Checker</h3>
             <p>Ensure your Python code follows best practices with automated style checking and formatting suggestions.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">🔧</div>
+            <div class="feature-icon" aria-hidden="true">🔧</div>
             <h3>Automated Code Cleanup</h3>
             <p>Remove dead code, optimize imports, and clean up your codebase with intelligent refactoring suggestions.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">📚</div>
+            <div class="feature-icon" aria-hidden="true">📚</div>
             <h3>Multi-Language Support</h3>
             <p>Works with Python, JavaScript, TypeScript, and Bash scripts. More languages coming soon.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">⚙️</div>
+            <div class="feature-icon" aria-hidden="true">⚙️</div>
             <h3>CI/CD Integration</h3>
             <p>Seamlessly integrate with your existing workflow through our API and command-line tools.</p>
           </div>
@@ -252,7 +272,7 @@
 
         <div class="testimonials-grid">
           <div class="testimonial">
-            <div class="testimonial-rating">★★★★★</div>
+            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
             <p>"I run all my Python scripts through CodeTune before production — it's like having a senior engineer review my work."</p>
             <div class="testimonial-author">
               <strong>Alex</strong>
@@ -261,7 +281,7 @@
           </div>
 
           <div class="testimonial">
-            <div class="testimonial-rating">★★★★★</div>
+            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
             <p>"It helped me spot performance issues I missed for months. My API response times improved by 40%."</p>
             <div class="testimonial-author">
               <strong>Priya</strong>
@@ -270,7 +290,7 @@
           </div>
 
           <div class="testimonial">
-            <div class="testimonial-rating">★★★★★</div>
+            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
             <p>"The security suggestions alone have saved us from several potential vulnerabilities."</p>
             <div class="testimonial-author">
               <strong>Marcus</strong>
@@ -362,14 +382,13 @@
   </main>
 
   <!-- Footer -->
-  <footer id="about" class="footer">
+  <footer id="about" class="footer" role="contentinfo">
     <div class="container">
       <div class="footer-content">
         <div class="footer-section">
           <h4>CodeTune Studio Lite</h4>
           <p>The best AI for refactoring JavaScript, Python optimization, and automated code improvement. Built by developers, for developers.</p>
         </div>
-        
         <div class="footer-section">
           <h4>Features</h4>
           <ul>
@@ -379,7 +398,6 @@
             <li><a href="#features">SaaS for Developers</a></li>
           </ul>
         </div>
-
         <div class="footer-section">
           <h4>Resources</h4>
           <ul>
@@ -389,7 +407,6 @@
             <li><a href="#status">Status Page</a></li>
           </ul>
         </div>
-
         <div class="footer-section">
           <h4>Company</h4>
           <ul>
@@ -400,7 +417,6 @@
           </ul>
         </div>
       </div>
-      
       <div class="footer-bottom">
         <p>&copy; 2024 CodeTune Studio Lite. All rights reserved.</p>
         <div class="footer-keywords">
@@ -413,5 +429,12 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <noscript>
+    <div class="noscript-warning" role="status">
+      JavaScript is disabled — some functionality on this site requires JavaScript. Please enable JavaScript for the full experience.
+    </div>
+  </noscript>
+
+  <script src="script.js" defer></script>
 </body>
+</html>
