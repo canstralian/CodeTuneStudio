@@ -1,9 +1,15 @@
 import os
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
-import pytest
-from anthropic_code_suggester import AnthropicCodeSuggesterTool
+# Mock the anthropic module before importing the tool
+sys.modules['anthropic'] = MagicMock()
+
+# Add parent directory to path to import plugins
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
 class TestAnthropicCodeSuggesterTool(unittest.TestCase):
@@ -38,7 +44,10 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_message = MagicMock()
-        mock_message.content = "Some suggestions"
+        # Mock the content as a list with a text block (matching Anthropic API structure)
+        mock_content_block = MagicMock()
+        mock_content_block.text = "Some suggestions"
+        mock_message.content = [mock_content_block]
         mock_client.messages.create.return_value = mock_message
 
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
@@ -71,7 +80,7 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
     def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with pytest.raises(ValueError):
+            with self.assertRaises(ValueError):
                 tool.execute({})
 
     @patch("anthropic.Anthropic")
@@ -86,6 +95,22 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
 
             assert result["status"] == "error"
             assert "API error" in result["error"]
+
+    @patch("anthropic.Anthropic")
+    def test_execute_empty_content(self, mock_anthropic_class) -> None:
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_message = MagicMock()
+        # Mock empty content list
+        mock_message.content = []
+        mock_client.messages.create.return_value = mock_message
+
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
+            tool = AnthropicCodeSuggesterTool()
+            result = tool.execute({"code": "def foo(): pass"})
+
+            assert result["status"] == "error"
+            assert "missing expected content" in result["error"]
 
 
 if __name__ == "__main__":
