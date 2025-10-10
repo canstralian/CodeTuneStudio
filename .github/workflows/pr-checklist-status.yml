@@ -27,7 +27,7 @@ jobs:
       - name: Run Black (formatting check)
         run: |
           # Black performs formatting checks and outputs a diff for violations
-          black --check --diff . --exclude '/app.py'
+          black --check --diff . --exclude 'app.py'
 
       - name: Run Ruff (lint check)
         run: |
