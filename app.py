@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CodeTune Studio Lite - AI Code Optimizer & Refactoring Tool</title>
-  <meta name="description" content="Boost your productivity with CodeTune Studio Lite — the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.">
+  <meta name="description" content="Boost your productivity with CodeTune Studio Lite - the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.">
   <meta name="keywords" content="AI code optimizer, code refactoring tool, Python optimization, JavaScript refactor, automated code improvement, code security scanner">
   <link rel="canonical" href="https://codetunestudio.app/">
   <link rel="stylesheet" href="style.css">
 
   <!-- Open Graph & Twitter Card for better previews -->
-  <meta property="og:title" content="CodeTune Studio Lite — AI Code Optimizer">
+  <meta property="og:title" content="CodeTune Studio Lite - AI Code Optimizer">
   <meta property="og:description" content="Automatically refactor, debug, and optimize Python, JavaScript, and Bash with CodeTune Studio Lite.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://codetunestudio.app/">
@@ -33,7 +33,7 @@
     "@type": "SoftwareApplication",
     "name": "CodeTune Studio Lite",
     "applicationCategory": "DeveloperApplication",
-    "description": "Boost your productivity with CodeTune Studio Lite — the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.",
+    "description": "Boost your productivity with CodeTune Studio Lite - the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.",
     "operatingSystem": "Web-based",
     "url": "https://codetunestudio.app",
     "offers": [
@@ -76,7 +76,7 @@
           "@type": "Rating",
           "ratingValue": "5"
         },
-        "reviewBody": "I run all my Python scripts through CodeTune before production — it's like having a senior engineer review my work."
+        "reviewBody": "I run all my Python scripts through CodeTune before production - it's like having a senior engineer review my work."
       },
       {
         "@type": "Review",
@@ -137,7 +137,7 @@
       <div class="container">
         <div class="hero-content">
           <h1 class="hero-title">AI Code Optimizer That Actually Works</h1>
-          <p class="hero-subtitle">Boost your productivity with CodeTune Studio Lite — the AI-powered code refactoring tool that automatically debugs, optimizes, and improves your Python, JavaScript, and Bash scripts.</p>
+          <p class="hero-subtitle">Boost your productivity with CodeTune Studio Lite - the AI-powered code refactoring tool that automatically debugs, optimizes, and improves your Python, JavaScript, and Bash scripts.</p>
           
           <div class="hero-stats" role="list" aria-label="Hero statistics">
             <div class="stat" role="listitem">
@@ -273,7 +273,7 @@
         <div class="testimonials-grid">
           <div class="testimonial">
             <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
-            <p>"I run all my Python scripts through CodeTune before production — it's like having a senior engineer review my work."</p>
+            <p>"I run all my Python scripts through CodeTune before production - it's like having a senior engineer review my work."</p>
             <div class="testimonial-author">
               <strong>Alex</strong>
               <span>Full Stack Developer</span>
@@ -431,7 +431,7 @@
 
   <noscript>
     <div class="noscript-warning" role="status">
-      JavaScript is disabled — some functionality on this site requires JavaScript. Please enable JavaScript for the full experience.
+      JavaScript is disabled - some functionality on this site requires JavaScript. Please enable JavaScript for the full experience.
     </div>
   </noscript>
 

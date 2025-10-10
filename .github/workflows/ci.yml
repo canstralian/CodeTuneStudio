@@ -6,6 +6,9 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,6 +37,9 @@ jobs:
     name: Respond to PR Comments
     if: github.event.issue.pull_request # Only run on PR comments
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Check out repository
