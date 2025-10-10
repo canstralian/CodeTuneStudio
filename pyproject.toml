@@ -2,7 +2,7 @@
 name = "repl-nix-workspace"
 version = "0.1.0"
 description = "Add your description here"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "accelerate>=1.3.0",
     "alembic>=1.14.1",
@@ -44,7 +44,7 @@ torchvision = [{ index = "pytorch-cpu", marker = "platform_system == 'Linux'" }]
 # Set the maximum line length to 88 (Black's default)
 line-length = 88
 # Set the minimum Python version to support
-target-version = "py311"
+target-version = "py310"
 # Exclude common directories and files
 exclude = [
     ".git",
