@@ -7,7 +7,7 @@
   <meta name="description" content="Boost your productivity with CodeTune Studio Lite — the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.">
   <meta name="keywords" content="AI code optimizer, code refactoring tool, Python optimization, JavaScript refactor, automated code improvement, code security scanner">
   <link rel="canonical" href="https://codetunestudio.app/">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 
   <!-- Open Graph & Twitter Card for better previews -->
   <meta property="og:title" content="CodeTune Studio Lite — AI Code Optimizer">
