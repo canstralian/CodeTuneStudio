@@ -34,4 +34,4 @@ jobs:
           # Ruff is a fast Python linter and formatter
           # --ignore E501: Ignore long lines (handled by Black)
           # --exit-non-zero-on-fix: Fail the job if fixes are made
-          ruff check . --ignore E501 --exit-non-zero-on-fix
+          ruff check . --ignore E501
