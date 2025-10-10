@@ -1,0 +1,13 @@
+# Safety configuration for dependency security scanning
+# https://docs.pyup.io/docs/getting-started-with-safety-cli
+
+[safety]
+# Files to check
+files = ["requirements.txt"]
+
+# Ignore specific vulnerabilities (use with caution and documentation)
+# Format: ignore-vulns = ["vulnerability-id"]
+ignore-vulns = []
+
+# Exit with error on vulnerabilities found
+exit-code = 1
