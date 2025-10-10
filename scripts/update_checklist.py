@@ -2,7 +2,7 @@ import requests
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 REPO = "canstralian/CodeTuneStudio"
-CHECKLIST_PATH = "PR_Checklist.md"
+CHECKLIST_PATH = "PR_REVIEW_CHECKLIST.md"
 
 headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
