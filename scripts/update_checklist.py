@@ -28,5 +28,8 @@ for i, line in enumerate(lines):
             lines[i] = line.replace("[ ]", "[x]")
 
 # Write updated checklist
-with open(CHECKLIST_PATH, "w") as f:
-    f.writelines(lines)
+try:
+    with open(CHECKLIST_PATH, "w") as f:
+        f.writelines(lines)
+except (IOError, OSError) as e:
+    print(f"Error writing to {CHECKLIST_PATH}: {e}")
