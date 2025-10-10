@@ -12,9 +12,15 @@ response.raise_for_status()
 prs = response.json()
 
 # Open checklist file
-with open(CHECKLIST_PATH, "r") as f:
-    lines = f.readlines()
-
+try:
+    with open(CHECKLIST_PATH, "r") as f:
+        lines = f.readlines()
+except FileNotFoundError:
+    print(f"Error: Checklist file '{CHECKLIST_PATH}' not found.")
+    exit(1)
+except OSError as e:
+    print(f"Error reading checklist file '{CHECKLIST_PATH}': {e}")
+    exit(1)
 # Update checklist for merged PRs
 for i, line in enumerate(lines):
     for pr in prs:
