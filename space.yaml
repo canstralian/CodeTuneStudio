@@ -1,0 +1,35 @@
+title: CodeTuneStudio
+emoji: 🌍
+colorFrom: purple
+colorTo: purple
+sdk: gradio
+sdk_version: 5.18.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: AI-driven code assistant for intelligent review, generation, optimization, and security insight.
+models:
+  - TheBloke/WizardCoder-Python-34B-V1.0-GGUF
+  - shibing624/code-autocomplete-distilgpt2-python
+  - sagard21/python-code-explainer
+  - Salesforce/codet5-base-codexglue-sum-python
+  - google/code_x_glue_ct_code_to_text
+  - codellama/CodeLlama-7b-Python-hf
+datasets:
+  # --- Core Author-Relevant Datasets ---
+  - google/code_x_glue_ct_code_to_text
+  - flytech/python-codes-25k
+  - semeru/text-code-CodeSummarization
+  - bigcode/the-stack
+
+  # --- Security and Static Analysis Datasets ---
+  - CyberNative/Code_Vulnerability_Security_DPO
+  - patched-codes/static-analysis-eval
+  - s2e-lab/SecurityEval
+  - lemon42-ai/Code_Vulnerability_Labeled_Dataset
+  - darkknight25/Vulnerable_Programming_Dataset
+  - ammarnasr/Python-Security-Code-Dataset
+
+  # --- Evaluation and Educational Context ---
+  - HuggingFaceH4/code_evaluation_prompts
+  - jupyter-agent/jupyter-agent-dataset
