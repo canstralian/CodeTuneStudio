@@ -27,7 +27,7 @@ This checklist is designed to guide you through reviewing, verifying, and mergin
 * [ ] Pull the latest `main` branch.
 * [ ] Check out each PR locally.
 * [ ] Run `black . && flake8 .` to ensure code formatting and linting compliance.
-* [ ] Confirm Python version (prefer 3.10 or 3.11).
+* [ ] Confirm Python version (require 3.10).
 
 ---
 
