@@ -53,16 +53,17 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
                 messages=[
                     {
                         "role": "user",
-                        "content": """Analyze this code and suggest improvements in JSON format.
-                    Include specific recommendations for:
-                    1. Code structure
-                    2. Optimization opportunities
-                    3. Best practices
-                    4. Error handling
-
-                    Code to analyze:
-                    def foo(): pass
-                    """,
+                        "content": (
+                            "Analyze this code and suggest improvements in "
+                            "JSON format.\n"
+                            "Include specific recommendations for:\n"
+                            "1. Code structure\n"
+                            "2. Optimization opportunities\n"
+                            "3. Best practices\n"
+                            "4. Error handling\n\n"
+                            "Code to analyze:\n"
+                            "def foo(): pass\n"
+                        ),
                     }
                 ],
             )

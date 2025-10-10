@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any
 
 import torch
 from accelerate import init_empty_weights
@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class ModelInference:
-    """Handle large model inference using Accelerate library with enhanced performance optimization"""
+    """Handle large model inference using Accelerate library with enhanced
+    performance optimization"""
 
     def __init__(self, model_name: str, device_map: str = "auto") -> None:
         self.model_name = model_name
@@ -128,9 +129,11 @@ class ModelInference:
 
             if not return_full_output:
                 return self.tokenizer.decode(
-                    outputs[0]
-                    if isinstance(outputs, torch.Tensor)
-                    else outputs.sequences[0],
+                    (
+                        outputs[0]
+                        if isinstance(outputs, torch.Tensor)
+                        else outputs.sequences[0]
+                    ),
                     skip_special_tokens=True,
                 )
             return outputs
