@@ -23,6 +23,22 @@ from typing import List, Tuple
 
 class SecurityChecker:
     """Check code for common security issues."""
+
+    def _redact_secret_line(self, line: str) -> str:
+        """
+        Redact the value of suspected secrets in a line.
+        Replaces values assigned to secret key variables with ***REDACTED***.
+        """
+        # Example pattern: SECRET_KEY = "value" or SECRET_KEY = 'value'
+        # Replace value after = with ***REDACTED*** for common secret assignment forms
+        # Will catch lines like: SOME_KEY = "12345", password = 'abcdef'
+        # Replace quoted assignments
+        line = re.sub(r'([\'"])[^\'"]+\1', r'\1***REDACTED***\1', line)
+        # Replace bare variable = value
+        line = re.sub(r'(=\s*)([A-Za-z0-9@#\-_]{4,})', r'\1***REDACTED***', line)
+        # Replace : value in dicts/yaml: key: value
+        line = re.sub(r'(:\s*)([A-Za-z0-9@#\-_]{4,})', r'\1***REDACTED***', line)
+        return line
     
     def __init__(self, directory: str = "."):
         """
@@ -232,8 +248,11 @@ class SecurityChecker:
         print(f"\n⚠️  {title} ({len(issues)} issues):")
         for filename, line_num, line in issues:
             print(f"  {filename}:{line_num}")
-            print(f"    {line[:100]}")
-    
+            # Redact suspected secrets if title indicates secret findings
+            if title.lower().startswith("potential hardcoded secrets"):
+                print(f"    {self._redact_secret_line(line)[:100]}")
+            else:
+                print(f"    {line[:100]}")
     def run_all_checks(self) -> bool:
         """
         Run all security checks.
