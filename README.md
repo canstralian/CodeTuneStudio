@@ -74,9 +74,35 @@ CodeTuneStudio/
 ├── app.py               # 🚀 Main application file
 ├── components/          # 🧩 UI components
 ├── utils/               # 🛠️ Utility functions
+│   ├── security.py      # 🔒 Security utilities
+│   └── secure_flask.py  # 🛡️ Secure Flask patterns
+├── docs/                # 📖 Documentation
+│   ├── SECURITY_BEST_PRACTICES.md
+│   └── SECURITY_QUICK_REFERENCE.md
 ├── requirements.txt     # 📦 Project dependencies
+├── SECURITY.md          # 🔐 Security policy
 └── README.md            # 📖 Documentation
 ```
+
+---
+
+## 🔒 Security
+
+CodeTuneStudio implements comprehensive security measures:
+
+- 🛡️ **Input Validation**: All user inputs are validated and sanitized
+- 🔐 **Parameterized Queries**: SQL injection prevention via ORM
+- 🚫 **Code Execution Safety**: Sandboxed execution patterns
+- ⏱️ **Timeout Enforcement**: DoS prevention for long operations
+- 🔑 **API Security**: Authentication and rate limiting
+- 🔍 **Automated Scanning**: Bandit, Safety, and CodeQL
+
+For security best practices, see:
+- 📚 [Security Best Practices Guide](docs/SECURITY_BEST_PRACTICES.md)
+- ⚡ [Security Quick Reference](docs/SECURITY_QUICK_REFERENCE.md)
+- 🔐 [Security Policy](SECURITY.md)
+
+To report security vulnerabilities, please see our [Security Policy](SECURITY.md).
 
 ---
 
