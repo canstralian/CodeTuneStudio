@@ -1,6 +1,7 @@
 version: 2
 
 updates:
+  # Python dependencies (pip)
   - package-ecosystem: "pip"
     directory: "/" # Root directory for Python dependencies
     schedule:
@@ -10,10 +11,13 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     allow:
-      - dependency-type: "all" # update both direct and indirect dependencies
+      - dependency-type: "all" # Update both direct and indirect dependencies
     ignore:
       - dependency-name: "django"
-        versions: ["<3.2"] # Ignore Django versions below 3.2
+        versions: ["<3.2"] # Ignore Django versions below 3.2 (security baseline)
+      # Add Flask-specific version constraints if needed
+      - dependency-name: "flask"
+        update-types: ["version-update:semver-major"] # Only allow minor/patch updates
     assignees:
       - "canstralian"
     reviewers:
@@ -23,12 +27,31 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
+      - "python"
       - "auto-update"
     rebase-strategy: "auto"
     pull-request-branch-name:
       separator: "-"
+    # Group updates to reduce PR noise
+    groups:
+      flask-ecosystem:
+        patterns:
+          - "flask*"
+          - "werkzeug"
+          - "jinja2"
+      security-packages:
+        patterns:
+          - "cryptography"
+          - "pyjwt"
+          - "bcrypt"
+          - "passlib"
+      testing:
+        patterns:
+          - "pytest*"
+          - "coverage"
+          - "mock"
 
-# Enable security updates (GitHub Advisory Database)
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/" # Location of GitHub Actions workflows
     schedule:
@@ -43,8 +66,72 @@ updates:
       - "canstralian"
     labels:
       - "github-actions"
+      - "ci"
       - "auto-update"
     commit-message:
       prefix: "ci:"
       include: "scope"
     rebase-strategy: "auto"
+    pull-request-branch-name:
+      separator: "-"
+
+  # npm/yarn for React dependencies (if applicable)
+  - package-ecosystem: "npm"
+    directory: "/" # Adjust if React app is in subdirectory (e.g., "/frontend")
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase"
+    ignore:
+      # Prevent major version bumps for React (manual review recommended)
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
+    commit-message:
+      prefix: "build(deps):"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "react"
+      - "auto-update"
+    rebase-strategy: "auto"
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@testing-library/*"
+      build-tools:
+        patterns:
+          - "webpack*"
+          - "babel*"
+          - "vite"
+
+  # Docker (if using containerization)
+  - package-ecosystem: "docker"
+    directory: "/" # Location of Dockerfile
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 2
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
+    commit-message:
+      prefix: "build(docker):"
+      include: "scope"
+    labels:
+      - "docker"
+      - "infrastructure"
+      - "auto-update"
