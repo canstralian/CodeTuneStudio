@@ -17,3 +17,6 @@ models:
   - codellama/CodeLlama-7b-Python-hf
 datasets:
   - google/code_x_glue_ct_code_to_text
+  - flytech/python-codes-25k
+  - semeru/text-code-CodeSummarization
+  - bigcode/the-stack  # (Check exact name on HF for “The Stack”)
