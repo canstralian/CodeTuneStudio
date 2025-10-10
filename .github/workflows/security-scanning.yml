@@ -12,6 +12,8 @@ on:
 jobs:
   bandit:
     name: Bandit Security Scan
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     
     steps:
@@ -41,6 +43,8 @@ jobs:
   
   safety:
     name: Safety Dependency Scan
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     
     steps:
