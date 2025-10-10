@@ -1,0 +1,234 @@
+name: Dependency Graph Auto-Submission
+
+# This workflow validates Python dependencies and ensures compatibility
+# Triggered on push to main branch and pull requests
+'on':
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Allow manual workflow dispatch for testing
+  workflow_dispatch:
+
+jobs:
+  dependency-validation:
+    # Use the latest Ubuntu runner for consistency
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository
+      # Uses actions/checkout@v4 for secure and up-to-date repository access
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for accurate dependency analysis
+          fetch-depth: 0
+      
+      # Step 2: Set up Python 3.11
+      # Uses actions/setup-python@v5 for Python environment configuration
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          # Enable caching for faster subsequent runs
+          cache: 'pip'
+      
+      # Step 3: Validate Python project structure
+      # Check for required dependency files at repository root
+      - name: Validate Python project structure
+        id: validate-structure
+        run: |
+          echo "🔍 Checking for Python dependency files..."
+          
+          # Initialize found files counter
+          found_files=0
+          
+          # Check for requirements.txt
+          if [ -f "requirements.txt" ]; then
+            echo "✅ Found requirements.txt"
+            found_files=$((found_files + 1))
+          fi
+          
+          # Check for pyproject.toml
+          if [ -f "pyproject.toml" ]; then
+            echo "✅ Found pyproject.toml"
+            found_files=$((found_files + 1))
+          fi
+          
+          # Check for setup.py
+          if [ -f "setup.py" ]; then
+            echo "✅ Found setup.py"
+            found_files=$((found_files + 1))
+          fi
+          
+          # Validate that at least one dependency file exists
+          if [ $found_files -eq 0 ]; then
+            echo "❌ ERROR: No Python dependency files found!"
+            echo "⚠️  Expected at least one of: requirements.txt, pyproject.toml, or setup.py"
+            echo "::error::Python dependency files are missing from repository root"
+            exit 1
+          fi
+          
+          echo "✅ Found $found_files dependency file(s) - validation passed"
+          echo "dependency-files-found=$found_files" >> $GITHUB_OUTPUT
+      
+      # Step 4: Upgrade pip and install pip-tools
+      # Ensures we have the latest secure versions
+      - name: Install pip and pip-tools
+        run: |
+          echo "📦 Upgrading pip..."
+          python -m pip install --upgrade pip
+          
+          echo "📦 Installing pip-tools for dependency compilation..."
+          pip install --upgrade "pip-tools>=7.0.0"
+          
+          echo "✅ Package installation complete"
+          
+          # Display versions for debugging
+          echo "📋 Installed versions:"
+          pip --version
+          pip-compile --version
+      
+      # Step 5: Validate dependencies with pip-compile
+      # Checks for conflicts and compatibility issues
+      - name: Validate dependencies with pip-compile
+        id: validate-dependencies
+        run: |
+          echo "🔍 Starting dependency validation..."
+          
+          # Track validation status
+          validation_failed=0
+          
+          # Validate requirements.txt if it exists
+          if [ -f "requirements.txt" ]; then
+            echo "📝 Validating requirements.txt..."
+            
+            # Create a temporary requirements.in for validation
+            cp requirements.txt requirements.in.tmp
+            
+            # Try to compile dependencies to check for conflicts
+            if pip-compile --dry-run --resolver=backtracking requirements.in.tmp > /dev/null 2>&1; then
+              echo "✅ requirements.txt validation passed"
+            else
+              echo "❌ requirements.txt validation failed"
+              echo "::warning::Dependency conflicts detected in requirements.txt"
+              
+              # Show detailed error output
+              echo "🔍 Detailed validation output:"
+              pip-compile --dry-run --resolver=backtracking requirements.in.tmp 2>&1 || true
+              
+              validation_failed=1
+            fi
+            
+            # Clean up temporary file
+            rm -f requirements.in.tmp
+          fi
+          
+          # Validate pyproject.toml if it exists
+          if [ -f "pyproject.toml" ]; then
+            echo "📝 Validating pyproject.toml..."
+            
+            # Check if pyproject.toml has valid syntax
+            if python -c "import tomli; tomli.load(open('pyproject.toml', 'rb'))" 2>/dev/null || \
+               python -c "import tomllib; tomllib.load(open('pyproject.toml', 'rb'))" 2>/dev/null; then
+              echo "✅ pyproject.toml syntax validation passed"
+            else
+              echo "❌ pyproject.toml has invalid syntax"
+              echo "::warning::pyproject.toml syntax validation failed"
+              validation_failed=1
+            fi
+          fi
+          
+          # Check for security vulnerabilities (optional but recommended)
+          if [ -f "requirements.txt" ]; then
+            echo "🔒 Checking for known security vulnerabilities..."
+            
+            # Install safety for vulnerability scanning
+            pip install safety 2>/dev/null || true
+            
+            # Run safety check (non-blocking)
+            if command -v safety &> /dev/null; then
+              safety check --file requirements.txt --output text || echo "⚠️  Some vulnerabilities detected (non-blocking)"
+            fi
+          fi
+          
+          # Exit with failure if validation failed
+          if [ $validation_failed -ne 0 ]; then
+            echo "::error::Dependency validation failed - please review errors above"
+            exit 1
+          fi
+          
+          echo "✅ All dependency validations passed successfully"
+      
+      # Step 6: Install project dependencies
+      # Verify that dependencies can be installed without conflicts
+      - name: Install project dependencies
+        run: |
+          echo "📦 Installing project dependencies..."
+          
+          # Try to install from requirements.txt first
+          if [ -f "requirements.txt" ]; then
+            echo "Installing from requirements.txt..."
+            pip install -r requirements.txt --no-deps --dry-run 2>&1 | head -20
+            
+            if pip install -r requirements.txt; then
+              echo "✅ Successfully installed dependencies from requirements.txt"
+            else
+              echo "❌ Failed to install dependencies from requirements.txt"
+              echo "::error::Dependency installation failed"
+              exit 1
+            fi
+          # Fallback to pyproject.toml if requirements.txt doesn't exist
+          elif [ -f "pyproject.toml" ]; then
+            echo "Installing from pyproject.toml..."
+            
+            if pip install -e .; then
+              echo "✅ Successfully installed dependencies from pyproject.toml"
+            else
+              echo "❌ Failed to install dependencies from pyproject.toml"
+              echo "::error::Dependency installation failed"
+              exit 1
+            fi
+          fi
+          
+          echo "✅ Dependency installation complete"
+      
+      # Step 7: Generate dependency report
+      # Provides summary of installed packages for audit trail
+      - name: Generate dependency report
+        if: success() || failure()
+        run: |
+          echo "📊 Generating dependency report..."
+          
+          # List all installed packages with versions
+          echo "=== Installed Packages ==="
+          pip list --format=freeze
+          
+          # Show dependency tree if available
+          pip install pipdeptree 2>/dev/null || true
+          if command -v pipdeptree &> /dev/null; then
+            echo ""
+            echo "=== Dependency Tree ==="
+            pipdeptree --warn silence || true
+          fi
+          
+          echo "✅ Dependency report generated"
+      
+      # Step 8: Summary report
+      # Provides clear outcome of the workflow
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "📋 Workflow Summary"
+          echo "==================="
+          echo "Runner: ubuntu-latest"
+          echo "Python Version: 3.11"
+          echo "Dependency Files Found: ${{ steps.validate-structure.outputs.dependency-files-found }}"
+          
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ All checks passed successfully"
+          else
+            echo "❌ Some checks failed - please review the logs above"
+          fi
