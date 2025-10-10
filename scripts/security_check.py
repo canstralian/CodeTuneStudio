@@ -33,7 +33,7 @@ class SecurityChecker:
         # Replace value after = with ***REDACTED*** for common secret assignment forms
         # Will catch lines like: SOME_KEY = "12345", password = 'abcdef'
         # Replace quoted assignments
-        line = re.sub(r'([\'"])[^\'"]+\1', r'\1***REDACTED***\1', line)
+        line = re.sub(r'([\'"])[^'"]+\1', r'\1***REDACTED***\1', line)
         # Replace bare variable = value
         line = re.sub(r'(=\s*)([A-Za-z0-9@#\-_]{4,})', r'\1***REDACTED***', line)
         # Replace : value in dicts/yaml: key: value
