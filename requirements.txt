@@ -20,4 +20,4 @@ numpy>=1.19.3,<2
 plotly==5.17.0
 
 # Annotation & feedback
-argilla==1.24.0
+argilla==2.8.0
