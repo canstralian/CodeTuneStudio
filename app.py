@@ -1,440 +1,472 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeTune Studio Lite - AI Code Optimizer & Refactoring Tool</title>
-  <meta name="description" content="Boost your productivity with CodeTune Studio Lite - the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.">
-  <meta name="keywords" content="AI code optimizer, code refactoring tool, Python optimization, JavaScript refactor, automated code improvement, code security scanner">
-  <link rel="canonical" href="https://codetunestudio.app/">
-  <link rel="stylesheet" href="style.css">
+import logging
+import os
+import re
+import time
+from contextlib import contextmanager
+from functools import lru_cache
+from typing import Any, Optional
 
-  <!-- Open Graph & Twitter Card for better previews -->
-  <meta property="og:title" content="CodeTune Studio Lite - AI Code Optimizer">
-  <meta property="og:description" content="Automatically refactor, debug, and optimize Python, JavaScript, and Bash with CodeTune Studio Lite.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://codetunestudio.app/">
-  <meta property="og:image" content="https://codetunestudio.app/assets/og-image.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="CodeTune Studio Lite">
-  <meta name="twitter:description" content="AI-powered code optimizer for developers.">
+# Third-party imports
+import streamlit as st
+from flask import Flask
+from sqlalchemy.pool import QueuePool
 
-  <!-- NOTE: Set a strict Content-Security-Policy as an HTTP response header on your server.
-       Example header (adjust to your needs):
-       Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.codetunestudio.app
-       Avoid using 'unsafe-inline' in production for scripts. -->
-  
-  <link rel="manifest" href="/manifest.json">
-  
-  <!-- Structured Data JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "CodeTune Studio Lite",
-    "applicationCategory": "DeveloperApplication",
-    "description": "Boost your productivity with CodeTune Studio Lite - the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.",
-    "operatingSystem": "Web-based",
-    "url": "https://codetunestudio.app",
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Free Plan",
-        "price": "0",
-        "priceCurrency": "USD",
-        "description": "1 AI optimization per day with limited support."
-      },
-      {
-        "@type": "Offer",
-        "name": "Developer Plan",
-        "price": "10.00",
-        "priceCurrency": "USD",
-        "priceSpecification": {
-          "@type": "PriceSpecification",
-          "price": "10.00",
-          "priceCurrency": "USD",
-          "billingCycle": "P1M"
-        },
-        "description": "Unlimited AI refactors, priority queue access, and code history."
-      }
-    ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "2",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
-    "review": [
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "Alex, Full Stack Developer"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "I run all my Python scripts through CodeTune before production - it's like having a senior engineer review my work."
-      },
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "Priya, Data Scientist"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "It helped me spot performance issues I missed for months."
-      }
-    ],
-    "potentialAction": {
-      "@type": "Action",
-      "name": "Try CodeTune Studio Lite for Free",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://codetunestudio.app/register",
-        "inLanguage": "en-US",
-        "actionPlatform": [
-          "http://schema.org/DesktopWebPlatform",
-          "http://schema.org/IOSPlatform",
-          "http://schema.org/AndroidPlatform"
+# Local imports
+from components.dataset_selector import dataset_browser, validate_dataset_name
+from components.documentation_viewer import documentation_viewer
+from components.experiment_compare import experiment_compare
+from components.parameter_config import training_parameters
+from components.plugin_manager import plugin_manager
+from components.tokenizer_builder import tokenizer_builder  # Add tokenizer builder
+from components.training_monitor import training_monitor
+from utils.config_validator import validate_config
+from utils.database import TrainingConfig, db, init_db
+from utils.plugins.registry import registry
+
+# Configure logging with more detailed format
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
+)
+logger = logging.getLogger(__name__)
+
+
+class MLFineTuningApp:
+    """
+    MLFineTuningApp: A comprehensive application for fine-tuning machine learning models.
+    This class integrates Flask for backend operations, Streamlit for the user interface,
+    and provides robust database management, plugin loading, and training configuration
+    handling. It supports dataset selection, model training monitoring, experiment comparison,
+    and plugin-based extensibility.
+    Attributes:
+        flask_app (Flask): The Flask application instance for backend operations.
+        (Other attributes are managed internally via configuration and initialization methods.)
+    Methods:
+        __init__(): Initializes the app with database, Streamlit, and plugin configurations.
+        _configure_database(): Sets up database connection with optimized pooling and settings.
+        _initialize_database_with_retry(max_retries=3, base_delay=1.0): Initializes the database
+            with retry logic and fallback to SQLite if needed.
+        session_scope(): Context manager for database sessions with error handling.
+        _load_custom_css(): Caches and loads custom CSS for Streamlit UI.
+        _configure_streamlit(): Configures Streamlit page settings and applies custom CSS.
+        _load_plugins(): Discovers and loads plugins from the plugins directory.
+        setup_sidebar(): Sets up the Streamlit sidebar with plugin info and navigation.
+        _render_navigation(): Renders navigation links in the sidebar.
+        save_training_config(config, dataset): Validates and saves training configuration to DB.
+        run(): Main method to run the Streamlit app, handling UI, validation, and training flow.
+    Usage:
+        Instantiate the class and call run() to start the application. Ensure environment
+        variables like DATABASE_URL are set for proper configuration. Plugins should be placed
+        in the 'plugins' directory for automatic loading.
+    Raises:
+        RuntimeError: If Streamlit configuration fails.
+        Various exceptions during database or plugin operations, logged and handled gracefully.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the application with improved error handling and caching"""
+        self.flask_app = Flask(__name__)
+        self._configure_database()
+        self._configure_streamlit()
+
+        # Load plugins only once during initialization
+        self._load_plugins()
+
+        self._initialize_database_with_retry()
+
+    def _configure_database(self) -> None:
+        """Configure database with optimized settings and connection pooling"""
+        database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+
+        # Optimized database configuration
+        self.flask_app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": database_url,
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "SQLALCHEMY_ENGINE_OPTIONS": {
+                    "poolclass": QueuePool,
+                    "pool_size": 10,
+                    "max_overflow": 20,
+                    "pool_timeout": 30,
+                    "pool_recycle": 1800,
+                    "pool_pre_ping": True,
+                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
+                },
+            }
+        )
+        logger.info(f"Database configured with URL: {database_url}")
+
+    def _initialize_database_with_retry(
+        self, max_retries: int = 3, base_delay: float = 1.0
+    ) -> None:
+        """Initialize database with exponential backoff retry strategy"""
+        for attempt in range(max_retries):
+            try:
+                with self.flask_app.app_context():
+                    init_db(self.flask_app)
+                    logger.info("Database initialized successfully")
+                return
+            except Exception as e:
+                delay = base_delay * (2**attempt)
+                if attempt == max_retries - 1:
+                    logger.critical(
+                        f"Failed to initialize database after {max_retries} attempts: {e}"
+                    )
+                    # Create fallback SQLite database if main DB fails
+                    try:
+                        self.flask_app.config["SQLALCHEMY_DATABASE_URI"] = (
+                            "sqlite:///fallback.db"
+                        )
+                        with self.flask_app.app_context():
+                            init_db(self.flask_app)
+                            logger.warning("Fallback to SQLite database successful")
+                        return
+                    except Exception as fallback_error:
+                        logger.critical(
+                            f"Fallback database initialization failed: {fallback_error}"
+                        )
+                        raise
+                logger.warning(
+                    f"Database initialization attempt {attempt + 1} failed: {e}"
+                )
+                time.sleep(delay)
+
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope with improved error handling and logging.
+
+        Note: Flask-SQLAlchemy manages sessions automatically. This context manager
+        provides explicit transaction boundaries for operations requiring it.
+        """
+        # Flask-SQLAlchemy's db.session is already a scoped session
+        session = db.session
+        try:
+            yield session
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Database transaction failed: {e}", exc_info=True)
+            raise
+        # Note: No session.close() needed - Flask-SQLAlchemy handles cleanup
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _load_custom_css() -> str | None:
+        """Load and cache custom CSS with improved error handling"""
+        css_path = "styles/custom.css"
+        try:
+            if os.path.exists(css_path):
+                with open(css_path) as f:
+                    return f.read()
+            logger.warning(f"CSS file not found: {css_path}")
+            return None
+        except Exception as e:
+            logger.exception(f"Failed to load CSS: {e}")
+            return None
+
+    def _configure_streamlit(self) -> None:
+        """Configure Streamlit UI with cached CSS loading"""
+        try:
+            st.set_page_config(
+                page_title="ML Model Fine-tuning",
+                page_icon="🚀",
+                layout="wide",
+                initial_sidebar_state="expanded"
+                if os.environ.get("SPACE_ID")
+                else "auto",
+            )
+            css_content = self._load_custom_css()
+            if css_content:
+                st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+        except Exception as e:
+            logger.error(f"Streamlit configuration failed: {e}", exc_info=True)
+            msg = f"Failed to configure Streamlit: {e}"
+            raise RuntimeError(msg)
+
+    def _load_plugins(self) -> None:
+        """Load plugins with improved error handling and path management"""
+        try:
+            # Get absolute path to plugins directory
+            plugins_dir = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "plugins")
+            )
+            logger.info(f"Loading plugins from: {plugins_dir}")
+
+            try:
+                # Clear existing registrations to prevent duplicates
+                registry.clear_tools()
+            except Exception as e:
+                logger.warning(f"Failed to clear tools registry: {e!s}")
+                # Continue execution as this is not a critical error
+
+            try:
+                # Discover and load plugins
+                registry.discover_tools(plugins_dir)
+                tools = registry.list_tools()
+
+                # Log successful plugin loading
+                logger.info("=== Plugin Loading Status ===")
+                if tools:
+                    logger.info(f"Successfully loaded {len(tools)} tools:")
+                    for tool in tools:
+                        logger.info(f"- {tool}")
+                else:
+                    logger.info("No plugins were loaded")
+                logger.info("=========================")
+
+            except Exception as e:
+                logger.error(f"Error during plugin discovery: {e!s}", exc_info=True)
+                # Continue execution with empty tools list
+                tools = []
+
+        except Exception as e:
+            logger.error(f"Plugin loading system error: {e!s}", exc_info=True)
+            # Allow application to continue without plugins
+
+    def setup_sidebar(self) -> None:
+        """Configure sidebar with cached plugin information"""
+        with st.sidebar:
+            st.title("ML Model Fine-tuning")
+            st.markdown("---")
+
+            tools = registry.list_tools()
+            st.markdown("### Available Plugins")
+            if tools:
+                for tool in tools:
+                    st.text(f"✓ {tool}")
+            else:
+                st.warning("No plugins available")
+
+            st.markdown("---")
+            self._render_navigation()
+
+    def _render_navigation(self) -> None:
+        """Render navigation section"""
+        st.markdown("""
+        ### Navigation
+        - [Dataset Selection](#dataset-selection)
+        - [Training Configuration](#training-configuration)
+        - [Training Progress](#training-progress)
+        - [Experiment Comparison](#experiment-comparison)
+        - [Documentation](#documentation)
+        ---
+        ### About
+        Fine-tune ML models with advanced monitoring
+        """)
+
+    @staticmethod
+    def sanitize_string(value: str, max_length: int = 200) -> str:
+        """Sanitize string input to prevent injection attacks.
+
+        Args:
+            value: String to sanitize
+            max_length: Maximum allowed length
+
+        Returns:
+            Sanitized string
+
+        Raises:
+            ValueError: If input is invalid
+        """
+        if not isinstance(value, str):
+            raise ValueError(f"Expected string, got {type(value)}")
+
+        # Remove null bytes and control characters
+        value = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', value)
+
+        # Trim to max length
+        value = value[:max_length].strip()
+
+        if not value:
+            raise ValueError("String cannot be empty after sanitization")
+
+        return value
+
+    @staticmethod
+    def validate_config_values(config: dict[str, Any]) -> list[str]:
+        """Validate configuration values with comprehensive checks.
+
+        Args:
+            config: Configuration dictionary to validate
+
+        Returns:
+            List of validation error messages (empty if valid)
+        """
+        errors = []
+
+        # Validate model_type
+        if "model_type" in config:
+            try:
+                model_type = MLFineTuningApp.sanitize_string(config["model_type"], max_length=50)
+                if not re.match(r'^[a-zA-Z0-9_\-/]+$', model_type):
+                    errors.append("model_type contains invalid characters")
+            except ValueError as e:
+                errors.append(f"model_type validation failed: {e}")
+
+        # Validate numeric ranges (in addition to database model validation)
+        if "batch_size" in config:
+            if not isinstance(config["batch_size"], int) or config["batch_size"] <= 0:
+                errors.append("batch_size must be a positive integer")
+
+        if "learning_rate" in config:
+            if not isinstance(config["learning_rate"], (int, float)):
+                errors.append("learning_rate must be numeric")
+            elif config["learning_rate"] <= 0 or config["learning_rate"] >= 1:
+                errors.append("learning_rate must be between 0 and 1")
+
+        if "epochs" in config:
+            if not isinstance(config["epochs"], int) or config["epochs"] <= 0:
+                errors.append("epochs must be a positive integer")
+
+        if "max_seq_length" in config:
+            if not isinstance(config["max_seq_length"], int) or config["max_seq_length"] <= 0:
+                errors.append("max_seq_length must be a positive integer")
+
+        if "warmup_steps" in config:
+            if not isinstance(config["warmup_steps"], int) or config["warmup_steps"] < 0:
+                errors.append("warmup_steps must be a non-negative integer")
+
+        return errors
+
+    def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
+        """Save training configuration with comprehensive validation and sanitization.
+
+        Args:
+            config: Training configuration dictionary
+            dataset: Dataset name
+
+        Returns:
+            Configuration ID if successful, None otherwise
+        """
+        if not isinstance(config, dict):
+            logger.error(f"Invalid configuration type: {type(config)}")
+            return None
+
+        required_fields = [
+            "model_type",
+            "batch_size",
+            "learning_rate",
+            "epochs",
+            "max_seq_length",
+            "warmup_steps",
         ]
-      }
-    }
-  }
-  </script>
-</head>
-<body>
-  <!-- Skip link for keyboard users -->
-  <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="header" role="banner">
-    <div class="container">
-      <div class="nav" role="navigation" aria-label="Primary navigation">
-        <div class="logo" aria-hidden="false">
-          <h1>CodeTune Studio Lite</h1>
-        </div>
-        <nav class="nav-links" aria-label="Main links">
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#about">About</a>
-        </nav>
-        <div class="nav-cta">
-          <a href="#register" class="btn-secondary">Login</a>
-          <a href="#register" class="btn-primary">Start Free</a>
-        </div>
-      </div>
-    </div>
-  </header>
+        missing_fields = [field for field in required_fields if field not in config]
+        if missing_fields:
+            logger.error(f"Missing required configuration fields: {missing_fields}")
+            return None
 
-  <main id="main-content">
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <h1 class="hero-title">AI Code Optimizer That Actually Works</h1>
-          <p class="hero-subtitle">Boost your productivity with CodeTune Studio Lite - the AI-powered code refactoring tool that automatically debugs, optimizes, and improves your Python, JavaScript, and Bash scripts.</p>
-          
-          <div class="hero-stats" role="list" aria-label="Hero statistics">
-            <div class="stat" role="listitem">
-              <span class="stat-number">87%</span>
-              <span class="stat-label">Faster Debugging</span>
-            </div>
-            <div class="stat" role="listitem">
-              <span class="stat-number">4.9★</span>
-              <span class="stat-label">Developer Rating</span>
-            </div>
-            <div class="stat" role="listitem">
-              <span class="stat-number">1,200+</span>
-              <span class="stat-label">Scripts Optimized Daily</span>
-            </div>
-          </div>
+        # Validate configuration values
+        validation_errors = self.validate_config_values(config)
+        if validation_errors:
+            for error in validation_errors:
+                logger.error(f"Configuration validation error: {error}")
+            return None
 
-          <div class="hero-cta">
-            <a href="#register" class="btn-primary large">Start Free Trial</a>
-            <p class="cta-note">No credit card required • 1 free optimization daily</p>
-          </div>
-        </div>
+        try:
+            # Sanitize string inputs
+            model_type = self.sanitize_string(config["model_type"], max_length=50)
+            dataset_name = self.sanitize_string(dataset, max_length=100)
 
-        <div class="hero-demo" aria-hidden="false">
-          <div class="demo-window">
-            <div class="demo-header">
-              <span class="demo-title">Before & After AI Optimization</span>
-            </div>
-            <div class="code-comparison">
-              <div class="code-before">
-                <h4>Your Code</h4>
-                <pre><code>def process_data(data):
-    result = []
-    for item in data:
-        if item != None:
-            result.append(item * 2)
-    return result</code></pre>
-              </div>
-              <div class="code-after">
-                <h4>AI Optimized</h4>
-                <pre><code>def process_data(data: list) -> list:
-    """Process data by doubling non-None values."""
-    return [item * 2 for item in data if item is not None]</code></pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+            with self.flask_app.app_context():
+                with self.session_scope() as session:
+                    # Database model will perform additional validation via @validates decorators
+                    training_config = TrainingConfig(
+                        model_type=model_type,
+                        dataset_name=dataset_name,
+                        batch_size=config["batch_size"],
+                        learning_rate=config["learning_rate"],
+                        epochs=config["epochs"],
+                        max_seq_length=config["max_seq_length"],
+                        warmup_steps=config["warmup_steps"],
+                    )
+                    session.add(training_config)
+                    session.flush()
+                    logger.info(f"Saved training config {training_config.id} for {model_type}")
+                    return training_config.id
+        except ValueError as e:
+            logger.error(f"Input validation failed: {e}", exc_info=True)
+            return None
+        except Exception as e:
+            logger.error(f"Failed to save training configuration: {e}", exc_info=True)
+            return None
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-      <div class="container">
-        <div class="section-header">
-          <h2>Automated Code Improvement That Developers Love</h2>
-          <p>Our AI developer tools analyze your code and provide intelligent suggestions for Python optimization, JavaScript refactoring, and security improvements.</p>
-        </div>
+    def run(self) -> None:
+        """Run the application with improved error boundaries and state management"""
+        try:
+            self.setup_sidebar()
+            st.markdown("# ML Model Fine-tuning Platform")
 
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">🔍</div>
-            <h3>Code Security Scanner</h3>
-            <p>Automatically detect vulnerabilities, SQL injection risks, and security anti-patterns before they reach production.</p>
-          </div>
+            if "page" not in st.session_state:
+                st.session_state.page = "main"
 
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">⚡</div>
-            <h3>Performance Optimization</h3>
-            <p>AI-powered analysis identifies bottlenecks and suggests optimizations that can improve your code speed by up to 87%.</p>
-          </div>
+            with st.expander("Documentation, Plugins & Tools", expanded=False):
+                tab1, tab2, tab3 = st.tabs(
+                    ["Documentation", "Plugin Management", "Tokenizer Builder"]
+                )
+                with tab1:
+                    documentation_viewer()
+                with tab2:
+                    plugin_manager()
+                with tab3:
+                    tokenizer_builder()
 
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">✨</div>
-            <h3>PEP 8 Style Checker</h3>
-            <p>Ensure your Python code follows best practices with automated style checking and formatting suggestions.</p>
-          </div>
+            # Dataset selection with validation
+            selected_dataset = dataset_browser()
+            if not selected_dataset or not validate_dataset_name(selected_dataset):
+                st.warning("Please select a valid dataset to continue")
+                return
 
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">🔧</div>
-            <h3>Automated Code Cleanup</h3>
-            <p>Remove dead code, optimize imports, and clean up your codebase with intelligent refactoring suggestions.</p>
-          </div>
+            # Configuration handling with validation
+            config = training_parameters()
+            if not isinstance(config, dict):
+                st.error("Invalid configuration format")
+                return
 
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">📚</div>
-            <h3>Multi-Language Support</h3>
-            <p>Works with Python, JavaScript, TypeScript, and Bash scripts. More languages coming soon.</p>
-          </div>
+            errors = validate_config(config)
+            if errors:
+                for error in errors:
+                    st.error(error)
+                return
 
-          <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">⚙️</div>
-            <h3>CI/CD Integration</h3>
-            <p>Seamlessly integrate with your existing workflow through our API and command-line tools.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+            # Save configuration and proceed with training
+            config_id = self.save_training_config(config, selected_dataset)
+            if config_id:
+                st.session_state.current_config_id = config_id
 
-    <!-- How It Works Section -->
-    <section class="how-it-works">
-      <div class="container">
-        <div class="section-header">
-          <h2>How to Improve Code Security Automatically</h2>
-          <p>Transform your development workflow in three simple steps</p>
-        </div>
+                with self.flask_app.app_context():
+                    # Restructured layout to avoid nested columns
+                    st.subheader("Training Progress")
+                    training_monitor()
 
-        <div class="steps-grid">
-          <div class="step">
-            <div class="step-number">1</div>
-            <h3>Upload Your Code</h3>
-            <p>Paste your Python, JavaScript, or Bash code directly into our web interface or use our API.</p>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <h3>AI Analysis</h3>
-            <p>Our advanced AI analyzes your code for performance issues, security vulnerabilities, and style improvements.</p>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <h3>Get Optimized Code</h3>
-            <p>Receive clean, optimized, and secure code with detailed explanations of all improvements made.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+                    st.subheader("Experiment Analysis")
+                    experiment_compare()
 
-    <!-- Social Proof Section -->
-    <section class="testimonials">
-      <div class="container">
-        <div class="section-header">
-          <h2>Trusted by Developers Worldwide</h2>
-        </div>
+                if st.button("Export Configuration"):
+                    st.json(config)
+            else:
+                st.error("Failed to save configuration. Please try again.")
 
-        <div class="testimonials-grid">
-          <div class="testimonial">
-            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
-            <p>"I run all my Python scripts through CodeTune before production - it's like having a senior engineer review my work."</p>
-            <div class="testimonial-author">
-              <strong>Alex</strong>
-              <span>Full Stack Developer</span>
-            </div>
-          </div>
+        except Exception as e:
+            logger.error(f"Application error: {e}", exc_info=True)
+            st.error(
+                "An unexpected error occurred. Please try again or contact support."
+            )
+            if hasattr(st.session_state, "current_config_id"):
+                del st.session_state.current_config_id
 
-          <div class="testimonial">
-            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
-            <p>"It helped me spot performance issues I missed for months. My API response times improved by 40%."</p>
-            <div class="testimonial-author">
-              <strong>Priya</strong>
-              <span>Data Scientist</span>
-            </div>
-          </div>
 
-          <div class="testimonial">
-            <div class="testimonial-rating" aria-hidden="true">★★★★★</div>
-            <p>"The security suggestions alone have saved us from several potential vulnerabilities."</p>
-            <div class="testimonial-author">
-              <strong>Marcus</strong>
-              <span>DevOps Engineer</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+def main() -> None:
+    """Application entry point with improved error handling"""
+    try:
+        app = MLFineTuningApp()
+        app.run()
+    except Exception as e:
+        logger.critical(f"Fatal error: {e}", exc_info=True)
+        st.error(
+            "A critical error occurred. Please reload the page or contact support."
+        )
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing">
-      <div class="container">
-        <div class="section-header">
-          <h2>Simple Pricing for Every Developer</h2>
-          <p>Start free, scale as you grow</p>
-        </div>
 
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <h3>Free Plan</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">0</span>
-              <span class="period">/month</span>
-            </div>
-            <ul class="features-list">
-              <li>1 AI optimization per day</li>
-              <li>Basic security scanning</li>
-              <li>Community support</li>
-              <li>Web interface access</li>
-            </ul>
-            <a href="#register" class="btn-secondary full-width">Start Free</a>
-          </div>
-
-          <div class="pricing-card featured">
-            <div class="badge">Most Popular</div>
-            <h3>Developer Plan</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">10</span>
-              <span class="period">/month</span>
-            </div>
-            <ul class="features-list">
-              <li>Unlimited AI refactors</li>
-              <li>Priority queue access</li>
-              <li>Advanced security scanning</li>
-              <li>Code history & versioning</li>
-              <li>API access</li>
-              <li>Priority support</li>
-            </ul>
-            <a href="#register" class="btn-primary full-width">Start 7-Day Trial</a>
-          </div>
-
-          <div class="pricing-card">
-            <h3>Team Plan</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">25</span>
-              <span class="period">/month</span>
-            </div>
-            <ul class="features-list">
-              <li>Everything in Developer</li>
-              <li>Team collaboration tools</li>
-              <li>Advanced analytics</li>
-              <li>Custom integrations</li>
-              <li>Dedicated support</li>
-            </ul>
-            <a href="#register" class="btn-secondary full-width">Contact Sales</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="final-cta">
-      <div class="container">
-        <div class="cta-content">
-          <h2>Ready to Transform Your Code Quality?</h2>
-          <p>Join thousands of developers who trust CodeTune Studio Lite to optimize their code automatically.</p>
-          <div class="cta-buttons">
-            <a href="#register" class="btn-primary large">Start Free Trial</a>
-            <a href="#demo" class="btn-secondary large">Watch Demo</a>
-          </div>
-          <p class="cta-guarantee">30-day money-back guarantee • Cancel anytime</p>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Footer -->
-  <footer id="about" class="footer" role="contentinfo">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>CodeTune Studio Lite</h4>
-          <p>The best AI for refactoring JavaScript, Python optimization, and automated code improvement. Built by developers, for developers.</p>
-        </div>
-        <div class="footer-section">
-          <h4>Features</h4>
-          <ul>
-            <li><a href="#features">AI Code Optimizer</a></li>
-            <li><a href="#features">Code Refactoring Tool</a></li>
-            <li><a href="#features">Security Scanner</a></li>
-            <li><a href="#features">SaaS for Developers</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="#documentation">API Documentation</a></li>
-            <li><a href="#blog">Developer Blog</a></li>
-            <li><a href="#support">Support Center</a></li>
-            <li><a href="#status">Status Page</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#about">About Us</a></li>
-            <li><a href="#privacy">Privacy Policy</a></li>
-            <li><a href="#terms">Terms of Service</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2024 CodeTune Studio Lite. All rights reserved.</p>
-        <div class="footer-keywords">
-          <span>AI developer tools</span> • 
-          <span>automated code cleanup</span> • 
-          <span>Python optimization</span> • 
-          <span>JavaScript refactor</span>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <noscript>
-    <div class="noscript-warning" role="status">
-      JavaScript is disabled - some functionality on this site requires JavaScript. Please enable JavaScript for the full experience.
-    </div>
-  </noscript>
-
-  <script src="script.js" defer></script>
-</body>
-</html>
+if __name__ == "__main__":
+    main()

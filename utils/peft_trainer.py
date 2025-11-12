@@ -12,10 +12,7 @@ from peft import (
 )
 from transformers import PreTrainedModel
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# Get logger for this module (configured by main application)
 logger = logging.getLogger(__name__)
 
 

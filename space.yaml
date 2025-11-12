@@ -2,8 +2,8 @@ title: CodeTuneStudio
 emoji: 🌍
 colorFrom: purple
 colorTo: purple
-sdk: gradio
-sdk_version: 5.18.0
+sdk: streamlit
+sdk_version: 1.37.0
 app_file: app.py
 pinned: false
 license: mit

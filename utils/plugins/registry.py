@@ -8,8 +8,7 @@ from typing import Dict, List, Optional, Type
 
 from .base import AgentTool
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger for this module (configured by main application)
 logger = logging.getLogger(__name__)
 
 
@@ -110,11 +109,11 @@ class PluginRegistry:
 
                 except Exception as e:
                     logger.exception(f"Failed to load plugin {file_path}: {e!s}")
-                    logger.debug("Exception details:", exc_info=True)
+                    # Note: logger.exception() already includes traceback
 
         except Exception as e:
             logger.exception(f"Error discovering plugins: {e!s}")
-            logger.debug("Exception details:", exc_info=True)
+            # Note: logger.exception() already includes traceback
             raise
 
 
