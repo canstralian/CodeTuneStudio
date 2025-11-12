@@ -186,9 +186,9 @@ jobs:
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
       - name: Run Snyk SAST
-        uses: snyk/actions/python@v0.4.0
+        uses: snyk/actions/python@master
         with:
-          command: test
+          args: test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Dependency audit
