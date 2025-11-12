@@ -123,7 +123,7 @@ jobs:
           ruff check .
           black --check .
       - name: Run tests
-        run: pytest --maxfail=1 --disable-warnings -q
+        run: pytest -q --disable-warnings --maxfail=1
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
