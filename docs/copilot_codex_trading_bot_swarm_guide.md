@@ -182,19 +182,19 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.7
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@v0.15.9
       - name: Run Snyk SAST
-        uses: snyk/actions/python@master
+        uses: snyk/actions/python@0.5.0
         with:
-          args: test
+          command: test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Dependency audit
         run: pip install pip-audit && pip-audit
       - name: Secret scan
-        uses: trufflesecurity/trufflehog@v3
+        uses: trufflesecurity/trufflehog@v3.78.0
 ```
 
 ## Contributor Guidelines
