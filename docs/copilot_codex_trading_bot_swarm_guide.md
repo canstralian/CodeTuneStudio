@@ -127,7 +127,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 ```
 
 ## Semantic Release and Version Tagging
