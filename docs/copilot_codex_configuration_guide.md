@@ -14,7 +14,7 @@ This guide defines the operational standards for integrating GitHub Copilot and 
 - All code changes must include unit tests or integration tests that cover new logic.
 - Use the standard testing harness (`pytest` for Python components, `jest` or equivalent for JavaScript/TypeScript modules).
 - Run static type checkers (`mypy`, `pyright`, or `tsc`) when applicable.
-- Lint Python code with `ruff` and JavaScript/TypeScript with `eslint` before merging.
+- Lint Python code with `flake8` (as enforced in CI) and JavaScript/TypeScript with `eslint` before merging. You may use `ruff` locally for faster linting, but ensure your code passes `flake8` checks, as these are required by the CI workflow. If both tools are supported, prefer the one enforced by CI to avoid merge failures.
 
 ### Code Style
 - Follow PEP 8 for Python with project-specific overrides captured in `pyproject.toml` and `ruff.toml`.
@@ -58,7 +58,9 @@ copilot:
     - "Do not propose documentation-only edits unless user explicitly asks."
     - "Provide context-aware suggestions referencing relevant modules."
   defaults:
-    testing: ["pytest", "ruff", "mypy"]
+    testing: ["pytest"]
+    linting: ["ruff"]
+    type-checking: ["mypy"]
     security: ["secrets-manager", "least-privilege"]
     observability: ["core.logging", "otel-tracing"]
 
@@ -100,7 +102,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -147,7 +149,7 @@ jobs:
       - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
         run: npx semantic-release
 ```
 
@@ -171,14 +173,15 @@ jobs:
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
-          format: table
-          severity: HIGH,CRITICAL
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
       - name: Upload findings
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-findings
-          path: trivy-results
+          path: 'trivy-results.sarif'
 ```
 
 ## Contributor Guidelines
@@ -199,7 +202,7 @@ jobs:
 ## Troubleshooting and Optimization Tips
 - If Copilot suggests insecure patterns, regenerate with stronger prompts emphasizing security.
 - For flaky tests, rerun with `pytest -vv --maxfail=1` and inspect logs in `core.logging` output.
-- When dependency conflicts occur, use `pip-compile --upgrade` with the supported Python version (3.11) and review lockfile diffs.
+- When dependency conflicts occur, use `pip-compile --upgrade` with the supported Python version (3.10) and review lockfile diffs.
 - Monitor CI runtime; cache dependencies using `actions/cache` if workflows exceed acceptable durations.
 
 ## Maintenance Schedule
