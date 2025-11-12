@@ -111,7 +111,7 @@ jobs:
         run: ruff check .
 
       - name: Run tests
-        run: pytest --maxfail=1 --disable-warnings -q
+        run: pytest --cov=. --cov-report=html --maxfail=1 --disable-warnings -q
 
       - name: Upload coverage
         if: always()
