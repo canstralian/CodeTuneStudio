@@ -21,3 +21,10 @@ plotly==5.17.0
 
 # Annotation & feedback
 argilla==1.24.0
+
+# Security scanning and protection
+bandit>=1.7.5
+safety>=2.3.5
+flask-limiter>=3.5.0
+flask-talisman>=1.1.0
+RestrictedPython>=6.2

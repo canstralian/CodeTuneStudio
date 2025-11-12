@@ -1,0 +1,28 @@
+# Bandit security scanner configuration
+# https://bandit.readthedocs.io/en/latest/config.html
+
+[bandit]
+# Directories to exclude from scanning
+exclude_dirs = [
+    "/venv/",
+    "/tests/",
+    "/.git/",
+    "/migrations/",
+    "/attached_assets/",
+]
+
+# Test IDs to skip (use with caution)
+skips = []
+
+# Severity level to report (LOW, MEDIUM, HIGH)
+# Only report MEDIUM and HIGH severity issues by default
+severity = MEDIUM
+
+# Confidence level to report (LOW, MEDIUM, HIGH)
+confidence = MEDIUM
+
+# Tests to run (leave empty to run all)
+tests = []
+
+# Plugins to load
+plugins = []
