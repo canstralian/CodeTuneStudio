@@ -24,10 +24,12 @@ class AnthropicCodeSuggesterTool(AgentTool):
         client (Anthropic): The Anthropic client instance used for API interactions.
     Methods:
         validate_inputs(inputs: Dict[str, Any]) -> bool:
-            Validates the input dictionary to ensure it contains a valid 'code' key with a string value.
+            Validates the input dictionary to ensure it contains a
+            valid 'code' key with a string value.
         execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
-            Executes the code suggestion process by sending the code to Claude for analysis and
-            returning the suggestions in a structured response.
+            Executes the code suggestion process by sending the code
+            to Claude for analysis and returning the suggestions in a
+            structured response.
     Note:
         Requires an ANTHROPIC_API_KEY environment variable to be set for authentication.
         The tool uses the 'claude-3-5-sonnet-20241022' model for generating suggestions.
@@ -117,7 +119,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
                     "error": "API returned empty response",
                     "status": "error"
                 }
-            
+
             if not hasattr(message.content[0], 'text'):
                 logger.error("Anthropic API response missing text attribute")
                 return {
