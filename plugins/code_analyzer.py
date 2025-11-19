@@ -1,21 +1,25 @@
 import ast
-from typing import Any, Dict, List
+from typing import Any
 
 from utils.plugins.base import AgentTool, ToolMetadata
 
 
 class CodeAnalyzerTool(AgentTool):
-    """CodeAnalyzerTool: A tool for analyzing Python code structure and complexity.
-    This class extends AgentTool to provide static analysis of Python code using the
-    Abstract Syntax Tree (AST) module. It extracts metrics such as the number of functions,
-    classes, imports, and a simple complexity score based on the total number of AST nodes.
+    """CodeAnalyzerTool: Analyzes Python code structure and complexity.
+
+    This class extends AgentTool to provide static analysis of Python code
+    using the Abstract Syntax Tree (AST) module. It extracts metrics such
+    as the number of functions, classes, imports, and a simple complexity
+    score based on the total number of AST nodes.
+
     Attributes:
-        metadata (ToolMetadata): Metadata describing the tool, including name, description,
-            version, author, and tags.
+        metadata (ToolMetadata): Metadata describing the tool, including
+            name, description, version, author, and tags.
     Methods:
         __init__(): Initializes the tool and sets up metadata.
         validate_inputs(inputs: Dict[str, Any]) -> bool:
-            Validates that the input dictionary contains a 'code' key with a string value.
+            Validates that the input dictionary contains a 'code' key
+            with a string value.
                 inputs (Dict[str, Any]): Input dictionary to validate.
                 bool: True if inputs are valid, False otherwise.
         execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
