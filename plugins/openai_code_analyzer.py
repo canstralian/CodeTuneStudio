@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 from openai import OpenAI
 
@@ -15,21 +15,24 @@ class OpenAICodeAnalyzerTool(AgentTool):
     """
     A tool for analyzing code using OpenAI's GPT models.
 
-    This class extends AgentTool to provide code analysis capabilities powered by OpenAI's
-    GPT models. It leverages the latest available model (e.g., GPT-4o) to evaluate code
-    for quality, improvements, performance, and security considerations.
+    This class extends AgentTool to provide code analysis capabilities
+    powered by OpenAI's GPT models. It leverages the latest available
+    model (e.g., GPT-4o) to evaluate code for quality, improvements,
+    performance, and security considerations.
 
     Attributes:
-        metadata (ToolMetadata): Metadata describing the tool, including name, description,
-            version, author, and tags.
-        client (OpenAI): An instance of the OpenAI client initialized with the API key
-            from environment variables.
+        metadata (ToolMetadata): Metadata describing the tool, including
+            name, description, version, author, and tags.
+        client (OpenAI): An instance of the OpenAI client initialized
+            with the API key from environment variables.
 
     Methods:
-        __init__(): Initializes the tool, sets up metadata, and creates the OpenAI client.
-        validate_inputs(inputs: Dict[str, Any]) -> bool:
-            Validates the input dictionary to ensure it contains a 'code' key with a string value.
-        execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
+        __init__(): Initializes the tool, sets up metadata, and creates
+            the OpenAI client.
+        validate_inputs(inputs: dict[str, Any]) -> bool:
+            Validates the input dictionary to ensure it contains a 'code'
+            key with a string value.
+        execute(inputs: dict[str, Any]) -> dict[str, Any]:
             Executes the code analysis using OpenAI's API.
     """
 
@@ -37,7 +40,10 @@ class OpenAICodeAnalyzerTool(AgentTool):
         super().__init__()
         self.metadata = ToolMetadata(
             name="openai_code_analyzer",
-            description="Analyzes code using OpenAI's models for improvements and suggestions",
+            description=(
+                "Analyzes code using OpenAI's models for "
+                "improvements and suggestions"
+            ),
             author="CodeTuneStudio",
             tags=["code-analysis", "ai", "openai"],
         )
@@ -45,7 +51,10 @@ class OpenAICodeAnalyzerTool(AgentTool):
         # Ensure the API key is set
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
-            msg = "The environment variable 'OPENAI_API_KEY' is not set. Please set it to your OpenAI API key."
+            msg = (
+                "The environment variable 'OPENAI_API_KEY' is not set. "
+                "Please set it to your OpenAI API key."
+            )
             raise OSError(msg)
         # Initialize OpenAI client
         self.client = OpenAI(api_key=api_key)
@@ -80,7 +89,8 @@ class OpenAICodeAnalyzerTool(AgentTool):
                     {
                         "role": "system",
                         "content": (
-                            "You are an expert code analyzer. Analyze the given code and provide insights about:\n"
+                            "You are an expert code analyzer. Analyze the "
+                            "given code and provide insights about:\n"
                             "1. Code quality\n"
                             "2. Potential improvements\n"
                             "3. Performance considerations\n"

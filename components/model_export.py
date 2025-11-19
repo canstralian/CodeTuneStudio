@@ -1,7 +1,4 @@
-import os
-
 import streamlit as st
-import torch
 from huggingface_hub import HfApi, create_repo
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
