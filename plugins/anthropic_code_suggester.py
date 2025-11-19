@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 from anthropic import Anthropic
 
@@ -14,19 +14,22 @@ logger = logging.getLogger(__name__)
 class AnthropicCodeSuggesterTool(AgentTool):
     """Tool for suggesting code improvements using Anthropic's Claude
 
-    A tool for generating code improvement suggestions using Anthropic's Claude AI model.
-    This class extends AgentTool to provide AI-powered code analysis and suggestions. It leverages
-    Anthropic's Claude model to evaluate provided code snippets and offer recommendations on structure,
-    optimization, best practices, and error handling.
+    A tool for generating code improvement suggestions using Anthropic's
+    Claude AI model. This class extends AgentTool to provide AI-powered
+    code analysis and suggestions. It leverages Anthropic's Claude model
+    to evaluate provided code snippets and offer recommendations on
+    structure, optimization, best practices, and error handling.
+
     Attributes:
-        metadata (ToolMetadata): Metadata describing the tool, including name, description, version,
-            author, and tags.
-        client (Anthropic): The Anthropic client instance used for API interactions.
+        metadata (ToolMetadata): Metadata describing the tool, including
+            name, description, version, author, and tags.
+        client (Anthropic): The Anthropic client instance used for API
+            interactions.
     Methods:
-        validate_inputs(inputs: Dict[str, Any]) -> bool:
+        validate_inputs(inputs: dict[str, Any]) -> bool:
             Validates the input dictionary to ensure it contains a
             valid 'code' key with a string value.
-        execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
+        execute(inputs: dict[str, Any]) -> dict[str, Any]:
             Executes the code suggestion process by sending the code
             to Claude for analysis and returning the suggestions in a
             structured response.
@@ -98,16 +101,16 @@ class AnthropicCodeSuggesterTool(AgentTool):
                 messages=[
                     {
                         "role": "user",
-                        "content": f"""Analyze this code and suggest improvements in JSON format.
-                    Include specific recommendations for:
-                    1. Code structure
-                    2. Optimization opportunities
-                    3. Best practices
-                    4. Error handling
-
-                    Code to analyze:
-                    {inputs["code"]}
-                    """,
+                        "content": (
+                            "Analyze this code and suggest improvements "
+                            "in JSON format.\n"
+                            "Include specific recommendations for:\n"
+                            "1. Code structure\n"
+                            "2. Optimization opportunities\n"
+                            "3. Best practices\n"
+                            "4. Error handling\n\n"
+                            f"Code to analyze:\n{inputs['code']}\n"
+                        ),
                     }
                 ],
             )
