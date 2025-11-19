@@ -172,9 +172,7 @@ def training_monitor() -> None:
                 )
                 for i, device in enumerate(device_info["devices"]):
                     mem_gb = device["total_memory"] / 1024**3
-                    st.text(
-                        f"Device {i}: {device['name']} ({mem_gb:.1f} GB)"
-                    )
+                    st.text(f"Device {i}: {device['name']} ({mem_gb:.1f} GB)")
 
             col1, col2 = st.columns([2, 1])
             with col1:
