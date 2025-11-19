@@ -1,12 +1,10 @@
 import logging
 import os
 import random
-from datetime import datetime
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
-import torch
 from datasets import load_dataset
 from tqdm import tqdm
 
@@ -18,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class RedditDatasetManager:
-    """
-    Handle Reddit dataset operations with enhanced validation and performance optimization
+    """Handle Reddit dataset operations.
+
+    Enhanced validation and performance optimization for Reddit datasets.
     """
 
     def __init__(
@@ -74,14 +73,38 @@ class RedditDatasetManager:
         """
         templates = {
             "python": [
-                "def dance_with_bytes(rainbow_bits):\n    return ''.join([chr((ord(b) << 2) >> 1) for b in rainbow_bits])",
-                "class QuantumPancake:\n    def flip_in_time(self, syrup_waves):\n        return float('inf') if syrup_waves else None",
-                "async def dream_compiler(thoughts):\n    return await sorted(thoughts, key=lambda x: hash(str(x)))",
+                (
+                    "def dance_with_bytes(rainbow_bits):\n"
+                    "    return ''.join([chr((ord(b) << 2) >> 1) "
+                    "for b in rainbow_bits])"
+                ),
+                (
+                    "class QuantumPancake:\n"
+                    "    def flip_in_time(self, syrup_waves):\n"
+                    "        return float('inf') if syrup_waves else None"
+                ),
+                (
+                    "async def dream_compiler(thoughts):\n"
+                    "    return await sorted(thoughts, "
+                    "key=lambda x: hash(str(x)))"
+                ),
             ],
             "javascript": [
-                "function whisperToPromises(dreamState) {\n    return new Promise(resolve => setTimeout(() => resolve(undefined ?? dreamState), Infinity))}",
-                "const floatingPixels = bytes => bytes.map(b => typeof b === 'number' ? String.fromCharCode(b) : '🌈')",
-                "class TimeTravel {\n    static async rewind(memories) {\n        return [...memories].reverse().filter(Boolean)}}",
+                (
+                    "function whisperToPromises(dreamState) {\n"
+                    "    return new Promise(resolve => "
+                    "setTimeout(() => resolve(undefined ?? dreamState), "
+                    "Infinity))}"
+                ),
+                (
+                    "const floatingPixels = bytes => bytes.map(b => "
+                    "typeof b === 'number' ? String.fromCharCode(b) : '🌈')"
+                ),
+                (
+                    "class TimeTravel {\n"
+                    "    static async rewind(memories) {\n"
+                    "        return [...memories].reverse().filter(Boolean)}}"
+                ),
             ],
         }
 

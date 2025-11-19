@@ -1,6 +1,3 @@
-import time
-from typing import Optional
-
 import streamlit as st
 
 
@@ -31,7 +28,10 @@ def show_training_animation(progress: float | None = None) -> None:
     }
 
     .training-container {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        background: linear-gradient(
+            135deg, rgba(102, 126, 234, 0.1) 0%,
+            rgba(118, 75, 162, 0.1) 100%
+        );
         border-radius: 16px;
         padding: 2rem;
         text-align: center;
