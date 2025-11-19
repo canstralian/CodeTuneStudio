@@ -6,14 +6,18 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from app import MLFineTuningApp, main
+# Import from the new core.server module
+from core.server import MLFineTuningApp, run_app
+
+# Legacy compatibility - map old main to new run_app
+main = run_app
 
 
 class TestMLFineTuningApp(unittest.TestCase):
     def setUp(self) -> None:
         self.app = MLFineTuningApp()
 
-    @patch("app.os.environ.get")
+    @patch("core.server.os.environ.get")
     def test_configure_database(self, mock_env) -> None:
         mock_env.return_value = "sqlite:///test.db"
         self.app._configure_database()
@@ -21,8 +25,8 @@ class TestMLFineTuningApp(unittest.TestCase):
             self.app.flask_app.config["SQLALCHEMY_DATABASE_URI"] == "sqlite:///test.db"
         )
 
-    @patch("app.init_db")
-    @patch("app.time.sleep")
+    @patch("core.server.init_db")
+    @patch("core.server.time.sleep")
     def test_initialize_database_with_retry_success(
         self, mock_sleep, mock_init_db
     ) -> None:
@@ -30,8 +34,8 @@ class TestMLFineTuningApp(unittest.TestCase):
         self.app._initialize_database_with_retry()
         mock_init_db.assert_called_once()
 
-    @patch("app.init_db")
-    @patch("app.time.sleep")
+    @patch("core.server.init_db")
+    @patch("core.server.time.sleep")
     def test_initialize_database_with_retry_failure_then_fallback(
         self, mock_sleep, mock_init_db
     ) -> None:
@@ -42,7 +46,7 @@ class TestMLFineTuningApp(unittest.TestCase):
             == "sqlite:///fallback.db"
         )
 
-    @patch("app.db.session")
+    @patch("core.server.db.session")
     def test_session_scope_commit(self, mock_session) -> None:
         mock_session_instance = MagicMock()
         mock_session.return_value = mock_session_instance
@@ -51,7 +55,7 @@ class TestMLFineTuningApp(unittest.TestCase):
         mock_session_instance.commit.assert_called_once()
         mock_session_instance.close.assert_called_once()
 
-    @patch("app.db.session")
+    @patch("core.server.db.session")
     def test_session_scope_rollback(self, mock_session) -> None:
         mock_session_instance = MagicMock()
         mock_session_instance.commit.side_effect = Exception("Commit error")
@@ -61,31 +65,31 @@ class TestMLFineTuningApp(unittest.TestCase):
         mock_session_instance.rollback.assert_called_once()
         mock_session_instance.close.assert_called_once()
 
-    @patch("app.os.path.exists")
+    @patch("core.server.os.path.exists")
     @patch("builtins.open", new_callable=mock_open, read_data="css content")
     def test_load_custom_css_success(self, mock_file, mock_exists) -> None:
         mock_exists.return_value = True
         result = self.app._load_custom_css()
         assert result == "css content"
 
-    @patch("app.os.path.exists")
+    @patch("core.server.os.path.exists")
     def test_load_custom_css_not_found(self, mock_exists) -> None:
         mock_exists.return_value = False
         result = self.app._load_custom_css()
         assert result is None
 
-    @patch("app.st.set_page_config")
-    @patch("app.st.markdown")
+    @patch("core.server.st.set_page_config")
+    @patch("core.server.st.markdown")
     def test_configure_streamlit(self, mock_markdown, mock_set_page_config) -> None:
         self.app._configure_streamlit()
         mock_set_page_config.assert_called_once()
 
-    @patch("app.registry.clear_tools")
-    @patch("app.registry.discover_tools")
-    @patch("app.registry.list_tools")
-    @patch("app.os.path.abspath")
-    @patch("app.os.path.join")
-    @patch("app.os.path.dirname")
+    @patch("core.server.registry.clear_tools")
+    @patch("core.server.registry.discover_tools")
+    @patch("core.server.registry.list_tools")
+    @patch("core.server.os.path.abspath")
+    @patch("core.server.os.path.join")
+    @patch("core.server.os.path.dirname")
     def test_load_plugins(
         self,
         mock_dirname,
@@ -100,12 +104,12 @@ class TestMLFineTuningApp(unittest.TestCase):
         mock_clear.assert_called_once()
         mock_discover.assert_called_once()
 
-    @patch("app.registry.list_tools")
-    @patch("app.st.sidebar")
-    @patch("app.st.title")
-    @patch("app.st.markdown")
-    @patch("app.st.text")
-    @patch("app.st.warning")
+    @patch("core.server.registry.list_tools")
+    @patch("core.server.st.sidebar")
+    @patch("core.server.st.title")
+    @patch("core.server.st.markdown")
+    @patch("core.server.st.text")
+    @patch("core.server.st.warning")
     def test_setup_sidebar_with_tools(
         self,
         mock_warning,
@@ -120,11 +124,11 @@ class TestMLFineTuningApp(unittest.TestCase):
         mock_title.assert_called_once_with("ML Model Fine-tuning")
         mock_text.assert_called_once_with("✓ tool1")
 
-    @patch("app.registry.list_tools")
-    @patch("app.st.sidebar")
-    @patch("app.st.title")
-    @patch("app.st.markdown")
-    @patch("app.st.warning")
+    @patch("core.server.registry.list_tools")
+    @patch("core.server.st.sidebar")
+    @patch("core.server.st.title")
+    @patch("core.server.st.markdown")
+    @patch("core.server.st.warning")
     def test_setup_sidebar_no_tools(
         self, mock_warning, mock_markdown, mock_title, mock_sidebar, mock_list_tools
     ) -> None:
@@ -132,7 +136,7 @@ class TestMLFineTuningApp(unittest.TestCase):
         self.app.setup_sidebar()
         mock_warning.assert_called_once_with("No plugins available")
 
-    @patch("app.st.markdown")
+    @patch("core.server.st.markdown")
     def test_render_navigation(self, mock_markdown) -> None:
         self.app._render_navigation()
         mock_markdown.assert_called_once()
@@ -146,8 +150,8 @@ class TestMLFineTuningApp(unittest.TestCase):
         result = self.app.save_training_config(config, "dataset")
         assert result is None
 
-    @patch("app.TrainingConfig")
-    @patch("app.db.session")
+    @patch("core.server.TrainingConfig")
+    @patch("core.server.db.session")
     def test_save_training_config_success(
         self, mock_session, mock_training_config
     ) -> None:
@@ -167,19 +171,19 @@ class TestMLFineTuningApp(unittest.TestCase):
         result = self.app.save_training_config(config, "dataset")
         assert result == 1
 
-    @patch("app.st.session_state")
-    @patch("app.st.markdown")
-    @patch("app.st.expander")
-    @patch("app.dataset_browser")
-    @patch("app.validate_dataset_name")
-    @patch("app.training_parameters")
-    @patch("app.validate_config")
-    @patch("app.training_monitor")
-    @patch("app.experiment_compare")
-    @patch("app.st.button")
-    @patch("app.st.json")
-    @patch("app.st.error")
-    @patch("app.st.warning")
+    @patch("core.server.st.session_state")
+    @patch("core.server.st.markdown")
+    @patch("core.server.st.expander")
+    @patch("core.server.dataset_browser")
+    @patch("core.server.validate_dataset_name")
+    @patch("core.server.training_parameters")
+    @patch("core.server.validate_config")
+    @patch("core.server.training_monitor")
+    @patch("core.server.experiment_compare")
+    @patch("core.server.st.button")
+    @patch("core.server.st.json")
+    @patch("core.server.st.error")
+    @patch("core.server.st.warning")
     def test_run_success(
         self,
         mock_warning,
@@ -215,7 +219,7 @@ class TestMLFineTuningApp(unittest.TestCase):
                 self.app.run()
         mock_markdown.assert_called()
 
-        @patch("app.os.path.exists")
+        @patch("core.server.os.path.exists")
         @patch("builtins.open", new_callable=mock_open)
         def test_load_custom_css_read_error(self, mock_file, mock_exists) -> None:
             mock_exists.return_value = True
@@ -223,26 +227,26 @@ class TestMLFineTuningApp(unittest.TestCase):
             result = self.app._load_custom_css()
             assert result is None
 
-        @patch("app.st.set_page_config")
+        @patch("core.server.st.set_page_config")
         def test_configure_streamlit_failure(self, mock_set_page_config) -> None:
             mock_set_page_config.side_effect = Exception("Config error")
             with pytest.raises(RuntimeError):
                 self.app._configure_streamlit()
 
-        @patch("app.registry.clear_tools")
-        @patch("app.registry.discover_tools")
+        @patch("core.server.registry.clear_tools")
+        @patch("core.server.registry.discover_tools")
         def test_load_plugins_clear_failure(self, mock_discover, mock_clear) -> None:
             mock_clear.side_effect = Exception("Clear error")
             self.app._load_plugins()
             mock_discover.assert_called_once()
 
-        @patch("app.registry.discover_tools")
+        @patch("core.server.registry.discover_tools")
         def test_load_plugins_discover_failure(self, mock_discover) -> None:
             mock_discover.side_effect = Exception("Discover error")
             self.app._load_plugins()
 
-        @patch("app.TrainingConfig")
-        @patch("app.db.session")
+        @patch("core.server.TrainingConfig")
+        @patch("core.server.db.session")
         def test_save_training_config_db_error(
             self, mock_session, mock_training_config
         ) -> None:
@@ -260,12 +264,12 @@ class TestMLFineTuningApp(unittest.TestCase):
             result = self.app.save_training_config(config, "dataset")
             assert result is None
 
-        @patch("app.st.session_state")
-        @patch("app.st.markdown")
-        @patch("app.st.expander")
-        @patch("app.dataset_browser")
-        @patch("app.validate_dataset_name")
-        @patch("app.st.warning")
+        @patch("core.server.st.session_state")
+        @patch("core.server.st.markdown")
+        @patch("core.server.st.expander")
+        @patch("core.server.dataset_browser")
+        @patch("core.server.validate_dataset_name")
+        @patch("core.server.st.warning")
         def test_run_invalid_dataset(
             self,
             mock_warning,
@@ -282,13 +286,13 @@ class TestMLFineTuningApp(unittest.TestCase):
                 self.app.run()
             mock_warning.assert_called_with("Please select a valid dataset to continue")
 
-        @patch("app.st.session_state")
-        @patch("app.st.markdown")
-        @patch("app.st.expander")
-        @patch("app.dataset_browser")
-        @patch("app.validate_dataset_name")
-        @patch("app.training_parameters")
-        @patch("app.st.error")
+        @patch("core.server.st.session_state")
+        @patch("core.server.st.markdown")
+        @patch("core.server.st.expander")
+        @patch("core.server.dataset_browser")
+        @patch("core.server.validate_dataset_name")
+        @patch("core.server.training_parameters")
+        @patch("core.server.st.error")
         def test_run_invalid_config_format(
             self,
             mock_error,
@@ -308,14 +312,14 @@ class TestMLFineTuningApp(unittest.TestCase):
                 self.app.run()
             mock_error.assert_called_with("Invalid configuration format")
 
-        @patch("app.st.session_state")
-        @patch("app.st.markdown")
-        @patch("app.st.expander")
-        @patch("app.dataset_browser")
-        @patch("app.validate_dataset_name")
-        @patch("app.training_parameters")
-        @patch("app.validate_config")
-        @patch("app.st.error")
+        @patch("core.server.st.session_state")
+        @patch("core.server.st.markdown")
+        @patch("core.server.st.expander")
+        @patch("core.server.dataset_browser")
+        @patch("core.server.validate_dataset_name")
+        @patch("core.server.training_parameters")
+        @patch("core.server.validate_config")
+        @patch("core.server.st.error")
         def test_run_config_validation_errors(
             self,
             mock_error,
@@ -344,14 +348,14 @@ class TestMLFineTuningApp(unittest.TestCase):
                 self.app.run()
             assert mock_error.call_count == 2
 
-        @patch("app.st.session_state")
-        @patch("app.st.markdown")
-        @patch("app.st.expander")
-        @patch("app.dataset_browser")
-        @patch("app.validate_dataset_name")
-        @patch("app.training_parameters")
-        @patch("app.validate_config")
-        @patch("app.st.error")
+        @patch("core.server.st.session_state")
+        @patch("core.server.st.markdown")
+        @patch("core.server.st.expander")
+        @patch("core.server.dataset_browser")
+        @patch("core.server.validate_dataset_name")
+        @patch("core.server.training_parameters")
+        @patch("core.server.validate_config")
+        @patch("core.server.st.error")
         def test_run_save_config_failure(
             self,
             mock_error,
@@ -383,14 +387,14 @@ class TestMLFineTuningApp(unittest.TestCase):
                 "Failed to save configuration. Please try again."
             )
 
-        @patch("app.st.session_state")
-        @patch("app.st.markdown")
-        @patch("app.st.expander")
-        @patch("app.dataset_browser")
-        @patch("app.validate_dataset_name")
-        @patch("app.training_parameters")
-        @patch("app.validate_config")
-        @patch("app.st.error")
+        @patch("core.server.st.session_state")
+        @patch("core.server.st.markdown")
+        @patch("core.server.st.expander")
+        @patch("core.server.dataset_browser")
+        @patch("core.server.validate_dataset_name")
+        @patch("core.server.training_parameters")
+        @patch("core.server.validate_config")
+        @patch("core.server.st.error")
         def test_run_general_exception(
             self,
             mock_error,
@@ -411,16 +415,16 @@ class TestMLFineTuningApp(unittest.TestCase):
                 "An unexpected error occurred. Please try again or contact support."
             )
 
-        @patch("app.MLFineTuningApp")
-        @patch("app.st.error")
+        @patch("core.server.MLFineTuningApp")
+        @patch("core.server.st.error")
         def test_main_success(self, mock_st_error, mock_app_class) -> None:
             mock_app_instance = MagicMock()
             mock_app_class.return_value = mock_app_instance
             main()
             mock_app_instance.run.assert_called_once()
 
-        @patch("app.MLFineTuningApp")
-        @patch("app.st.error")
+        @patch("core.server.MLFineTuningApp")
+        @patch("core.server.st.error")
         def test_main_failure(self, mock_st_error, mock_app_class) -> None:
             mock_app_class.side_effect = Exception("Init error")
             main()
