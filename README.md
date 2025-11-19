@@ -85,11 +85,29 @@ CodeTuneStudio/
 We welcome contributions! 🫶  
 Feel free to check out the [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get involved.
 
+### Code Quality
+
+We maintain high code quality standards using automated tools:
+
+- 🎨 **Code Formatting**: [Black](https://github.com/psf/black) with 88 character line length
+- 🔍 **Linting**: [Flake8](https://flake8.pycqa.org/) for PEP 8 compliance
+- 🪝 **Pre-commit Hooks**: Automated checks before each commit
+
+**Quick Setup:**
+```bash
+./scripts/setup-pre-commit.sh
+```
+
+For detailed information, see [Code Quality Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md).
+
+### Contributing Workflow
+
 1. 🍴 Fork the repository
 2. 💡 Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
-5. 📬 Open a Pull Request
+3. 🔧 Set up pre-commit hooks (`./scripts/setup-pre-commit.sh`)
+4. ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+5. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
+6. 📬 Open a Pull Request
 
 ---
 
