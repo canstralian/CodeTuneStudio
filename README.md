@@ -34,6 +34,18 @@ Before you begin, ensure you have the following installed:
 
 ## 📥 Installation
 
+### Via pip (Recommended)
+
+Install CodeTune Studio from PyPI:
+
+```bash
+pip install codetune-studio
+```
+
+### From Source
+
+For development or the latest features:
+
 1. **🔄 Clone the Repository:**
 
    ```bash
@@ -41,29 +53,81 @@ Before you begin, ensure you have the following installed:
    cd CodeTuneStudio
    ```
 
-2. **📦 Install Dependencies:**
+2. **📦 Install in Development Mode:**
 
    ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **⚡ Run the Application:**
-   ```bash
-   python app.py
+   pip install -e .
    ```
 
 ---
 
 ## 🌐 Usage
 
-1. 🟢 **Start the Application:**
+### Quick Start
 
-   ```bash
-   python app.py
-   ```
+Simply run the CLI command:
 
-2. 🌍 **Access the Interface:**
-   Open your browser and navigate to 👉 [http://localhost:7860](http://localhost:7860) to start optimizing your code!
+```bash
+codetune-studio
+```
+
+The application will start on [http://localhost:7860](http://localhost:7860) 🚀
+
+### CLI Options
+
+```bash
+# Custom host and port
+codetune-studio --host 0.0.0.0 --port 8501
+
+# Enable debug logging
+codetune-studio --log-level DEBUG
+
+# Headless mode (no browser auto-open)
+codetune-studio --no-browser
+
+# Custom database
+codetune-studio --database-url postgresql://user:pass@localhost/dbname
+
+# Show version
+codetune-studio --version
+
+# Get help
+codetune-studio --help
+```
+
+### Environment Variables
+
+Alternatively, configure via environment variables in a `.env` file:
+
+```bash
+# Copy the example configuration
+cp .env.example .env
+
+# Edit with your settings
+# Required: API keys for code analysis plugins
+OPENAI_API_KEY=your_key_here
+ANTHROPIC_API_KEY=your_key_here
+
+# Optional: Database configuration
+DATABASE_URL=postgresql://user:pass@localhost/dbname
+LOG_LEVEL=INFO
+HOST=localhost
+PORT=7860
+```
+
+### Legacy Usage (Backward Compatible)
+
+You can still run directly with Python:
+
+```bash
+python app.py
+```
+
+Or with Streamlit:
+
+```bash
+streamlit run app.py --server.port=7860
+```
 
 ---
 
@@ -71,12 +135,48 @@ Before you begin, ensure you have the following installed:
 
 ```
 CodeTuneStudio/
-├── app.py               # 🚀 Main application file
-├── components/          # 🧩 UI components
-├── utils/               # 🛠️ Utility functions
-├── requirements.txt     # 📦 Project dependencies
-└── README.md            # 📖 Documentation
+├── core/                   # 🎯 Core application modules
+│   ├── __init__.py        # Version and exports
+│   ├── cli.py             # Command-line interface
+│   ├── server.py          # Application server logic
+│   └── logging.py         # Centralized logging
+├── components/             # 🧩 Streamlit UI components
+├── utils/                  # 🛠️ Utility functions
+│   ├── database.py        # Database models and operations
+│   ├── plugins/           # Plugin system
+│   └── ...                # Various utilities
+├── plugins/                # 🔌 Extensible code analysis plugins
+├── tests/                  # 🧪 Test suite
+├── docs/                   # 📚 Documentation
+│   ├── ARCHITECTURE.md    # System architecture
+│   └── PLUGIN_GUIDE.md    # Plugin development guide
+├── app.py                  # 🚀 Legacy entrypoint (backward compatible)
+├── requirements.txt        # 📦 Project dependencies
+├── pyproject.toml          # 📋 Package configuration
+├── CHANGELOG.md            # 📝 Version history
+└── README.md               # 📖 This file
 ```
+
+---
+
+## 📚 Documentation
+
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and component overview
+- **[Plugin Development Guide](docs/PLUGIN_GUIDE.md)** - Create custom code analysis plugins
+- **[Changelog](CHANGELOG.md)** - Version history and migration guides
+- **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
+
+---
+
+## 🔌 Plugin System
+
+CodeTune Studio features an extensible plugin architecture for code analysis:
+
+- **Built-in Plugins**: OpenAI, Anthropic Claude integration
+- **Custom Plugins**: Easily create your own analyzers
+- **Hot Reloading**: Plugins are discovered automatically
+
+See the [Plugin Development Guide](docs/PLUGIN_GUIDE.md) for details.
 
 ---
 
@@ -91,6 +191,27 @@ Feel free to check out the [CONTRIBUTING.md](CONTRIBUTING.md) for details on how
 4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
 5. 📬 Open a Pull Request
 
+### Development Setup
+
+```bash
+# Clone and setup for development
+git clone https://github.com/canstralian/CodeTuneStudio.git
+cd CodeTuneStudio
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/
+
+# Check code style
+ruff check .
+black --check .
+
+# Run type checker
+mypy core/
+```
+
 ---
 
 ## 📜 License
@@ -103,5 +224,23 @@ See the [LICENSE](LICENSE) file for details.
 ## 🙏 Acknowledgements
 
 💖 Huge thanks to the open-source community for their continuous inspiration and support.
+
+Special thanks to:
+- **Streamlit** for the amazing web framework
+- **Hugging Face** for transformers and model hosting
+- **OpenAI** and **Anthropic** for AI capabilities
+- All our contributors and users
+
+---
+
+## 📊 Project Status
+
+- **Version**: 0.2.0
+- **Status**: Beta (Production-Ready)
+- **Python**: 3.10, 3.11, 3.12
+- **License**: MIT
+- **Maintainers**: [@canstralian](https://github.com/canstralian)
+
+---
 
 > _"Code is like music — when optimized, it flows perfectly."_ 🎵💻
