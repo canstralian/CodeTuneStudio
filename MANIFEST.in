@@ -1,0 +1,41 @@
+# Include essential documentation
+include README.md
+include LICENSE
+include CLAUDE.md
+include SECURITY.md
+include CODE_OF_CONDUCT.md
+
+# Include configuration files
+include pyproject.toml
+include setup.cfg
+include .flake8
+include requirements.txt
+
+# Include data files
+recursive-include codetunestudio *.py
+recursive-include utils *.py
+recursive-include components *.py
+recursive-include plugins *.py
+recursive-include models *.py
+recursive-include core *.py
+
+# Include static assets
+include styles.css
+include space.yaml
+
+# Exclude development and build artifacts
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude *.dylib
+prune venv
+prune .venv
+prune build
+prune dist
+prune *.egg-info
+prune .git
+prune .github
+prune migrations
+prune tests
+prune attached_assets

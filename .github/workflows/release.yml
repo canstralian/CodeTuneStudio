@@ -1,0 +1,243 @@
+name: Release and Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.2.0)'
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Release version: ${VERSION}"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "Error: Invalid version format. Expected: v0.0.0 or v0.0.0-suffix"
+            exit 1
+          fi
+          echo "✓ Version format valid"
+
+      - name: Check version in __version__.py
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          VERSION_NUMBER="${VERSION#v}"
+          if grep -q "\"$VERSION_NUMBER\"" codetunestudio/__version__.py; then
+            echo "✓ Version matches in __version__.py"
+          else
+            echo "Warning: Version mismatch in __version__.py"
+          fi
+
+  build-release:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    needs: validate-release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel setuptools twine
+
+      - name: Build distributions
+        run: |
+          python -m build
+          echo "✓ Distributions built"
+
+      - name: Verify distributions
+        run: |
+          twine check dist/*
+          echo "✓ Distributions verified"
+
+      - name: List artifacts
+        run: |
+          echo "## Build Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          ls -lh dist/ >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+          retention-days: 30
+
+  test-release:
+    name: Test Release Installation
+    runs-on: ubuntu-latest
+    needs: build-release
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Test installation
+        run: |
+          pip install dist/*.whl
+          echo "✓ Package installed"
+
+      - name: Test CLI
+        run: |
+          codetune-studio --version
+          echo "✓ CLI working"
+
+      - name: Test imports
+        run: |
+          python -c "from codetunestudio import __version__; print(f'Version: {__version__}')"
+          echo "✓ Imports working"
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          echo "## What's Changed" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          else
+            git log --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+          
+          echo "" >> CHANGELOG.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LAST_TAG}...${VERSION}" >> CHANGELOG.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.validate-release.outputs.version }}
+          name: Release ${{ needs.validate-release.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ contains(needs.validate-release.outputs.version, '-') }}
+          files: |
+            dist/*
+            LICENSE
+            README.md
+
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release, create-github-release]
+    environment:
+      name: pypi
+      url: https://pypi.org/project/codetunestudio/
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
+
+  publish-test-pypi:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release]
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/project/codetunestudio/
+    if: github.event_name == 'workflow_dispatch' || contains(needs.validate-release.outputs.version, '-')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  notify-release:
+    name: Notify Release Complete
+    runs-on: ubuntu-latest
+    needs: [create-github-release]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.validate-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Distribution" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub Release: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- PyPI: ${{ needs.publish-pypi.result == 'success' && '✅' || '⏭️' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Test PyPI: ${{ needs.publish-test-pypi.result == 'success' && '✅' || '⏭️' }}" >> $GITHUB_STEP_SUMMARY
