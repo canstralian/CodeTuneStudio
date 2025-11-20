@@ -40,16 +40,16 @@ logger = logging.getLogger(__name__)
 class MLFineTuningApp:
     """
     MLFineTuningApp: A comprehensive application for fine-tuning machine learning models.
-    
+
     This class integrates Flask for backend operations, Streamlit for the user interface,
     and provides robust database management, plugin loading, and training configuration
     handling. It supports dataset selection, model training monitoring, experiment comparison,
     and plugin-based extensibility.
-    
+
     Attributes:
         flask_app (Flask): The Flask application instance for backend operations.
         (Other attributes are managed internally via configuration and initialization methods.)
-    
+
     Methods:
         __init__(): Initializes the app with database, Streamlit, and plugin configurations.
         _configure_database(): Sets up database connection with optimized pooling and settings.
@@ -63,12 +63,12 @@ class MLFineTuningApp:
         _render_navigation(): Renders navigation links in the sidebar.
         save_training_config(config, dataset): Validates and saves training configuration to DB.
         run(): Main method to run the Streamlit app, handling UI, validation, and training flow.
-    
+
     Usage:
         Instantiate the class and call run() to start the application. Ensure environment
         variables like DATABASE_URL are set for proper configuration. Plugins should be placed
         in the 'plugins' directory for automatic loading.
-    
+
     Raises:
         RuntimeError: If Streamlit configuration fails.
         Various exceptions during database or plugin operations, logged and handled gracefully.
@@ -125,9 +125,9 @@ class MLFineTuningApp:
                     )
                     # Create fallback SQLite database if main DB fails
                     try:
-                        self.flask_app.config["SQLALCHEMY_DATABASE_URI"] = (
-                            "sqlite:///fallback.db"
-                        )
+                        self.flask_app.config[
+                            "SQLALCHEMY_DATABASE_URI"
+                        ] = "sqlite:///fallback.db"
                         with self.flask_app.app_context():
                             init_db(self.flask_app)
                             logger.warning("Fallback to SQLite database successful")
@@ -199,13 +199,13 @@ class MLFineTuningApp:
         try:
             # Clear any existing plugins
             registry.clear_tools()
-            
+
             # Discover plugins in the plugins directory
             plugin_dir = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), "..", "plugins")
             )
             registry.discover_tools(plugin_dir)
-            
+
             plugins = registry.list_tools()
             logger.info(f"Loaded {len(plugins)} plugins: {', '.join(plugins)}")
         except Exception as e:
@@ -216,17 +216,17 @@ class MLFineTuningApp:
         """Setup sidebar with enhanced plugin information and navigation"""
         with st.sidebar:
             st.title("ML Model Fine-tuning")
-            
+
             st.markdown("---")
             st.markdown("### 🔌 Loaded Plugins")
-            
+
             plugins = registry.list_tools()
             if plugins:
                 for plugin in plugins:
                     st.text(f"✓ {plugin}")
             else:
                 st.warning("No plugins available")
-            
+
             st.markdown("---")
             self._render_navigation()
 
@@ -285,7 +285,7 @@ class MLFineTuningApp:
         """Run the application with improved error boundaries and state management"""
         try:
             self.setup_sidebar()
-            
+
             # Enhanced header with visual appeal
             st.markdown(
                 """
@@ -375,7 +375,7 @@ class MLFineTuningApp:
 def run_app() -> None:
     """
     Main application entry point.
-    
+
     This function instantiates and runs the MLFineTuningApp.
     It's the primary entry point called by the CLI and legacy app.py.
     """

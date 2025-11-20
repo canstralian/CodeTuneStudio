@@ -88,9 +88,7 @@ def tokenizer_builder() -> None:
                 # Save tokenizer locally
                 tokenizer.save_pretrained(output_dir)
 
-                st.success(
-                    f"✅ Tokenizer built successfully and saved to {output_dir}/"
-                )
+                st.success(f"✅ Tokenizer built successfully and saved to {output_dir}/")
 
                 # Display the files created
                 files = os.listdir(output_dir)
