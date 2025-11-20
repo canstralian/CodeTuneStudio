@@ -1,8 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "repl-nix-workspace"
-version = "0.1.0"
-description = "Add your description here"
+name = "codetunestudio"
+version = "0.2.0"
+description = "Production-ready ML model fine-tuning platform with PEFT/LoRA, plugin architecture, and experiment tracking"
+readme = "README.md"
 requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["machine-learning", "fine-tuning", "peft", "lora", "streamlit", "flask"]
+authors = [
+    {name = "CodeTuneStudio Contributors", email = "contact@codetunestudio.app"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "accelerate>=1.3.0",
     "alembic>=1.14.1",
@@ -29,7 +52,32 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff>=0.8.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.4.0",
 ]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+]
+
+[project.scripts]
+codetune-studio = "codetunestudio.cli:cli_entry_point"
+
+[project.urls]
+Homepage = "https://github.com/canstralian/CodeTuneStudio"
+Documentation = "https://github.com/canstralian/CodeTuneStudio#readme"
+Repository = "https://github.com/canstralian/CodeTuneStudio"
+Issues = "https://github.com/canstralian/CodeTuneStudio/issues"
+Changelog = "https://github.com/canstralian/CodeTuneStudio/releases"
 
 [[tool.uv.index]]
 explicit = true
@@ -263,7 +311,7 @@ exclude = '''
   | build
   | dist
   | migrations
-  | app\.py
   | index\.html
+  | index_old\.html
 )/
 '''

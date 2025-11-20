@@ -34,6 +34,14 @@ Before you begin, ensure you have the following installed:
 
 ## 📥 Installation
 
+### From PyPI (Recommended)
+
+```bash
+pip install codetunestudio
+```
+
+### From Source
+
 1. **🔄 Clone the Repository:**
 
    ```bash
@@ -44,21 +52,44 @@ Before you begin, ensure you have the following installed:
 2. **📦 Install Dependencies:**
 
    ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **⚡ Run the Application:**
-   ```bash
-   python app.py
+   pip install -e .
    ```
 
 ---
 
 ## 🌐 Usage
 
+### Command-Line Interface
+
+CodeTuneStudio now provides a unified CLI for easy operation:
+
+```bash
+# Start the Streamlit web interface (default)
+codetune-studio
+
+# Run on a custom port
+codetune-studio --port 8080
+
+# Run the Flask API backend
+codetune-studio flask --port 5000
+
+# Check database connection
+codetune-studio db check
+
+# Initialize database
+codetune-studio db init
+
+# Show version
+codetune-studio version
+```
+
+### Web Interface
+
 1. 🟢 **Start the Application:**
 
    ```bash
+   codetune-studio
+   # or alternatively:
    python app.py
    ```
 
