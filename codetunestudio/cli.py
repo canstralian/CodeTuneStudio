@@ -7,10 +7,17 @@ application, managing database operations, and performing various tasks.
 
 import argparse
 import logging
+import os
 import sys
 from typing import List, Optional
 
-from codetunestudio.__version__ import __version__
+# Handle imports for both installed package and direct script execution
+try:
+    from codetunestudio.__version__ import __version__
+except ImportError:
+    # Add parent directory to path for direct script execution
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from codetunestudio.__version__ import __version__
 
 # Configure logging
 logging.basicConfig(
@@ -72,8 +79,6 @@ def run_flask(args: argparse.Namespace) -> int:
         Exit code (0 for success, non-zero for failure)
     """
     try:
-        from flask.cli import FlaskGroup
-
         logger.info("Starting Flask backend...")
 
         # Import the Flask app
@@ -87,6 +92,8 @@ def run_flask(args: argparse.Namespace) -> int:
         host = args.host or "0.0.0.0"
         debug = args.debug or False
 
+        # Keep app_instance reference to prevent garbage collection
+        _ = app_instance
         flask_app.run(host=host, port=port, debug=debug)
         return 0
 
@@ -132,7 +139,8 @@ def init_database(args: argparse.Namespace) -> int:
         sys.path.insert(0, ".")
         from app import MLFineTuningApp
 
-        app_instance = MLFineTuningApp()
+        # Initialize app which creates database
+        _ = MLFineTuningApp()
         logger.info("Database initialized successfully")
         return 0
 
@@ -209,7 +217,10 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
         "--port", type=int, default=7860, help="Port to run on (default: 7860)"
     )
     streamlit_parser.add_argument(
-        "--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
+        "--host",
+        type=str,
+        default="0.0.0.0",
+        help="Host to bind to (default: 0.0.0.0)",
     )
     streamlit_parser.add_argument(
         "--headless", action="store_true", help="Run in headless mode"
@@ -222,7 +233,10 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
         "--port", type=int, default=5000, help="Port to run on (default: 5000)"
     )
     flask_parser.add_argument(
-        "--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
+        "--host",
+        type=str,
+        default="0.0.0.0",
+        help="Host to bind to (default: 0.0.0.0)",
     )
     flask_parser.add_argument(
         "--debug", action="store_true", help="Run in debug mode"
@@ -231,7 +245,9 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
 
     # Database commands
     db_parser = subparsers.add_parser("db", help="Database management commands")
-    db_subparsers = db_parser.add_subparsers(dest="db_command", help="Database commands")
+    db_subparsers = db_parser.add_subparsers(
+        dest="db_command", help="Database commands"
+    )
 
     check_parser = db_subparsers.add_parser("check", help="Check database connection")
     check_parser.set_defaults(func=check_database)

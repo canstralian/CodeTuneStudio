@@ -1,6 +1,14 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel", "setuptools-scm>=8.0"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["codetunestudio*", "utils*", "components*", "plugins*", "core*", "models*"]
+exclude = ["tests*", "venv*", "migrations*"]
+
+[tool.setuptools]
+py-modules = ["app", "manage", "db_check"]
 
 [project]
 name = "codetunestudio"
