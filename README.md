@@ -34,6 +34,14 @@ Before you begin, ensure you have the following installed:
 
 ## 📥 Installation
 
+### Option 1: Install from PyPI (Production)
+
+```bash
+pip install codetunestudio
+```
+
+### Option 2: Install from Source (Development)
+
 1. **🔄 Clone the Repository:**
 
    ```bash
@@ -44,26 +52,51 @@ Before you begin, ensure you have the following installed:
 2. **📦 Install Dependencies:**
 
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
-3. **⚡ Run the Application:**
+   Or for development with additional tools:
+
    ```bash
-   python app.py
+   pip install -e ".[dev]"
    ```
 
 ---
 
 ## 🌐 Usage
 
-1. 🟢 **Start the Application:**
+### Using the CLI (Recommended)
 
-   ```bash
-   python app.py
-   ```
+After installation, launch CodeTuneStudio with the new CLI:
 
-2. 🌍 **Access the Interface:**
-   Open your browser and navigate to 👉 [http://localhost:7860](http://localhost:7860) to start optimizing your code!
+```bash
+codetune-studio
+```
+
+Optional CLI arguments:
+```bash
+codetune-studio --help          # Show help message
+codetune-studio --version       # Show version
+codetune-studio --port 8080     # Run on custom port
+codetune-studio --host 0.0.0.0  # Bind to all interfaces
+codetune-studio --debug         # Enable debug logging
+```
+
+### Using Python Module
+
+You can also run it directly:
+
+```bash
+python -m core.cli
+```
+
+Or run the legacy app.py:
+
+```bash
+python app.py
+```
+
+The Streamlit interface will be available at 👉 [http://localhost:7860](http://localhost:7860)
 
 ---
 
