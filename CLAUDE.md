@@ -4,13 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CodeTuneStudio is a Streamlit/Flask hybrid application for ML model fine-tuning with parameter-efficient training (PEFT/LoRA), plugin architecture for extensible code analysis tools, and PostgreSQL/SQLite database backend for experiment tracking.
+CodeTuneStudio is a production-grade Streamlit/Flask hybrid application for ML model fine-tuning with parameter-efficient training (PEFT/LoRA), plugin architecture for extensible code analysis tools, and PostgreSQL/SQLite database backend for experiment tracking.
+
+**Package Name**: `codetunestudio`  
+**Version**: 1.0.0  
+**CLI Command**: `codetune-studio`
 
 ## Core Architecture
 
+### Package Structure
+- **core/__init__.py**: Package initialization and exports
+- **core/__version__.py**: Version management (semantic versioning)
+- **core/server.py**: Server module (re-exports from app.py for modularity)
+- **core/cli.py**: Command-line interface with argparse
+- **app.py**: Main application logic (backward compatible entry point)
+
 ### Hybrid Framework Structure
-- **app.py**: Main entry point orchestrating both Streamlit UI and Flask backend
-- **Streamlit** handles the interactive web UI (port 7860 by default)
+- **app.py**: Main application logic orchestrating both Streamlit UI and Flask backend
+- **core/cli.py**: Production CLI with `codetune-studio` command
+- **Streamlit** handles the interactive web UI (port 7860 by default, configurable via CLI)
 - **Flask** manages database operations via SQLAlchemy with connection pooling
 - Database fallback: PostgreSQL (via DATABASE_URL env var) with automatic SQLite fallback
 
@@ -56,7 +68,16 @@ class MyTool(AgentTool):
 
 ### Running the Application
 ```bash
-# Start Streamlit interface (default: http://localhost:7860)
+# Using the CLI (recommended for production)
+codetune-studio
+
+# With custom options
+codetune-studio --port 8080 --host 0.0.0.0 --debug
+
+# Using Python module
+python -m core.cli
+
+# Legacy method (backward compatible)
 python app.py
 
 # Alternative: Using Streamlit directly
