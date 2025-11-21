@@ -44,10 +44,10 @@ that AI-assisted development maintains the highest standards of:
 
 ### Related Documentation
 
-- [GitHub Copilot Instructions](.github/copilot-instructions.md)
-- [Architecture Guide](docs/ARCHITECTURE.md)
-- [Contributing Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md)
-- [Security Policy](SECURITY.md)
+- [GitHub Copilot Instructions](../.github/copilot-instructions.md)
+- [Architecture Guide](ARCHITECTURE.md)
+- [Contributing Guidelines](CONTRIBUTING_CODE_QUALITY.md)
+- [Security Policy](../SECURITY.md)
 
 ---
 
@@ -869,8 +869,8 @@ git push origin feature/add-validation
 
 2. **Set Up Development Environment**:
    ```bash
-   # Clone repository
-   git clone https://github.com/canstralian/CodeTuneStudio.git
+   # Clone repository (replace with your fork if contributing)
+   git clone https://github.com/YOUR_USERNAME/CodeTuneStudio.git
    cd CodeTuneStudio
    
    # Install dependencies
@@ -1368,7 +1368,7 @@ pytest -v --cov=.                 # Tests with coverage
 - **1.0.0** (2025-11-21): Initial comprehensive guide
 
 **Maintainers:**
-- [@canstralian](https://github.com/canstralian)
+- See repository maintainers and contributors
 
 **Last Review:** 2025-11-21  
 **Next Review Due:** 2026-02-21

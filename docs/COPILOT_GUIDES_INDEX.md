@@ -126,4 +126,4 @@ label `documentation`.
 ---
 
 **Last Updated:** 2025-11-21  
-**Maintained by:** [@canstralian](https://github.com/canstralian)
+**Maintained by:** Repository maintainers and contributors
