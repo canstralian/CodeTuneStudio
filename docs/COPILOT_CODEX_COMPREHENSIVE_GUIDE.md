@@ -263,7 +263,7 @@ The CI pipeline enforces quality standards on every pull request:
 #### Example
 
 ```python
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -272,7 +272,7 @@ logger = logging.getLogger(__name__)
 def validate_training_config(
     config: Dict[str, Any],
     dataset_name: Optional[str] = None
-) -> tuple[bool, List[str]]:
+) -> Tuple[bool, List[str]]:
     """
     Validate training configuration parameters.
     
@@ -325,7 +325,10 @@ def validate_training_config(
 
 ```python
 import asyncio
-from typing import List, Optional
+import logging
+from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 async def fetch_market_data(
@@ -642,13 +645,17 @@ def validate_numeric_range(
 **Never** use string concatenation for SQL queries:
 
 ```python
+from typing import List, Optional
+
 from sqlalchemy import text
 from utils.database import db, TrainingConfig
+
 
 # CORRECT: SQLAlchemy ORM (preferred)
 def get_training_config(config_id: int) -> Optional[TrainingConfig]:
     """Retrieve training config using ORM (safe)."""
     return TrainingConfig.query.filter_by(id=config_id).first()
+
 
 # CORRECT: Parameterized query
 def get_configs_by_model(model_type: str) -> List[TrainingConfig]:
