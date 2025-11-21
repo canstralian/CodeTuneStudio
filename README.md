@@ -163,6 +163,8 @@ CodeTuneStudio/
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and component overview
 - **[Plugin Development Guide](docs/PLUGIN_GUIDE.md)** - Create custom code analysis plugins
+- **[Copilot & Codex Guide](docs/COPILOT_CODEX_COMPREHENSIVE_GUIDE.md)** - GitHub Copilot and Codex configuration for the Trading Bot Swarm ecosystem
+- **[Code Quality Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md)** - Standards for code quality and testing
 - **[Changelog](CHANGELOG.md)** - Version history and migration guides
 - **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
 
