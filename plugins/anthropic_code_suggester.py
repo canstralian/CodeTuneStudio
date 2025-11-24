@@ -52,6 +52,18 @@ class AnthropicCodeSuggesterTool(AgentTool):
             author="CodeTuneStudio",
             tags=["code-suggestions", "ai", "anthropic"],
         )
+        self.client = None
+
+    def init(self) -> None:
+        """
+        Initialize the Anthropic client with validation.
+
+        Logs a warning if API key is not set but doesn't raise an error
+        to allow graceful degradation.
+        """
+        if self._initialized:
+            return
+
         # Initialize Anthropic client with validation
         api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not api_key:
@@ -62,6 +74,8 @@ class AnthropicCodeSuggesterTool(AgentTool):
             self.client = None
         else:
             self.client = Anthropic(api_key=api_key)
+
+        super().init()
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """Validate required inputs"""

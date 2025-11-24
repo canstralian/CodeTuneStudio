@@ -5,7 +5,6 @@ This module contains the main application logic refactored from app.py,
 providing a clean separation between server logic and CLI entrypoint.
 """
 
-import logging
 import os
 import time
 from contextlib import contextmanager
@@ -25,16 +24,14 @@ from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from core.logging import get_logger, setup_logging
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
-)
-logger = logging.getLogger(__name__)
+# Configure logging using centralized configuration
+setup_logging()
+logger = get_logger(__name__)
 
 
 class MLFineTuningApp:

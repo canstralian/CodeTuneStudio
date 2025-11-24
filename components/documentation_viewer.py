@@ -1,8 +1,27 @@
 import os
+from typing import Optional
 
 import streamlit as st
 
-from utils.documentation import DocItem, DocumentationGenerator
+# Lazy import to avoid loading documentation module unless needed
+_doc_generator_cache: Optional[any] = None
+
+
+def _get_documentation_generator():
+    """
+    Lazy load DocumentationGenerator to optimize startup performance.
+
+    Returns:
+        DocumentationGenerator instance
+    """
+    global _doc_generator_cache
+    if _doc_generator_cache is None:
+        from utils.documentation import DocumentationGenerator
+
+        _doc_generator_cache = DocumentationGenerator(
+            os.path.dirname(os.path.dirname(__file__))
+        )
+    return _doc_generator_cache
 
 
 def render_parameters(params: list[dict[str, str]]) -> None:
@@ -21,8 +40,14 @@ def render_parameters(params: list[dict[str, str]]) -> None:
         )
 
 
-def render_doc_item(item: DocItem, level: int = 0) -> None:
-    """Render a documentation item with proper formatting"""
+def render_doc_item(item, level: int = 0) -> None:
+    """
+    Render a documentation item with proper formatting.
+
+    Args:
+        item: DocItem instance (lazily typed to avoid import)
+        level: Nesting level for hierarchical rendering
+    """
     prefix = "#" * (level + 2)
 
     st.markdown(f"{prefix} {item.name}")
@@ -43,11 +68,16 @@ def render_doc_item(item: DocItem, level: int = 0) -> None:
 
 
 def documentation_viewer() -> None:
-    """Streamlit component for viewing project documentation"""
+    """
+    Streamlit component for viewing project documentation.
+
+    Uses lazy loading to optimize performance - documentation is only
+    generated when this component is actually used.
+    """
     st.header("📚 Documentation")
 
-    # Initialize documentation generator
-    doc_gen = DocumentationGenerator(os.path.dirname(os.path.dirname(__file__)))
+    # Lazy load documentation generator
+    doc_gen = _get_documentation_generator()
 
     try:
         with st.spinner("Generating documentation..."):

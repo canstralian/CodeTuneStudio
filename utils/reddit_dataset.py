@@ -8,6 +8,8 @@ import numpy as np
 from datasets import load_dataset
 from tqdm import tqdm
 
+from utils.template_manager import get_template_manager
+
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -63,7 +65,9 @@ class RedditDatasetManager:
 
     def generate_amphigory_code(self, language: str) -> str:
         """
-        Generate nonsensical but syntactically valid code with improved variety
+        Generate nonsensical but syntactically valid code with improved variety.
+
+        Uses centralized template manager for consistent template handling.
 
         Args:
             language: Target programming language
@@ -71,45 +75,16 @@ class RedditDatasetManager:
         Returns:
             Generated code snippet
         """
-        templates = {
-            "python": [
-                (
-                    "def dance_with_bytes(rainbow_bits):\n"
-                    "    return ''.join([chr((ord(b) << 2) >> 1) "
-                    "for b in rainbow_bits])"
-                ),
-                (
-                    "class QuantumPancake:\n"
-                    "    def flip_in_time(self, syrup_waves):\n"
-                    "        return float('inf') if syrup_waves else None"
-                ),
-                (
-                    "async def dream_compiler(thoughts):\n"
-                    "    return await sorted(thoughts, "
-                    "key=lambda x: hash(str(x)))"
-                ),
-            ],
-            "javascript": [
-                (
-                    "function whisperToPromises(dreamState) {\n"
-                    "    return new Promise(resolve => "
-                    "setTimeout(() => resolve(undefined ?? dreamState), "
-                    "Infinity))}"
-                ),
-                (
-                    "const floatingPixels = bytes => bytes.map(b => "
-                    "typeof b === 'number' ? String.fromCharCode(b) : '🌈')"
-                ),
-                (
-                    "class TimeTravel {\n"
-                    "    static async rewind(memories) {\n"
-                    "        return [...memories].reverse().filter(Boolean)}}"
-                ),
-            ],
-        }
+        template_manager = get_template_manager()
 
-        available_templates = templates.get(language.lower(), templates["python"])
-        return random.choice(available_templates)
+        try:
+            return template_manager.get_random_template(language)
+        except ValueError:
+            # Fallback to Python if language not supported
+            logger.warning(
+                f"Language '{language}' not supported, falling back to Python"
+            )
+            return template_manager.get_random_template("python")
 
     @lru_cache(maxsize=128)
     def augment_with_amphigory(
