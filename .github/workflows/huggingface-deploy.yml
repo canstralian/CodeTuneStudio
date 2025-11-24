@@ -1,4 +1,6 @@
 name: Hugging Face Model CI/CD
+permissions:
+  contents: read
 
 on:
   push:
