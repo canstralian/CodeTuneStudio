@@ -82,7 +82,7 @@ jobs:
       - name: Type check
         run: mypy .
       - name: Test
-        run: pytest --maxfail=1 --disable-warnings -q
+        run: pytest --maxfail=1 --disable-warnings --cov -q
 ```
 
 ## Semantic Release and Version Tagging Workflow
