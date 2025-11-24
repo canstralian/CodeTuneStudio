@@ -4,7 +4,7 @@ from typing import Any
 
 from anthropic import Anthropic
 
-from utils.plugins.base import AgentTool, ToolMetadata
+from src.utils.plugins.base import AgentTool, ToolMetadata
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

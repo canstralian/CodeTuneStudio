@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 # Import from the new core.server module
-from core.server import MLFineTuningApp, run_app
+from src.core.server import MLFineTuningApp, run_app
 
 # Legacy compatibility - map old main to new run_app
 main = run_app

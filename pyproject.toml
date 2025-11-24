@@ -44,7 +44,7 @@ dependencies = [
 ]
 
 [project.scripts]
-codetune-studio = "core.cli:main"
+codetune-studio = "src.core.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -57,11 +57,11 @@ dev = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "core.__version__"}
+version = {attr = "src.core.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["core*", "components*", "utils*", "plugins*"]
+include = ["src*"]
 
 [[tool.uv.index]]
 explicit = true
@@ -239,7 +239,7 @@ ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
 force-single-line = false
-known-first-party = ["core", "utils", "components", "models", "plugins"]
+known-first-party = ["src"]
 known-third-party = [
     "anthropic",
     "flask",

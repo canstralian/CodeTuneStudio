@@ -1,7 +1,7 @@
 import ast
 from typing import Any
 
-from utils.plugins.base import AgentTool, ToolMetadata
+from src.utils.plugins.base import AgentTool, ToolMetadata
 
 
 class CodeAnalyzerTool(AgentTool):

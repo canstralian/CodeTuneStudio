@@ -3,7 +3,7 @@ from typing import Any
 
 import streamlit as st
 
-from utils.config_validator import sanitize_string, validate_config
+from src.utils.config_validator import sanitize_string, validate_config
 
 # Configure logging
 logging.basicConfig(
