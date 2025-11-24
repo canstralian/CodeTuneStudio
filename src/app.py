@@ -1,10 +1,11 @@
 """
 CodeTune Studio - ML Model Fine-tuning Application
 
-This is the legacy entrypoint maintained for backward compatibility.
-The actual application logic has been refactored to core.server module.
+This module provides the main application entry point for running directly with Python.
+The actual application logic is in the core.server module.
 
-For new deployments, use the CLI: `codetune-studio`
+For production use, prefer the CLI: `codetune-studio`
+For development: `python -m src.app`
 """
 
 # Import the run_app function from the new core.server module

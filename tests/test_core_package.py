@@ -124,15 +124,13 @@ class TestCorePackage(unittest.TestCase):
         app_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app.py")
         self.assertTrue(os.path.exists(app_path))
 
-        # Verify it imports from src - could be src.app or src.core.server
+        # Verify it imports from src package
         with open(app_path) as f:
             content = f.read()
-            # Check for either old structure (src.core.server) or new wrapper (src.app)
-            has_src_import = (
-                "from src.app import" in content
-                or "from src.core.server import" in content
-            )
-            self.assertTrue(has_src_import)
+            # Should import from src.app (backward-compat wrapper)
+            self.assertIn("from src.app", content)
+            # Should show deprecation warning
+            self.assertIn("DeprecationWarning", content)
 
     @patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}, clear=False)
     def test_environment_variable_integration(self):

@@ -1,7 +1,7 @@
 """Plugin system for CodeTuneStudio."""
 
-from src.utils.plugins.base import AgentTool, ToolMetadata
-from src.utils.plugins.registry import PluginRegistry, registry
+from .base import AgentTool, ToolMetadata
+from .registry import PluginRegistry, registry
 
 __all__ = [
     "AgentTool",
