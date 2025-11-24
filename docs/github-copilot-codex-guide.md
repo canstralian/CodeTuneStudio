@@ -150,7 +150,7 @@ on:
 
 jobs:
   release:
-    if: github.repository == 'TradingBotSwarm/platform'
+    if: github.repository == 'canstralian/CodeTuneStudio'
     runs-on: ubuntu-latest
     permissions:
       contents: write
