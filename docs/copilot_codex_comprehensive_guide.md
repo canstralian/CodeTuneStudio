@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@v0
+      - uses: aquasecurity/trivy-action@v0.20.0
         with:
           scan-type: fs
           ignore-unfixed: true
