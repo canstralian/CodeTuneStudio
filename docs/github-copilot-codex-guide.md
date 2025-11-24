@@ -28,7 +28,7 @@
 - Require parameterized queries, prepared statements, and upstream validation for any user input.
 
 ### Logging and Observability
-- Emit structured logs (JSON) with correlation IDs using the shared logging utility in `utils/logging.py`.
+- Emit structured logs (JSON) with correlation IDs using the shared logging utility.
 - Record audit events for trade execution, risk engine overrides, and bot configuration changes.
 - Export Prometheus metrics for latency, order volume, and error rates; surface alerts in Grafana.
 
