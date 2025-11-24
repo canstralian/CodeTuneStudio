@@ -2,7 +2,7 @@ import re
 from typing import Dict, List, Union, Any
 import logging
 from pydantic import ValidationError
-from .pydantic_models import TrainingConfigModel, validate_config_dict
+from .pydantic_models import validate_config_dict
 
 # Configure logging
 logging.basicConfig(
