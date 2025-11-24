@@ -10,7 +10,7 @@ from transformers import (
     TopPLogitsWarper,
 )
 from transformers.generation import GenerationConfig
-from typing import Dict, Optional, Any, List
+from typing import Dict, Optional, Any, List, Union
 import logging
 from .peft_trainer import PEFTTrainer
 from .reddit_dataset import RedditDatasetManager
