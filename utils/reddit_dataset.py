@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 from functools import lru_cache
@@ -73,7 +72,7 @@ class RedditDatasetManager:
             Generated code snippet
         """
         from utils.template_manager import get_default_template_manager
-        
+
         template_manager = get_default_template_manager()
         try:
             return template_manager.generate_code(language)

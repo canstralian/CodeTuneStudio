@@ -5,7 +5,6 @@ Unit tests for the standardized plugin lifecycle (init, run, teardown).
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
 
 from utils.plugins.base import AgentTool, ToolMetadata
 
