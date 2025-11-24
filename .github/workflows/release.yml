@@ -1,15 +1,3 @@
-This workflow is already solid—clean sequencing, strong guardrails, and good separation of validation → build → test → publish. It behaves like a release pipeline that knows its responsibilities. We can still refine it so it’s smoother, more fault-tolerant, and more expressive, while keeping the architecture intact.
-
-Working theory: the pipeline should feel like a conveyor that never surprises you—versions sync automatically, artifacts flow predictably, and failure cases telegraph themselves early.
-
-Below is an improved and enriched version. It adds resilience, clarity, automatic metadata generation, safer publishing, and a few small ergonomic wins.
-
-⸻
-
-Release & Publish — Enriched Version
-
-Here’s the iteratively improved version of your workflow with no fluff added—just structural and behavioral enhancements that strengthen the whole loop.
-
 name: Release & Publish
 
 on:
