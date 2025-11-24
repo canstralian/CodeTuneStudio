@@ -1,13 +1,25 @@
-title: CodeTuneStudio
-emoji: 🌍
-colorFrom: purple
-colorTo: purple
-sdk: gradio
-sdk_version: 5.18.0
-app_file: app.py
-pinned: false
-license: mit
-short_description: this is a space
+# Hugging Face Space metadata for CodeTuneStudio
+
+title: CodeTuneStudio         # Display title
+emoji: 🛠️                    # A single emoji to represent your Space
+colorFrom: purple            # Starting color of the thumbnail gradient
+colorTo: pink                # Ending color of the thumbnail gradient
+sdk: gradio                  # Framework used (gradio/docker/static)
+sdk_version: 6.0.0           # Latest Gradio version as of Nov 2025 [oai_citation:0‡pypi.org](https://pypi.org/project/gradio/#:~:text=gradio%206)
+python_version: "3.10"       # Explicitly set Python runtime (default is 3.10)
+app_file: app.py             # Main app file relative to the repo root
+pinned: false                # Do not pin this Space on your profile
+license: mit                 # Keep the MIT license (lowercase is accepted)
+short_description: >-
+  CodeTuneStudio is an interactive environment for Python code generation and summarization,
+  featuring multiple code-focused LLMs and curated datasets.
+tags:
+  - code-generation
+  - python
+  - summarization
+  - generative-ai
+
+# List of Hugging Face model IDs used in the Space [oai_citation:1‡huggingface.co](https://huggingface.co/docs/hub/en/spaces-config-reference#:~:text=%60models%60%20%3A%20List,code%20if%20not%20specified%20here)
 models:
   - TheBloke/WizardCoder-Python-34B-V1.0-GGUF
   - shibing624/code-autocomplete-distilgpt2-python
@@ -15,8 +27,15 @@ models:
   - Salesforce/codet5-base-codexglue-sum-python
   - google/code_x_glue_ct_code_to_text
   - codellama/CodeLlama-7b-Python-hf
+
+# List of dataset IDs used in the Space [oai_citation:2‡huggingface.co](https://huggingface.co/docs/hub/en/spaces-config-reference#:~:text=%60datasets%60%20%3A%20List,code%20if%20not%20specified%20here)
 datasets:
   - google/code_x_glue_ct_code_to_text
   - flytech/python-codes-25k
   - semeru/text-code-CodeSummarization
-  - bigcode/the-stack  # (Check exact name on HF for “The Stack”)
+  - bigcode/the-stack         # The Stack dataset from BigCode [oai_citation:3‡huggingface.co](https://huggingface.co/datasets/bigcode/the-stack#:~:text=the)
+
+# Optional: preload large models/datasets during build to speed up startup
+# preload_from_hub:
+#   - bigcode/the-stack
+#   - TheBloke/WizardCoder-Python-34B-V1.0-GGUF
