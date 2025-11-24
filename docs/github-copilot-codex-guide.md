@@ -29,7 +29,7 @@
 
 ### Logging and Observability
 - Emit structured logs (JSON) with correlation IDs using the shared logging utility.
-- Record audit events for trade execution, risk engine overrides, and bot configuration changes.
+- Record audit events for model training runs, experiment configuration changes, and user access changes.
 - Export Prometheus metrics for latency, order volume, and error rates; surface alerts in Grafana.
 
 ### CI/CD Integration
