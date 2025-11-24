@@ -1,9 +1,9 @@
 import streamlit as st
-from huggingface_hub import HfApi, create_repo
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import HfApi, create_repo
 
 
-def export_model() -> None:
+def export_model():
     st.header("Model Export & Sharing")
 
     if "current_config_id" not in st.session_state:
@@ -39,9 +39,9 @@ def export_model() -> None:
                     # Add model card
                     model_card = f"""
                     # {repo_name}
-
+                    
                     {model_description}
-
+                    
                     ## Training Details
                     This model was fine-tuned using the ML Fine-tuning Platform.
                     """
@@ -56,4 +56,4 @@ def export_model() -> None:
                     f"Model exported! View it at: https://huggingface.co/{repo_name}"
                 )
             except Exception as e:
-                st.error(f"Export failed: {e!s}")
+                st.error(f"Export failed: {str(e)}")

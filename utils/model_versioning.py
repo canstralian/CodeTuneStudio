@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 from datetime import datetime
-from typing import Any
+from typing import Dict, Any, Optional
 
 
 class ModelVersion:
@@ -13,7 +13,7 @@ class ModelVersion:
     of ML models along with their associated configuration parameters.
     """
 
-    def __init__(self, version_dir: str = "model_versions") -> None:
+    def __init__(self, version_dir: str = "model_versions"):
         """
         Initialize the model version manager.
 
@@ -23,10 +23,11 @@ class ModelVersion:
         self.version_dir = version_dir
         os.makedirs(version_dir, exist_ok=True)
 
-    def save_version(self, model_path: str, config: dict[str, Any]) -> str:
+    def save_version(self, model_path: str, config: Dict[str, Any]) -> str:
         """Save a model version with its configuration"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        config_hash = hashlib.md5(
+        # Use SHA256 instead of MD5 for better security, but mark as safe for performance
+        config_hash = hashlib.sha256(
             json.dumps(config, sort_keys=True).encode()
         ).hexdigest()[:8]
         version_id = f"{timestamp}_{config_hash}"
@@ -40,14 +41,14 @@ class ModelVersion:
 
         # Save model files
         for file in os.listdir(model_path):
-            if file.endswith((".pt", ".bin")):
+            if file.endswith(".pt") or file.endswith(".bin"):
                 src = os.path.join(model_path, file)
                 dst = os.path.join(version_path, file)
                 os.rename(src, dst)
 
         return version_id
 
-    def load_version(self, version_id: str) -> dict[str, Any] | None:
+    def load_version(self, version_id: str) -> Optional[Dict[str, Any]]:
         """
         Load a specific model version's configuration.
 
@@ -64,7 +65,7 @@ class ModelVersion:
         with open(os.path.join(version_path, "config.json")) as f:
             return json.load(f)
 
-    def list_versions(self) -> dict[str, dict[str, Any]]:
+    def list_versions(self) -> Dict[str, Dict[str, Any]]:
         """
         List all available model versions and their configurations.
 

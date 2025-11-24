@@ -1,18 +1,17 @@
-import logging
-from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any
-
 import streamlit as st
-
-from components.loading_animation import show_training_animation
-from utils.database import TrainingMetric, db
-from utils.distributed_trainer import DistributedTrainer
-from utils.mock_training import mock_training_step
-from utils.model_inference import ModelInference
+import plotly.graph_objects as go
+import numpy as np
+from typing import List, Optional, Tuple, Dict, Any
 from utils.visualization import create_metrics_chart
-
-if TYPE_CHECKING:
-    import threading
+from utils.mock_training import mock_training_step
+from utils.database import TrainingMetric, db
+from utils.model_inference import ModelInference
+from utils.distributed_trainer import DistributedTrainer, DistributedTrainingError
+from components.loading_animation import show_training_animation
+import logging
+import torch
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,19 +23,18 @@ def initialize_training_state() -> None:
     if "training_active" not in st.session_state:
         st.session_state.training_active = False
         st.session_state.current_epoch = 0
-        st.session_state.train_loss: list[float] = []
-        st.session_state.eval_loss: list[float] = []
-        st.session_state.model_inference: ModelInference | None = None
-        st.session_state.distributed_trainer: DistributedTrainer | None = None
-        st.session_state.training_threads: list[threading.Thread] = []
+        st.session_state.train_loss: List[float] = []
+        st.session_state.eval_loss: List[float] = []
+        st.session_state.model_inference: Optional[ModelInference] = None
+        st.session_state.distributed_trainer: Optional[DistributedTrainer] = None
+        st.session_state.training_threads: List[threading.Thread] = []
 
 
 def save_training_metrics(
-    train_loss: float, eval_loss: float, step: int, rank: int | None = None
+    train_loss: float, eval_loss: float, step: int, rank: Optional[int] = None
 ) -> None:
     """
-    Save training metrics to database with enhanced error handling for
-    distributed training
+    Save training metrics to database with enhanced error handling for distributed training
 
     Args:
         train_loss: Training loss value
@@ -56,23 +54,22 @@ def save_training_metrics(
             )
             db.session.add(metric)
             db.session.commit()
-            rank_str = f"(rank {rank})" if rank is not None else ""
             logger.info(
-                f"Saved metrics for step {step} {rank_str}: "
+                f"Saved metrics for step {step} {'(rank ' + str(rank) + ')' if rank is not None else ''}: "
                 f"train_loss={train_loss}, eval_loss={eval_loss}"
             )
     except Exception as e:
-        logger.exception(f"Failed to save metrics: {e!s}")
+        logger.error(f"Failed to save metrics: {str(e)}")
         db.session.rollback()
         raise
 
 
-def get_device_info() -> dict[str, Any]:
+def get_device_info() -> Dict[str, Any]:
     """Get available device information for distributed training"""
     try:
         return DistributedTrainer.get_available_devices()
     except Exception as e:
-        logger.exception(f"Error getting device information: {e!s}")
+        logger.error(f"Error getting device information: {str(e)}")
         return {"error": str(e)}
 
 
@@ -80,7 +77,7 @@ def update_training_progress(
     progress_bar: st.progress,
     metrics_chart: st.empty,
     step: int,
-    rank: int | None = None,
+    rank: Optional[int] = None,
 ) -> None:
     """
     Update training progress and visualizations with distributed training support
@@ -98,8 +95,7 @@ def update_training_progress(
         if not (
             isinstance(train_loss, (int, float)) and isinstance(eval_loss, (int, float))
         ):
-            msg = "Invalid loss values received"
-            raise ValueError(msg)
+            raise ValueError("Invalid loss values received")
 
         st.session_state.train_loss.append(float(train_loss))
         st.session_state.eval_loss.append(float(eval_loss))
@@ -117,16 +113,15 @@ def update_training_progress(
 
         st.session_state.current_epoch = int(progress * 3)
         logger.info(
-            f"Updated training progress: step={step}, "
-            f"epoch={st.session_state.current_epoch}"
+            f"Updated training progress: step={step}, epoch={st.session_state.current_epoch}"
         )
 
     except Exception as e:
-        logger.exception(f"Error updating training progress: {e!s}")
+        logger.error(f"Error updating training progress: {str(e)}")
         raise
 
 
-def initialize_distributed_training() -> DistributedTrainer | None:
+def initialize_distributed_training() -> Optional[DistributedTrainer]:
     """Initialize distributed training environment"""
     try:
         device_info = get_device_info()
@@ -135,14 +130,14 @@ def initialize_distributed_training() -> DistributedTrainer | None:
                 world_size=device_info["device_count"], backend="nccl"
             )
             logger.info(
-                "Initialized distributed training with "
-                f"{device_info['device_count']} devices"
+                f"Initialized distributed training with {device_info['device_count']} devices"
             )
             return trainer
-        logger.warning("No CUDA devices available for distributed training")
-        return None
+        else:
+            logger.warning("No CUDA devices available for distributed training")
+            return None
     except Exception as e:
-        logger.exception(f"Failed to initialize distributed training: {e!s}")
+        logger.error(f"Failed to initialize distributed training: {str(e)}")
         return None
 
 
@@ -167,12 +162,12 @@ def training_monitor() -> None:
             device_info = get_device_info()
             if device_info.get("cuda_available", False):
                 st.info(
-                    f"Found {device_info['device_count']} CUDA devices "
-                    "available for distributed training"
+                    f"Found {device_info['device_count']} CUDA devices available for distributed training"
                 )
                 for i, device in enumerate(device_info["devices"]):
-                    mem_gb = device["total_memory"] / 1024**3
-                    st.text(f"Device {i}: {device['name']} ({mem_gb:.1f} GB)")
+                    st.text(
+                        f"Device {i}: {device['name']} ({device['total_memory'] / 1024**3:.1f} GB)"
+                    )
 
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -193,12 +188,13 @@ def training_monitor() -> None:
                             model_name="Replit-v1.5", device_map="auto"
                         )
                         show_training_animation()
-                elif st.button("Stop Training", type="secondary"):
-                    st.session_state.training_active = False
-                    if st.session_state.model_inference:
-                        st.session_state.model_inference.cleanup()
-                    if st.session_state.distributed_trainer:
-                        st.session_state.distributed_trainer.cleanup()
+                else:
+                    if st.button("Stop Training", type="secondary"):
+                        st.session_state.training_active = False
+                        if st.session_state.model_inference:
+                            st.session_state.model_inference.cleanup()
+                        if st.session_state.distributed_trainer:
+                            st.session_state.distributed_trainer.cleanup()
 
             with col2:
                 st.metric("Current Epoch", st.session_state.current_epoch)
@@ -235,8 +231,8 @@ def training_monitor() -> None:
                                 break
                             update_training_progress(progress_bar, metrics_chart, i)
                 except Exception as e:
-                    logger.exception(f"Training error: {e!s}")
-                    st.error(f"Training error: {e!s}")
+                    logger.error(f"Training error: {str(e)}")
+                    st.error(f"Training error: {str(e)}")
                     st.session_state.training_active = False
                     if st.session_state.model_inference:
                         st.session_state.model_inference.cleanup()
@@ -250,5 +246,5 @@ def training_monitor() -> None:
                             st.session_state.distributed_trainer.cleanup()
 
     except Exception as e:
-        logger.exception(f"Fatal error in training monitor: {e!s}")
-        st.error(f"An unexpected error occurred: {e!s}")
+        logger.error(f"Fatal error in training monitor: {str(e)}")
+        st.error(f"An unexpected error occurred: {str(e)}")

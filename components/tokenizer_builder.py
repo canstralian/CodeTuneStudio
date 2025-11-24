@@ -1,13 +1,12 @@
-import logging
 import os
-
 import streamlit as st
+import logging
 from transformers import AutoTokenizer
 
 logger = logging.getLogger(__name__)
 
 
-def tokenizer_builder() -> None:
+def tokenizer_builder():
     """
     Streamlit component for building and uploading tokenizers to Hugging Face
     """
@@ -113,11 +112,10 @@ def tokenizer_builder() -> None:
                                 f"🚀 Tokenizer successfully uploaded to {full_repo_path}"
                             )
                             st.markdown(
-                                "[View your tokenizer on Hugging Face]"
-                                f"(https://huggingface.co/{full_repo_path})"
+                                f"[View your tokenizer on Hugging Face](https://huggingface.co/{full_repo_path})"
                             )
                         except Exception as e:
-                            st.error(f"⚠️ Upload failed: {e!s}")
+                            st.error(f"⚠️ Upload failed: {str(e)}")
                             st.info(
                                 """
                             To upload to Hugging Face, make sure you are logged in.
@@ -130,33 +128,32 @@ def tokenizer_builder() -> None:
                     )
 
             except Exception as e:
-                logger.exception(f"Tokenizer building error: {e!s}")
-                st.error(f"Error building tokenizer: {e!s}")
+                logger.error(f"Tokenizer building error: {str(e)}")
+                st.error(f"Error building tokenizer: {str(e)}")
 
     # Documentation and help
     with st.expander("Help & Documentation"):
         st.markdown(
             """
         ### How to use this tool
-
-        1. **Select a base tokenizer** - Choose from popular
-           pre-trained tokenizers or specify a custom one
-        2. **Enter your Hugging Face details** - Provide your username
-           and repository name
+        
+        1. **Select a base tokenizer** - Choose from popular pre-trained tokenizers or specify a custom one
+        2. **Enter your Hugging Face details** - Provide your username and repository name
         3. **Customize special tokens** - Modify the special tokens if needed
         4. **Build the tokenizer** - Generate tokenizer files locally
-        5. **Upload to Hugging Face** - Optionally push the tokenizer
-           to your model repository
-
+        5. **Upload to Hugging Face** - Optionally push the tokenizer to your model repository
+        
         ### Hugging Face Login
-
+        
         To upload your tokenizer to Hugging Face, you need to be logged in.
         Run the following command in your terminal:
         ```
         huggingface-cli login
         ```
-
+        
         You'll be prompted for your Hugging Face token, which you can generate at:
         [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
         """
         )
+
+    return

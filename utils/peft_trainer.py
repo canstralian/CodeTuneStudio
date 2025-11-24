@@ -1,16 +1,15 @@
-import logging
-from contextlib import contextmanager
-from typing import Any
-
+from typing import Dict, Optional, Union, Any
 import torch
 from peft import (
     LoraConfig,
-    PeftModel,
     TaskType,
     get_peft_model,
+    PeftModel,
     prepare_model_for_kbit_training,
 )
 from transformers import PreTrainedModel
+import logging
+from contextlib import contextmanager
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -21,33 +20,32 @@ logger = logging.getLogger(__name__)
 
 class PEFTTrainer:
     """
-    Handle Parameter-Efficient Fine-Tuning (PEFT) operations with
-    enhanced error handling and resource management.
+    Handle Parameter-Efficient Fine-Tuning (PEFT) operations with enhanced error handling
+    and resource management.
     """
 
     def __init__(
         self,
         model: PreTrainedModel,
-        peft_config: dict[str, Any] | None = None,
-        device: str | None = None,
-    ) -> None:
+        peft_config: Optional[Dict[str, Any]] = None,
+        device: Optional[str] = None,
+    ):
         """
         Initialize PEFT trainer with improved configuration options
 
         Args:
             model: Base model to apply PEFT
             peft_config: Configuration for PEFT setup
-            device: Target device for training ('cpu', 'cuda', or None for
-                auto-detection)
+            device: Target device for training ('cpu', 'cuda', or None for auto-detection)
         """
         self.base_model = model
         self.peft_config = peft_config or self.get_default_peft_config()
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.peft_model: PeftModel | None = None
+        self.peft_model: Optional[PeftModel] = None
 
         logger.info(f"Initializing PEFT trainer on device: {self.device}")
 
-    def get_default_peft_config(self) -> dict[str, Any]:
+    def get_default_peft_config(self) -> Dict[str, Any]:
         """
         Get default LoRA configuration with optimized parameters
 
@@ -77,8 +75,7 @@ class PEFTTrainer:
         required_keys = ["r", "lora_alpha", "target_modules", "task_type"]
         for key in required_keys:
             if key not in self.peft_config:
-                msg = f"Missing required configuration key: {key}"
-                raise ValueError(msg)
+                raise ValueError(f"Missing required configuration key: {key}")
 
     def prepare_for_training(self) -> None:
         """
@@ -113,7 +110,7 @@ class PEFTTrainer:
             logger.info("Model prepared for PEFT training successfully")
 
         except Exception as e:
-            logger.exception(f"Error preparing model for PEFT: {e!s}")
+            logger.error(f"Error preparing model for PEFT: {str(e)}")
             self.cleanup()
             raise
 
@@ -121,8 +118,7 @@ class PEFTTrainer:
         """Print information about trainable parameters with enhanced details"""
         try:
             if self.peft_model is None:
-                msg = "PEFT model not initialized"
-                raise ValueError(msg)
+                raise ValueError("PEFT model not initialized")
 
             trainable_params = 0
             all_param = 0
@@ -142,7 +138,7 @@ class PEFTTrainer:
                 f"trainable%: {100 * trainable_params / all_param:.2f}%"
             )
         except Exception as e:
-            logger.exception(f"Error analyzing trainable parameters: {e!s}")
+            logger.error(f"Error analyzing trainable parameters: {str(e)}")
             raise
 
     def save_peft_model(self, save_path: str) -> None:
@@ -154,14 +150,13 @@ class PEFTTrainer:
         """
         try:
             if self.peft_model is None:
-                msg = "PEFT model not initialized"
-                raise ValueError(msg)
+                raise ValueError("PEFT model not initialized")
 
             logger.info(f"Saving PEFT model to {save_path}")
             self.peft_model.save_pretrained(save_path)
             logger.info("PEFT model saved successfully")
         except Exception as e:
-            logger.exception(f"Error saving PEFT model: {e!s}")
+            logger.error(f"Error saving PEFT model: {str(e)}")
             raise
 
     def load_peft_model(self, load_path: str) -> None:
@@ -174,15 +169,14 @@ class PEFTTrainer:
         try:
             logger.info(f"Loading PEFT model from {load_path}")
             if self.base_model is None:
-                msg = "Base model not initialized"
-                raise ValueError(msg)
+                raise ValueError("Base model not initialized")
 
             self.peft_model = PeftModel.from_pretrained(
                 self.base_model, load_path, device_map=self.device
             )
             logger.info("PEFT model loaded successfully")
         except Exception as e:
-            logger.exception(f"Error loading PEFT model: {e!s}")
+            logger.error(f"Error loading PEFT model: {str(e)}")
             raise
 
     def cleanup(self) -> None:
@@ -195,4 +189,4 @@ class PEFTTrainer:
                 self.peft_model = None
                 logger.info("PEFT model resources cleaned up")
         except Exception as e:
-            logger.exception(f"Error during cleanup: {e!s}")
+            logger.error(f"Error during cleanup: {str(e)}")

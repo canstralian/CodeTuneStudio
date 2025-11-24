@@ -1,9 +1,9 @@
+from typing import Dict, List, Type, Optional
 import importlib.util
 import inspect
 import logging
 import sys
 from pathlib import Path
-
 from .base import AgentTool
 
 # Configure logging
@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 class PluginRegistry:
     """Registry for managing agent tools"""
 
-    def __init__(self) -> None:
-        self._tools: dict[str, type[AgentTool]] = {}
+    def __init__(self):
+        self._tools: Dict[str, Type[AgentTool]] = {}
 
-    def register_tool(self, tool_class: type[AgentTool]) -> None:
+    def register_tool(self, tool_class: Type[AgentTool]) -> None:
         """
         Register a new tool
 
@@ -36,10 +36,10 @@ class PluginRegistry:
             logger.info(f"Successfully registered tool: {tool_name}")
 
         except Exception as e:
-            logger.exception(f"Failed to register tool {tool_class.__name__}: {e!s}")
+            logger.error(f"Failed to register tool {tool_class.__name__}: {str(e)}")
             raise
 
-    def get_tool(self, name: str) -> type[AgentTool] | None:
+    def get_tool(self, name: str) -> Optional[Type[AgentTool]]:
         """
         Get tool by name
 
@@ -51,7 +51,7 @@ class PluginRegistry:
         """
         return self._tools.get(name)
 
-    def list_tools(self) -> list[str]:
+    def list_tools(self) -> List[str]:
         """Get list of registered tool names"""
         return list(self._tools.keys())
 
@@ -98,7 +98,7 @@ class PluginRegistry:
                     spec.loader.exec_module(module)
 
                     # Find and register tool classes
-                    for _name, obj in inspect.getmembers(module):
+                    for name, obj in inspect.getmembers(module):
                         if (
                             inspect.isclass(obj)
                             and issubclass(obj, AgentTool)
@@ -107,11 +107,11 @@ class PluginRegistry:
                             self.register_tool(obj)
 
                 except Exception as e:
-                    logger.exception(f"Failed to load plugin {file_path}: {e!s}")
+                    logger.error(f"Failed to load plugin {file_path}: {str(e)}")
                     logger.debug("Exception details:", exc_info=True)
 
         except Exception as e:
-            logger.exception(f"Error discovering plugins: {e!s}")
+            logger.error(f"Error discovering plugins: {str(e)}")
             logger.debug("Exception details:", exc_info=True)
             raise
 

@@ -1,8 +1,9 @@
+import inspect
 import ast
+from typing import Dict, List, Any, Optional
+from pathlib import Path
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,18 +16,18 @@ class DocItem:
     docstring: str
     type: str  # 'function', 'class', or 'module'
     source_file: str
-    signature: str | None = None
-    methods: list[Any] = None  # Will contain DocItems for class methods
-    parameters: list[dict[str, str]] = None
+    signature: Optional[str] = None
+    methods: List[Any] = None  # Will contain DocItems for class methods
+    parameters: List[Dict[str, str]] = None
 
 
 class DocumentationGenerator:
     """Generates documentation from Python source code"""
 
-    def __init__(self, root_dir: str = ".") -> None:
+    def __init__(self, root_dir: str = "."):
         self.root_dir = Path(root_dir)
 
-    def parse_file(self, file_path: Path) -> list[DocItem]:
+    def parse_file(self, file_path: Path) -> List[DocItem]:
         """
         Parse a Python file and extract documentation
 
@@ -37,7 +38,7 @@ class DocumentationGenerator:
             List of DocItem objects containing documentation
         """
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             module = ast.parse(content)
@@ -108,7 +109,7 @@ class DocumentationGenerator:
             return docs
 
         except Exception as e:
-            logger.exception(f"Failed to parse file {file_path}: {e!s}")
+            logger.error(f"Failed to parse file {file_path}: {str(e)}")
             return []
 
     def _get_function_signature(self, node: ast.FunctionDef) -> str:
@@ -118,7 +119,7 @@ class DocumentationGenerator:
             args.append(arg.arg)
         return f"{node.name}({', '.join(args)})"
 
-    def _get_function_parameters(self, node: ast.FunctionDef) -> list[dict[str, str]]:
+    def _get_function_parameters(self, node: ast.FunctionDef) -> List[Dict[str, str]]:
         """Extract function parameters with type hints and defaults"""
         params = []
         for arg in node.args.args:
@@ -128,7 +129,7 @@ class DocumentationGenerator:
             params.append(param)
         return params
 
-    def generate_documentation(self) -> dict[str, list[DocItem]]:
+    def generate_documentation(self) -> Dict[str, List[DocItem]]:
         """
         Generate documentation for all Python files in the project
 

@@ -1,12 +1,11 @@
-import functools
-import logging
 import os
-from contextlib import contextmanager
-from typing import Any
-
+import logging
+from typing import Optional, Dict, Any
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
+from contextlib import contextmanager
+import functools
 
 # Configure logging
 logging.basicConfig(
@@ -18,6 +17,8 @@ logger = logging.getLogger(__name__)
 class DistributedTrainingError(Exception):
     """Custom exception for distributed training errors"""
 
+    pass
+
 
 def require_initialized(func):
     """Decorator to ensure distributed environment is initialized"""
@@ -25,8 +26,7 @@ def require_initialized(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         if not self.is_initialized:
-            msg = "Distributed environment not initialized"
-            raise DistributedTrainingError(msg)
+            raise DistributedTrainingError("Distributed environment not initialized")
         return func(self, *args, **kwargs)
 
     return wrapper
@@ -35,7 +35,7 @@ def require_initialized(func):
 class DistributedTrainer:
     """Handle distributed training operations with enhanced error handling"""
 
-    def __init__(self, world_size: int | None = None, backend: str = "nccl") -> None:
+    def __init__(self, world_size: Optional[int] = None, backend: str = "nccl"):
         """
         Initialize distributed trainer
 
@@ -49,8 +49,9 @@ class DistributedTrainer:
         self.rank = None
 
         if self.world_size < 1:
-            msg = "No available devices for distributed training"
-            raise DistributedTrainingError(msg)
+            raise DistributedTrainingError(
+                "No available devices for distributed training"
+            )
 
         logger.info(
             f"Initializing distributed trainer with {self.world_size} processes"
@@ -70,7 +71,7 @@ class DistributedTrainer:
         finally:
             self.cleanup()
 
-    def init_process(self, rank: int) -> None:
+    def init_process(self, rank: int):
         """
         Initialize distributed process with error handling
 
@@ -93,9 +94,8 @@ class DistributedTrainer:
             logger.info(f"Process {rank} initialized successfully")
 
         except Exception as e:
-            logger.exception(f"Failed to initialize process {rank}: {e!s}")
-            msg = f"Process initialization failed: {e!s}"
-            raise DistributedTrainingError(msg)
+            logger.error(f"Failed to initialize process {rank}: {str(e)}")
+            raise DistributedTrainingError(f"Process initialization failed: {str(e)}")
 
     @require_initialized
     def prepare_model(self, model: torch.nn.Module) -> DistributedDataParallel:
@@ -110,17 +110,17 @@ class DistributedTrainer:
         """
         try:
             model = model.to(self.rank)
-            return DistributedDataParallel(
+            distributed_model = DistributedDataParallel(
                 model,
                 device_ids=[self.rank],
                 output_device=self.rank,
                 find_unused_parameters=True,
             )
+            return distributed_model
 
         except Exception as e:
-            logger.exception(f"Failed to prepare distributed model: {e!s}")
-            msg = f"Model preparation failed: {e!s}"
-            raise DistributedTrainingError(msg)
+            logger.error(f"Failed to prepare distributed model: {str(e)}")
+            raise DistributedTrainingError(f"Model preparation failed: {str(e)}")
 
     @require_initialized
     def prepare_dataloader(
@@ -149,11 +149,10 @@ class DistributedTrainer:
             )
 
         except Exception as e:
-            logger.exception(f"Failed to prepare distributed dataloader: {e!s}")
-            msg = f"Dataloader preparation failed: {e!s}"
-            raise DistributedTrainingError(msg)
+            logger.error(f"Failed to prepare distributed dataloader: {str(e)}")
+            raise DistributedTrainingError(f"Dataloader preparation failed: {str(e)}")
 
-    def cleanup(self) -> None:
+    def cleanup(self):
         """Cleanup distributed training resources"""
         if self.is_initialized:
             try:
@@ -162,10 +161,10 @@ class DistributedTrainer:
                 self.rank = None
                 logger.info("Distributed training resources cleaned up")
             except Exception as e:
-                logger.exception(f"Error during cleanup: {e!s}")
+                logger.error(f"Error during cleanup: {str(e)}")
 
     @staticmethod
-    def get_available_devices() -> dict[str, Any]:
+    def get_available_devices() -> Dict[str, Any]:
         """
         Get information about available devices
 
@@ -196,5 +195,5 @@ class DistributedTrainer:
             return info
 
         except Exception as e:
-            logger.exception(f"Error getting device information: {e!s}")
+            logger.error(f"Error getting device information: {str(e)}")
             return {"error": str(e)}

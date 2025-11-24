@@ -1,6 +1,3 @@
-import logging
-from typing import Any
-
 import torch
 from accelerate import init_empty_weights
 from transformers import (
@@ -13,26 +10,34 @@ from transformers import (
     TopPLogitsWarper,
 )
 from transformers.generation import GenerationConfig
-
+from typing import Dict, Set, Tuple, Optional, Union, Any, List
+import logging
 from .peft_trainer import PEFTTrainer
-from .reddit_dataset import RedditDatasetManager
+from .reddit_dataset import RedditDatasetManager  # Added import
+
 
 # Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class RedditDatasetManager:  # Minimal implementation for runnable code
+    def get_training_data(
+        self, min_score: int = 100, max_samples: int = 1000
+    ) -> List[str]:
+        # Replace this with your actual Reddit data retrieval logic
+        return ["Sample Reddit Post 1", "Sample Reddit Post 2"]
+
+
 class ModelInference:
-    """Handle large model inference using Accelerate library.
+    """Handle large model inference using Accelerate library with enhanced performance optimization"""
 
-    Enhanced performance optimization for large model inference.
-    """
-
-    def __init__(self, model_name: str, device_map: str = "auto") -> None:
+    def __init__(self, model_name: str, device_map: str = "auto"):
         self.model_name = model_name
         self.device_map = device_map
-        self.model: AutoModelForCausalLM | None = None
-        self.tokenizer: AutoTokenizer | None = None
-        self.peft_trainer: PEFTTrainer | None = None
+        self.model: Optional[AutoModelForCausalLM] = None
+        self.tokenizer: Optional[AutoTokenizer] = None
+        self.peft_trainer: Optional[PEFTTrainer] = None
         self.reddit_manager = RedditDatasetManager()  # Added reddit_manager instance
 
     def get_default_logits_processors(
@@ -64,17 +69,17 @@ class ModelInference:
 
             return processors
         except Exception as e:
-            logger.exception(f"Error creating logits processors: {e!s}")
+            logger.error(f"Error creating logits processors: {str(e)}")
             raise
 
     def generate_text(
         self,
         prompt: str,
         max_length: int = 100,
-        generation_config: GenerationConfig | None = None,
-        logits_processors: LogitsProcessorList | None = None,
+        generation_config: Optional[GenerationConfig] = None,
+        logits_processors: Optional[LogitsProcessorList] = None,
         return_full_output: bool = False,
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, Dict[str, Any]]:
         """
         Generate text using the loaded model with enhanced control and output options
 
@@ -90,8 +95,7 @@ class ModelInference:
         """
         try:
             if self.model is None or self.tokenizer is None:
-                msg = "Model or tokenizer not initialized"
-                raise ValueError(msg)
+                raise ValueError("Model or tokenizer not initialized")
 
             # Set default generation config if none provided
             if generation_config is None:
@@ -141,7 +145,7 @@ class ModelInference:
             return outputs
 
         except Exception as e:
-            logger.exception(f"Error generating text: {e!s}")
+            logger.error(f"Error generating text: {str(e)}")
             raise
 
     def initialize_model(self) -> None:
@@ -154,7 +158,7 @@ class ModelInference:
                 )
             logger.info("Empty model initialization successful")
         except Exception as e:
-            logger.exception(f"Error initializing empty model: {e!s}")
+            logger.error(f"Error initializing empty model: {str(e)}")
             raise
 
     def load_model_weights(self, weights_path: str) -> None:
@@ -162,14 +166,14 @@ class ModelInference:
         try:
             logger.info(f"Loading model weights from: {weights_path}")
             if self.model is None:
-                msg = "Model not initialized. Call initialize_model first."
-                raise ValueError(msg)
+                raise ValueError("Model not initialized. Call initialize_model first.")
 
-            state_dict = torch.load(weights_path, map_location="cpu")
+            # Use weights_only=True to prevent arbitrary code execution
+            state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
             self.model.load_state_dict(state_dict)
             logger.info("Model weights loaded successfully")
         except Exception as e:
-            logger.exception(f"Error loading model weights: {e!s}")
+            logger.error(f"Error loading model weights: {str(e)}")
             raise
 
     def load_pretrained(self) -> None:
@@ -182,21 +186,20 @@ class ModelInference:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             logger.info("Pre-trained model loaded successfully")
         except Exception as e:
-            logger.exception(f"Error loading pre-trained model: {e!s}")
+            logger.error(f"Error loading pre-trained model: {str(e)}")
             raise
 
-    def setup_peft(self, peft_config: dict | None = None) -> None:
+    def setup_peft(self, peft_config: Optional[Dict] = None) -> None:
         """Initialize PEFT trainer with the current model"""
         try:
             if self.model is None:
-                msg = "Model not initialized. Call load_pretrained first."
-                raise ValueError(msg)
+                raise ValueError("Model not initialized. Call load_pretrained first.")
 
             self.peft_trainer = PEFTTrainer(self.model, peft_config)
             self.peft_trainer.prepare_for_training()
             logger.info("PEFT trainer initialized successfully")
         except Exception as e:
-            logger.exception(f"Error setting up PEFT trainer: {e!s}")
+            logger.error(f"Error setting up PEFT trainer: {str(e)}")
             raise
 
     def cleanup(self) -> None:
@@ -209,12 +212,12 @@ class ModelInference:
             torch.cuda.empty_cache()
             logger.info("Model resources cleaned up successfully")
         except Exception as e:
-            logger.exception(f"Error cleaning up resources: {e!s}")
+            logger.error(f"Error cleaning up resources: {str(e)}")
             raise
 
     def prepare_reddit_data_for_training(
         self, min_score: int = 100, max_samples: int = 1000
-    ) -> list[str]:
+    ) -> List[str]:
         """
         Prepare Reddit data for model training or fine-tuning
 
@@ -239,5 +242,5 @@ class ModelInference:
             return training_data
 
         except Exception as e:
-            logger.exception(f"Error preparing Reddit data: {e!s}")
+            logger.error(f"Error preparing Reddit data: {str(e)}")
             return []

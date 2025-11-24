@@ -1,11 +1,10 @@
+import streamlit as st
+from utils.documentation import DocumentationGenerator, DocItem
+from typing import Dict, List
 import os
 
-import streamlit as st
 
-from utils.documentation import DocItem, DocumentationGenerator
-
-
-def render_parameters(params: list[dict[str, str]]) -> None:
+def render_parameters(params: List[Dict[str, str]]) -> None:
     """Render function parameters in a table"""
     if params:
         st.markdown("**Parameters:**")
@@ -42,7 +41,7 @@ def render_doc_item(item: DocItem, level: int = 0) -> None:
             render_doc_item(method, level + 1)
 
 
-def documentation_viewer() -> None:
+def documentation_viewer():
     """Streamlit component for viewing project documentation"""
     st.header("📚 Documentation")
 
@@ -89,4 +88,4 @@ def documentation_viewer() -> None:
                     render_doc_item(item)
 
     except Exception as e:
-        st.error(f"Failed to generate documentation: {e!s}")
+        st.error(f"Failed to generate documentation: {str(e)}")

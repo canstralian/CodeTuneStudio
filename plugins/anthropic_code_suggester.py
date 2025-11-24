@@ -1,9 +1,7 @@
-import logging
+from typing import Dict, Any
 import os
-from typing import Any
-
 from anthropic import Anthropic
-
+import logging
 from utils.plugins.base import AgentTool, ToolMetadata
 
 # Configure logging
@@ -12,38 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class AnthropicCodeSuggesterTool(AgentTool):
-    """Tool for suggesting code improvements using Anthropic's Claude
+    """Tool for suggesting code improvements using Anthropic's Claude"""
 
-    A tool for generating code improvement suggestions using Anthropic's
-    Claude AI model. This class extends AgentTool to provide AI-powered
-    code analysis and suggestions. It leverages Anthropic's Claude model
-    to evaluate provided code snippets and offer recommendations on
-    structure, optimization, best practices, and error handling.
-
-    Attributes:
-        metadata (ToolMetadata): Metadata describing the tool, including
-            name, description, version, author, and tags.
-        client (Anthropic): The Anthropic client instance used for API
-            interactions.
-
-    Methods:
-        validate_inputs(inputs: Dict[str, Any]) -> bool:
-            Validates the input dictionary to ensure it contains a valid
-            'code' key with a string value.
-        execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
-            Executes the code suggestion process by sending the code to
-            Claude for analysis and returning the suggestions in a
-            structured response.
-    Note:
-        Requires an ANTHROPIC_API_KEY environment variable to be set for authentication.
-        The tool uses the 'claude-3-5-sonnet-20241022' model for generating suggestions.
-    Example:
-        >>> tool = AnthropicCodeSuggesterTool()
-        >>> result = tool.execute({"code": "def hello(): print('Hello')"})
-        >>> print(result["suggestions"])
-    """
-
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self.metadata = ToolMetadata(
             name="anthropic_code_suggester",
@@ -52,24 +21,18 @@ class AnthropicCodeSuggesterTool(AgentTool):
             author="CodeTuneStudio",
             tags=["code-suggestions", "ai", "anthropic"],
         )
-        # Initialize Anthropic client with validation
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            logger.warning(
-                "ANTHROPIC_API_KEY not set. Anthropic code suggestions "
-                "will not be available."
-            )
-            self.client = None
-        else:
-            self.client = Anthropic(api_key=api_key)
+        # Initialize Anthropic client
+        self.client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def validate_inputs(self, inputs: dict[str, Any]) -> bool:
+    def validate_inputs(self, inputs: Dict[str, Any]) -> bool:
         """Validate required inputs"""
         if "code" not in inputs:
             return False
-        return isinstance(inputs["code"], str)
+        if not isinstance(inputs["code"], str):
+            return False
+        return True
 
-    def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
+    def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate code suggestions using Anthropic
 
@@ -81,57 +44,35 @@ class AnthropicCodeSuggesterTool(AgentTool):
             Dictionary containing suggested improvements
         """
         if not self.validate_inputs(inputs):
-            msg = "Invalid inputs"
-            raise ValueError(msg)
-
-        if not self.client:
-            return {
-                "error": (
-                    "ANTHROPIC_API_KEY not configured. Please set the "
-                    "API key to use this tool."
-                ),
-                "status": "error",
-            }
+            raise ValueError("Invalid inputs")
 
         try:
-            # The newest Anthropic model is "claude-3-5-sonnet-20241022"
-            # Released October 22, 2024
+            # the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
             message = self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
-                max_tokens=4096,
                 messages=[
                     {
                         "role": "user",
-                        "content": (
-                            "Analyze this code and suggest improvements "
-                            "in JSON format.\n"
-                            "Include specific recommendations for:\n"
-                            "1. Code structure\n"
-                            "2. Optimization opportunities\n"
-                            "3. Best practices\n"
-                            "4. Error handling\n\n"
-                            "Code to analyze:\n"
-                            f"{inputs['code']}"
-                        ),
+                        "content": f"""Analyze this code and suggest improvements in JSON format. 
+                    Include specific recommendations for:
+                    1. Code structure
+                    2. Optimization opportunities
+                    3. Best practices
+                    4. Error handling
+                    
+                    Code to analyze:
+                    {inputs['code']}
+                    """,
                     }
                 ],
             )
 
-            # Validate response structure before accessing
-            if not message.content or len(message.content) == 0:
-                logger.error("Anthropic API returned empty content")
-                return {"error": "API returned empty response", "status": "error"}
-
-            if not hasattr(message.content[0], "text"):
-                logger.error("Anthropic API response missing text attribute")
-                return {"error": "Invalid API response format", "status": "error"}
-
             return {
-                "suggestions": message.content[0].text,
+                "suggestions": message.content,
                 "model": "claude-3-5-sonnet-20241022",
                 "status": "success",
             }
 
         except Exception as e:
-            logger.exception(f"Anthropic code suggestion failed: {e!s}")
+            logger.error(f"Anthropic code suggestion failed: {str(e)}")
             return {"error": str(e), "status": "error"}

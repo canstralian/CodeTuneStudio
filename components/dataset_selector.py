@@ -1,10 +1,9 @@
-import logging
 import re
-from functools import lru_cache
-
 import streamlit as st
-
 from utils.argilla_dataset import ArgillaDatasetManager
+from typing import Optional, Dict
+from functools import lru_cache
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -20,22 +19,32 @@ AVAILABLE_DATASETS = {
 
 @lru_cache(maxsize=32)
 def validate_dataset_name(name: str) -> bool:
+    """
+    Validate dataset name format.
+
+    Allows alphanumeric characters, hyphens, underscores, dots, and forward slashes
+    to support HuggingFace dataset names like 'user/dataset-name'.
+    """
     if not name or not isinstance(name, str):
         logger.error(f"Invalid dataset name: {name}")
         return False
-    pattern = r"^[a-zA-Z0-9_\-]+$"
-    return bool(re.match(pattern, name))
+    # Updated pattern to allow forward slashes and dots for HF datasets
+    pattern = r"^[\w\-\/\.]+$"
+    if not re.match(pattern, name):
+        logger.error(f"Dataset name '{name}' contains invalid characters")
+        return False
+    return True
 
 
-def get_argilla_dataset_manager() -> ArgillaDatasetManager | None:
+def get_argilla_dataset_manager() -> Optional[ArgillaDatasetManager]:
     try:
         return ArgillaDatasetManager()
     except Exception as e:
-        logger.exception(f"Argilla initialization error: {e}")
+        logger.error(f"Argilla initialization error: {e}")
         return None
 
 
-def display_preview_data(dataset_name: str) -> None:
+def display_preview_data(dataset_name: str):
     try:
         if dataset_name.startswith("argilla_"):
             argilla_manager = get_argilla_dataset_manager()
@@ -54,11 +63,11 @@ def display_preview_data(dataset_name: str) -> None:
             }
             st.dataframe(preview_data)
     except Exception as e:
-        logger.exception(f"Preview error: {e}")
+        logger.error(f"Preview error: {e}")
         st.error("Error displaying preview")
 
 
-def display_dataset_info(dataset_name: str) -> None:
+def display_dataset_info(dataset_name: str):
     try:
         with st.expander("Dataset Information"):
             if dataset_name.startswith("argilla_"):
@@ -78,12 +87,12 @@ def display_dataset_info(dataset_name: str) -> None:
                 st.write("Languages: Python, JavaScript")
                 st.write("Average sequence length: 128")
     except Exception as e:
-        logger.exception(f"Info display error: {e}")
+        logger.error(f"Info display error: {e}")
         st.error("Error displaying information")
 
 
 @st.cache_data(ttl=3600)
-def get_dataset_info(dataset_name: str) -> dict:
+def get_dataset_info(dataset_name: str) -> Dict:
     try:
         if dataset_name.startswith("argilla_"):
             argilla_manager = get_argilla_dataset_manager()
@@ -103,11 +112,11 @@ def get_dataset_info(dataset_name: str) -> dict:
             "avg_seq_length": 128,
         }
     except Exception as e:
-        logger.exception(f"Dataset info error: {e}")
+        logger.error(f"Dataset info error: {e}")
         return {}
 
 
-def dataset_browser() -> str | None:
+def dataset_browser() -> Optional[str]:
     st.header("Dataset Selection")
 
     try:
@@ -149,6 +158,6 @@ def dataset_browser() -> str | None:
             return selected_dataset
 
     except Exception as e:
-        logger.exception(f"Dataset browser error: {e}")
+        logger.error(f"Dataset browser error: {e}")
         st.error(f"Dataset selection error: {e}")
         return None
