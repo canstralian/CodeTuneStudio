@@ -97,8 +97,7 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
         "--server-headless",
         action="store_true",
         default=(
-            os.environ.get("SERVER_HEADLESS", "false").lower()
-            in ("true", "1", "yes")
+            os.environ.get("SERVER_HEADLESS", "false").lower() in ("true", "1", "yes")
         ),
         help="Run server in headless mode (default: false, env: SERVER_HEADLESS)",
     )

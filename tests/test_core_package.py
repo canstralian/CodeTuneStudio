@@ -54,12 +54,17 @@ class TestCorePackage(unittest.TestCase):
         """Test CLI argument parsing with custom values"""
         from core.cli import parse_args
 
-        args = parse_args([
-            "--host", "0.0.0.0",
-            "--port", "8501",
-            "--log-level", "DEBUG",
-            "--no-browser"
-        ])
+        args = parse_args(
+            [
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8501",
+                "--log-level",
+                "DEBUG",
+                "--no-browser",
+            ]
+        )
 
         self.assertEqual(args.host, "0.0.0.0")
         self.assertEqual(args.port, 8501)
@@ -93,8 +98,7 @@ class TestCorePackage(unittest.TestCase):
         import logging
 
         formatter = StructuredFormatter(
-            use_color=False,
-            fmt="%(levelname)s - %(message)s"
+            use_color=False, fmt="%(levelname)s - %(message)s"
         )
         record = logging.LogRecord(
             name="test",
@@ -103,7 +107,7 @@ class TestCorePackage(unittest.TestCase):
             lineno=10,
             msg="Test message",
             args=(),
-            exc_info=None
+            exc_info=None,
         )
 
         formatted = formatter.format(record)
@@ -113,10 +117,7 @@ class TestCorePackage(unittest.TestCase):
         """Test that app.py exists for backward compatibility"""
         import os
 
-        app_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "app.py"
-        )
+        app_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app.py")
         self.assertTrue(os.path.exists(app_path))
 
         # Verify it imports from core.server
@@ -141,8 +142,7 @@ class TestPackageMetadata(unittest.TestCase):
         import os
 
         pyproject_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "pyproject.toml"
+            os.path.dirname(os.path.dirname(__file__)), "pyproject.toml"
         )
         self.assertTrue(os.path.exists(pyproject_path))
 
@@ -151,8 +151,7 @@ class TestPackageMetadata(unittest.TestCase):
         import os
 
         readme_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "README.md"
+            os.path.dirname(os.path.dirname(__file__)), "README.md"
         )
         self.assertTrue(os.path.exists(readme_path))
 
@@ -161,8 +160,7 @@ class TestPackageMetadata(unittest.TestCase):
         import os
 
         changelog_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "CHANGELOG.md"
+            os.path.dirname(os.path.dirname(__file__)), "CHANGELOG.md"
         )
         self.assertTrue(os.path.exists(changelog_path))
 
@@ -170,10 +168,7 @@ class TestPackageMetadata(unittest.TestCase):
         """Test that core package has expected structure"""
         import os
 
-        core_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "core"
-        )
+        core_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "core")
 
         self.assertTrue(os.path.exists(core_path))
         self.assertTrue(os.path.exists(os.path.join(core_path, "__init__.py")))
