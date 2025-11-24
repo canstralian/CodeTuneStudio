@@ -5,7 +5,6 @@ This module contains the main application logic refactored from app.py,
 providing a clean separation between server logic and CLI entrypoint.
 """
 
-import logging
 import os
 import time
 from contextlib import contextmanager
@@ -14,10 +13,17 @@ from typing import Any, Dict, Optional
 
 # Third-party imports
 import streamlit as st
-from flask import Flask
+from flask import Flask, request
 from sqlalchemy.pool import QueuePool
 
 # Local imports
+from core.logging import (
+    clear_request_id,
+    get_logger,
+    get_request_id,
+    set_request_id,
+    setup_logging,
+)
 from components.dataset_selector import dataset_browser, validate_dataset_name
 from components.documentation_viewer import documentation_viewer
 from components.experiment_compare import experiment_compare
@@ -29,12 +35,8 @@ from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
-)
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_logger(__name__)
 
 
 class MLFineTuningApp:
@@ -77,6 +79,7 @@ class MLFineTuningApp:
     def __init__(self) -> None:
         """Initialize the application with improved error handling and caching"""
         self.flask_app = Flask(__name__)
+        self._install_request_context()
         self._configure_database()
         self._configure_streamlit()
 
@@ -105,7 +108,24 @@ class MLFineTuningApp:
                 },
             }
         )
-        logger.info(f"Database configured with URL: {database_url}")
+        logger.info("Database configured", extra={"database_url": database_url})
+
+    def _install_request_context(self) -> None:
+        """Attach request id lifecycle hooks to the Flask app."""
+
+        @self.flask_app.before_request
+        def _assign_request_id():  # type: ignore[unused-ignore]
+            incoming_request_id = request.headers.get("X-Request-ID")
+            request_id = set_request_id(incoming_request_id)
+            self.flask_app.config["CURRENT_REQUEST_ID"] = request_id
+
+        @self.flask_app.after_request
+        def _append_request_id(response):  # type: ignore[unused-ignore]
+            request_id = get_request_id()
+            if request_id:
+                response.headers["X-Request-ID"] = request_id
+            clear_request_id()
+            return response
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0

@@ -1,10 +1,10 @@
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any
 
 import streamlit as st
 
 from components.loading_animation import show_training_animation
+from core.logging import get_logger
 from utils.database import TrainingMetric, db
 from utils.distributed_trainer import DistributedTrainer
 from utils.mock_training import mock_training_step
@@ -14,9 +14,7 @@ from utils.visualization import create_metrics_chart
 if TYPE_CHECKING:
     import threading
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def initialize_training_state() -> None:

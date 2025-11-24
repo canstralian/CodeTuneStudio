@@ -6,14 +6,14 @@ with argument parsing and configuration management.
 """
 
 import argparse
-import logging
 import os
 import sys
 from typing import Optional
 
 from core import __version__
+from core.logging import get_logger, setup_logging
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
@@ -107,18 +107,7 @@ def configure_logging(log_level: str) -> None:
     Args:
         log_level: Logging level as a string (DEBUG, INFO, WARNING, ERROR, CRITICAL).
     """
-    numeric_level = getattr(logging, log_level.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError(f"Invalid log level: {log_level}")
-    
-    logging.basicConfig(
-        level=numeric_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-        ],
-    )
-    logger.info(f"Logging configured at {log_level} level")
+    setup_logging(log_level=log_level)
 
 
 def main(args: Optional[list[str]] = None) -> int:

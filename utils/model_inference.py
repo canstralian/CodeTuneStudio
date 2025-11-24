@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 import torch
@@ -14,11 +13,11 @@ from transformers import (
 )
 from transformers.generation import GenerationConfig
 
+from core.logging import get_logger
 from .peft_trainer import PEFTTrainer
 from .reddit_dataset import RedditDatasetManager
 
-# Configure logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ModelInference:

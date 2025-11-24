@@ -1,12 +1,9 @@
-import logging
-
 import streamlit as st
 
+from core.logging import get_logger
 from utils.plugins.registry import registry
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def plugin_manager() -> None:
