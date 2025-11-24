@@ -5,6 +5,79 @@ All notable changes to CodeTune Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+#### Repository Structure (Breaking Changes)
+- **Source Code Organization**: Moved all Python source code to `src/` directory
+  - All packages (`core`, `components`, `utils`, `models`, `plugins`, `migrations`) now under `src/`
+  - Python scripts (`app.py`, `db_check.py`, `kali_server.py`, `manage.py`) moved to `src/`
+  - Created `src/__init__.py` to make it a proper Python package
+  - Updated all imports across the codebase to use `src.*` prefix
+- **Configuration Files**: Moved to dedicated `config/` directory
+  - `.env.example` → `config/.env.example`
+  - `replit.nix` → `config/replit.nix`
+  - `space.yaml` → `config/space.yaml`
+- **Package Configuration**: Updated `pyproject.toml` for new structure
+  - Entry point: `src.core.cli:main`
+  - Version attribute: `src.core.__version__`
+  - Package discovery: includes `src*` packages
+  - Updated ruff/isort configuration for `src` as known-first-party
+- **Test Suite**: Updated all test imports to use `src.*` prefix
+- **Backward Compatibility**: Created root-level `app.py` wrapper for existing deployments
+  - Maintains compatibility with `python app.py` usage
+  - Shows deprecation warning directing users to new CLI
+  - Imports from new `src.app` location
+
+### Added
+
+#### Documentation Improvements
+- **Development Environment Setup**: Added comprehensive setup guides
+  - VS Code setup with Python extension, linting, and formatting configuration
+  - Replit setup with environment configuration and run instructions
+  - Kali Linux setup with system dependencies and virtual environment
+- **Project Structure**: Updated README with new directory layout
+  - Clear visualization of `src/`, `config/`, `tests/`, `docs/` structure
+  - Descriptions for each major directory and file
+- **Configuration Documentation**: Added notes about `config/` directory usage
+  - Environment variable templates location
+  - Platform-specific configuration files
+
+### Migration Guide
+
+For developers and users migrating from version 0.2.0 or earlier:
+
+1. **Update imports** in any custom code or plugins:
+   ```python
+   # Old (v0.2.0 and earlier)
+   from core.server import MLFineTuningApp
+   from utils.database import db
+   from plugins.code_analyzer import CodeAnalyzerTool
+   
+   # New (v0.3.0+)
+   from src.core.server import MLFineTuningApp
+   from src.utils.database import db
+   from src.plugins.code_analyzer import CodeAnalyzerTool
+   ```
+
+2. **Update configuration file paths**:
+   ```bash
+   # Old
+   cp .env.example .env
+   
+   # New
+   cp config/.env.example .env
+   ```
+
+3. **Preferred usage** (no changes needed):
+   - CLI: `codetune-studio` (recommended, unchanged)
+   - Package install: `pip install codetune-studio` (unchanged)
+
+4. **Legacy usage** (still supported with deprecation warning):
+   - `python app.py` - now shows deprecation warning
+   - Redirects to `src.app.main()` automatically
+
 ## [0.2.0] - 2024-11-19
 
 ### Added
