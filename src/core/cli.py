@@ -11,7 +11,7 @@ import os
 import sys
 from typing import Optional
 
-from core import __version__
+from . import __version__
 
 logger = logging.getLogger(__name__)
 
