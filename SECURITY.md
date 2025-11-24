@@ -138,7 +138,6 @@ Security updates will be:
 - **Project Repository:** https://github.com/canstralian/CodeTuneStudio
 - **Security Contact:** distortedprojection@gmail.com
 - **Code of Conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- **Contributing Guidelines:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Security Best Practices:** [.github/copilot-instructions.md](.github/copilot-instructions.md)
 
 ## Acknowledgments
@@ -147,6 +146,6 @@ We would like to thank the security researchers and contributors who help keep C
 
 ---
 
-*Last Updated: 2024-01-15*
+*Last Updated: 2024-11-24*
 
 Thank you for helping keep CodeTuneStudio and our users safe! 🔒
