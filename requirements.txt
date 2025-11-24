@@ -20,4 +20,8 @@ numpy>=1.19.3,<2
 plotly==6.4.0
 
 # Annotation & feedback
-argilla==1.24.0
+argilla==2.8.0
+
+# AI providers
+openai>=1.0.0
+anthropic>=0.18.0
