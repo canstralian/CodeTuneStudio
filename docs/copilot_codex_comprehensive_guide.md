@@ -64,7 +64,7 @@ name: python-style-and-tests
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronized, reopened]
     paths-ignore:
       - "**/*.md"
   push:
