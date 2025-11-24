@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import streamlit as st
 
-from utils.database import TrainingConfig, TrainingMetric, db
+from src.utils.database import TrainingConfig, TrainingMetric, db
 
 
 @st.cache_data(ttl=60)  # Cache experiment data for 1 minute

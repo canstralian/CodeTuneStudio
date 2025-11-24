@@ -1,7 +1,7 @@
 """Utility modules for CodeTuneStudio."""
 
-from utils.config_validator import validate_config
-from utils.database import TrainingConfig, TrainingMetric, db, init_db
+from src.utils.config_validator import validate_config
+from src.utils.database import TrainingConfig, TrainingMetric, db, init_db
 
 __all__ = [
     "validate_config",

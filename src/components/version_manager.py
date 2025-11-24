@@ -1,6 +1,6 @@
 import streamlit as st
 
-from utils.model_versioning import ModelVersion
+from src.utils.model_versioning import ModelVersion
 
 
 def version_manager() -> None:

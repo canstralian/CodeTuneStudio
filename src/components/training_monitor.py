@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any
 
 import streamlit as st
 
-from components.loading_animation import show_training_animation
-from utils.database import TrainingMetric, db
-from utils.distributed_trainer import DistributedTrainer
-from utils.mock_training import mock_training_step
-from utils.model_inference import ModelInference
-from utils.visualization import create_metrics_chart
+from src.components.loading_animation import show_training_animation
+from src.utils.database import TrainingMetric, db
+from src.utils.distributed_trainer import DistributedTrainer
+from src.utils.mock_training import mock_training_step
+from src.utils.model_inference import ModelInference
+from src.utils.visualization import create_metrics_chart
 
 if TYPE_CHECKING:
     import threading

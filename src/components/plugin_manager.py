@@ -2,7 +2,7 @@ import logging
 
 import streamlit as st
 
-from utils.plugins.registry import registry
+from src.utils.plugins.registry import registry
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

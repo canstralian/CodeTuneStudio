@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from db_check import check_database
+from src.db_check import check_database
 
 
 class TestCheckDatabase(unittest.TestCase):

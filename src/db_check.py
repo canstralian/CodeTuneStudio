@@ -3,7 +3,7 @@ import sys
 
 from flask import Flask
 
-from utils.database import db, init_db
+from src.utils.database import db, init_db
 
 
 def check_database() -> bool | None:

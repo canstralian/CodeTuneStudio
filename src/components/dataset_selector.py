@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import streamlit as st
 
-from utils.argilla_dataset import ArgillaDatasetManager
+from src.utils.argilla_dataset import ArgillaDatasetManager
 
 logger = logging.getLogger(__name__)
 

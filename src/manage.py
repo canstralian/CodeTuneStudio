@@ -15,7 +15,7 @@ Example commands:
     - shell: Open an interactive shell with app context.
     - db: Database migration commands (if Flask-Migrate is used).
 """
-from app import flask_app
+from src.app import flask_app
 
 cli = FlaskGroup(flask_app)
 

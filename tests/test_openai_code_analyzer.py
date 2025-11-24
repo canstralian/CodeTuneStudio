@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from plugins.openai_code_analyzer import OpenAICodeAnalyzerTool
+from src.plugins.openai_code_analyzer import OpenAICodeAnalyzerTool
 
 
 class TestOpenAICodeAnalyzerTool(unittest.TestCase):

@@ -1,7 +1,7 @@
 from click.testing import CliRunner
 from flask.cli import FlaskGroup
 
-from manage import cli
+from src.manage import cli
 
 
 def test_cli_help() -> None:

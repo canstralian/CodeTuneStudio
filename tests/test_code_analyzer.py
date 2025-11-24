@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from plugins.code_analyzer import CodeAnalyzerTool
+from src.plugins.code_analyzer import CodeAnalyzerTool
 
 
 class TestCodeAnalyzerTool(unittest.TestCase):

@@ -68,15 +68,17 @@ CodeTune Studio is a production-ready ML model fine-tuning platform built with a
 
 ## Core Components
 
-### 1. Core Module (`core/`)
+All Python source code is organized under the `src/` directory for better namespace management and adherence to Python packaging best practices.
+
+### 1. Core Module (`src/core/`)
 
 The `core` module contains the essential application logic and entry points.
 
-#### `core/__init__.py`
+#### `src/core/__init__.py`
 - Defines package version (`__version__`)
 - Exports core functionality
 
-#### `core.cli` - Command-Line Interface
+#### `src/core.cli` - Command-Line Interface
 ```python
 # Entry point: codetune-studio
 - Argument parsing (host, port, database, log level)
@@ -121,12 +123,12 @@ class MLFineTuningApp:
 - Route logs to console and file
 - Support production monitoring
 
-### 2. Components Module (`components/`)
+### 2. Components Module (`src/components/`)
 
 Reusable Streamlit UI components for different application features.
 
 ```
-components/
+src/components/
 ├── dataset_selector.py      # Dataset browsing and selection
 ├── parameter_config.py      # Training parameter configuration
 ├── training_monitor.py      # Real-time training monitoring
@@ -155,12 +157,12 @@ def component_name(param1, param2=default):
     return result
 ```
 
-### 3. Utils Module (`utils/`)
+### 3. Utils Module (`src/utils/`)
 
 Utility functions and backend services.
 
 ```
-utils/
+src/utils/
 ├── database.py              # SQLAlchemy models and database operations
 ├── config_validator.py      # Training configuration validation
 ├── plugins/                 # Plugin system implementation
@@ -172,12 +174,12 @@ utils/
 └── model_versioning.py     # Model version management
 ```
 
-### 4. Plugins Module (`plugins/`)
+### 4. Plugins Module (`src/plugins/`)
 
 Extensible code analysis plugins.
 
 ```
-plugins/
+src/plugins/
 ├── __init__.py
 ├── code_analyzer.py         # Base code analysis
 ├── openai_code_analyzer.py  # OpenAI-powered analysis

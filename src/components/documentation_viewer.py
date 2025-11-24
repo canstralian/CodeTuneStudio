@@ -2,7 +2,7 @@ import os
 
 import streamlit as st
 
-from utils.documentation import DocItem, DocumentationGenerator
+from src.utils.documentation import DocItem, DocumentationGenerator
 
 
 def render_parameters(params: list[dict[str, str]]) -> None:
