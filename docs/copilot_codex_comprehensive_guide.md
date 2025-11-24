@@ -142,7 +142,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: pip install pip-audit && pip-audit
   codeql:
-    uses: github/codeql-action/.github/workflows/codeql.yml@v3
+    uses: github/codeql-action/analyze@v3
   trivy:
     runs-on: ubuntu-latest
     steps:
