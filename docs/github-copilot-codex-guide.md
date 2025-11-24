@@ -50,7 +50,7 @@
 - Highlight missing tests whenever Copilot proposes functionality changes.
 
 ### Example Rule Set
-1. Respect domain-driven boundaries (`core/risk`, `core/execution`, `plugins/strategies`).
+1. Respect domain-driven boundaries (`core/`, `plugins/`, `components/`, `utils/`).
 2. Annotate all public functions with type hints and docstrings.
 3. Prompt for test updates (`tests/` mirror path) for every behavior change.
 4. Avoid modifying documentation-only files when responding to code refactor requests.
