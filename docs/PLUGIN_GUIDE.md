@@ -42,7 +42,7 @@ plugins/
 All plugins must inherit from `BaseTool`:
 
 ```python
-from utils.plugins.base import BaseTool
+from src.utils.plugins.base import BaseTool
 
 class MyPlugin(BaseTool):
     """Plugin description"""
@@ -68,7 +68,7 @@ Create a new file in the `plugins/` directory:
 # plugins/code_complexity_analyzer.py
 
 from typing import Any, Dict, List
-from utils.plugins.base import BaseTool
+from src.utils.plugins.base import BaseTool
 import re
 
 
@@ -135,7 +135,7 @@ Create a test file in `tests/`:
 # tests/test_code_complexity_analyzer.py
 
 import unittest
-from plugins.code_complexity_analyzer import CodeComplexityAnalyzer
+from src.plugins.code_complexity_analyzer import CodeComplexityAnalyzer
 
 
 class TestCodeComplexityAnalyzer(unittest.TestCase):
@@ -196,7 +196,7 @@ class BaseTool:
 The plugin registry provides methods to interact with loaded plugins:
 
 ```python
-from utils.plugins.registry import registry
+from src.utils.plugins.registry import registry
 
 # List all available plugins
 plugins = registry.list_tools()
@@ -315,7 +315,7 @@ class MyPlugin(BaseTool):
 ```python
 # plugins/style_checker.py
 
-from utils.plugins.base import BaseTool
+from src.utils.plugins.base import BaseTool
 import ast
 import re
 
@@ -372,7 +372,7 @@ class StyleChecker(BaseTool):
 
 import os
 from typing import Dict, Any
-from utils.plugins.base import BaseTool
+from src.utils.plugins.base import BaseTool
 import openai
 
 class OpenAIRefactor(BaseTool):
