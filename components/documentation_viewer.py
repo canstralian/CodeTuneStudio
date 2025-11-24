@@ -1,8 +1,31 @@
 import os
+from typing import Optional
 
 import streamlit as st
 
-from utils.documentation import DocItem, DocumentationGenerator
+# Lazy import for DocumentationGenerator to optimize performance
+_doc_gen_cache: Optional[object] = None
+
+
+def _get_documentation_generator():
+    """
+    Lazy-load the DocumentationGenerator.
+
+    This function implements lazy loading to optimize application startup time
+    by only importing and initializing the documentation generator when needed.
+
+    Returns:
+        DocumentationGenerator instance
+    """
+    global _doc_gen_cache
+
+    if _doc_gen_cache is None:
+        from utils.documentation import DocumentationGenerator
+        _doc_gen_cache = DocumentationGenerator(
+            os.path.dirname(os.path.dirname(__file__))
+        )
+
+    return _doc_gen_cache
 
 
 def render_parameters(params: list[dict[str, str]]) -> None:
@@ -21,7 +44,7 @@ def render_parameters(params: list[dict[str, str]]) -> None:
         )
 
 
-def render_doc_item(item: DocItem, level: int = 0) -> None:
+def render_doc_item(item, level: int = 0) -> None:
     """Render a documentation item with proper formatting"""
     prefix = "#" * (level + 2)
 
@@ -43,11 +66,16 @@ def render_doc_item(item: DocItem, level: int = 0) -> None:
 
 
 def documentation_viewer() -> None:
-    """Streamlit component for viewing project documentation"""
+    """
+    Streamlit component for viewing project documentation.
+
+    Uses lazy loading to optimize performance by only loading the
+    documentation generator when the component is actually rendered.
+    """
     st.header("📚 Documentation")
 
-    # Initialize documentation generator
-    doc_gen = DocumentationGenerator(os.path.dirname(os.path.dirname(__file__)))
+    # Lazy-load documentation generator
+    doc_gen = _get_documentation_generator()
 
     try:
         with st.spinner("Generating documentation..."):

@@ -1,14 +1,14 @@
-import logging
 import os
-from typing import Any
+import time
+from typing import Any, Optional
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
+from config.logging_config import get_logger
 from utils.plugins.base import AgentTool, ToolMetadata
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Use centralized logging
+logger = get_logger(__name__)
 
 
 class OpenAICodeAnalyzerTool(AgentTool):
@@ -47,17 +47,41 @@ class OpenAICodeAnalyzerTool(AgentTool):
             author="CodeTuneStudio",
             tags=["code-analysis", "ai", "openai"],
         )
+        # Rate limiting configuration
+        self.max_retries = int(os.environ.get("OPENAI_MAX_RETRIES", "3"))
+        self.retry_delay = float(os.environ.get("OPENAI_RETRY_DELAY", "1.0"))
+        self.rate_limit_delay = float(
+            os.environ.get("OPENAI_RATE_LIMIT_DELAY", "0.5")
+        )
+        self.last_request_time: float = 0.0
+
         # Initialize OpenAI client
-        # Ensure the API key is set
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
+        self.client: Optional[OpenAI] = None
+        self._api_key = os.environ.get("OPENAI_API_KEY")
+
+    def init(self) -> None:
+        """
+        Initialize the OpenAI client.
+
+        Raises:
+            OSError: If OPENAI_API_KEY is not set
+        """
+        if not self._api_key:
             msg = (
                 "The environment variable 'OPENAI_API_KEY' is not set. "
                 "Please set it to your OpenAI API key."
             )
             raise OSError(msg)
-        # Initialize OpenAI client
-        self.client = OpenAI(api_key=api_key)
+
+        self.client = OpenAI(api_key=self._api_key)
+        super().init()
+        logger.info("OpenAI Code Analyzer initialized")
+
+    def teardown(self) -> None:
+        """Clean up resources."""
+        self.client = None
+        super().teardown()
+        logger.info("OpenAI Code Analyzer teardown complete")
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """Validate required inputs"""
@@ -65,9 +89,86 @@ class OpenAICodeAnalyzerTool(AgentTool):
             return False
         return isinstance(inputs["code"], str)
 
+    def _apply_rate_limiting(self) -> None:
+        """Apply rate limiting to avoid exceeding API limits."""
+        current_time = time.time()
+        time_since_last_request = current_time - self.last_request_time
+
+        if time_since_last_request < self.rate_limit_delay:
+            sleep_time = self.rate_limit_delay - time_since_last_request
+            logger.debug(f"Rate limiting: sleeping for {sleep_time:.2f}s")
+            time.sleep(sleep_time)
+
+        self.last_request_time = time.time()
+
+    def _make_api_call_with_retry(
+        self, code: str
+    ) -> dict[str, Any]:
+        """
+        Make API call with retry logic.
+
+        Args:
+            code: Code to analyze
+
+        Returns:
+            API response dictionary
+
+        Raises:
+            OpenAIError: If all retry attempts fail
+        """
+        if not self.client:
+            raise RuntimeError("Client not initialized. Call init() first.")
+
+        last_error = None
+
+        for attempt in range(self.max_retries):
+            try:
+                self._apply_rate_limiting()
+
+                response = self.client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert code analyzer. Analyze the "
+                                "given code and provide insights about:\n"
+                                "1. Code quality\n"
+                                "2. Potential improvements\n"
+                                "3. Performance considerations\n"
+                                "4. Security considerations\n"
+                                "Provide the analysis in JSON format."
+                            ),
+                        },
+                        {"role": "user", "content": f"Analyze this code:\n\n{code}"},
+                    ],
+                    temperature=0.7,
+                )
+
+                return {
+                    "analysis": response.choices[0].message.content,
+                    "model": response.model,
+                    "status": "success",
+                }
+
+            except OpenAIError as e:
+                last_error = e
+                logger.warning(
+                    f"API call attempt {attempt + 1}/{self.max_retries} failed: {e}"
+                )
+
+                if attempt < self.max_retries - 1:
+                    # Exponential backoff
+                    delay = self.retry_delay * (2 ** attempt)
+                    logger.info(f"Retrying in {delay:.2f}s...")
+                    time.sleep(delay)
+
+        # All retries failed
+        raise last_error
+
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Analyze code using OpenAI
+        Analyze code using OpenAI with retry logic and rate limiting.
 
         Args:
             inputs: Dictionary containing:
@@ -83,48 +184,16 @@ class OpenAICodeAnalyzerTool(AgentTool):
             }
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert code analyzer. Analyze the "
-                            "given code and provide insights about:\n"
-                            "1. Code quality\n"
-                            "2. Potential improvements\n"
-                            "3. Performance considerations\n"
-                            "4. Security considerations\n"
-                            "Provide the analysis in JSON format."
-                        ),
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Analyze this code:\n\n{inputs['code']}",
-                    },
-                ],
-                response_format={"type": "json_object"},
-            )
-
-            # Validate response structure before accessing
-            if (
-                response.choices
-                and isinstance(response.choices, list)
-                and len(response.choices) > 0
-                and response.choices[0].message
-                and response.choices[0].message.content
-            ):
-                analysis_content = response.choices[0].message.content
-                return {
-                    "analysis": analysis_content,
-                    "model": "gpt-4o",
-                    "status": "success",
-                }
-            logger.error("OpenAI API response missing expected content.")
+            return self._make_api_call_with_retry(inputs["code"])
+        except OpenAIError as e:
+            logger.error(f"OpenAI code analysis failed: {e!s}")
             return {
-                "error": "OpenAI API response missing expected content.",
+                "error": f"API error: {e!s}",
                 "status": "error",
             }
         except Exception as e:
-            logger.exception(f"OpenAI code analysis failed: {e!s}")
-            return {"error": str(e), "status": "error"}
+            logger.exception(f"Unexpected error in code analysis: {e!s}")
+            return {
+                "error": f"Unexpected error: {e!s}",
+                "status": "error",
+            }
