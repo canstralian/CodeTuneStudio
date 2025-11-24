@@ -10,7 +10,7 @@ psycopg2-binary==2.9.11
 
 # Machine learning stack
 torch>=2.2.0
-transformers==4.53.0
+transformers==4.57.1
 datasets==4.3.0
 evaluate==0.4.6
 accelerate==1.10.1
