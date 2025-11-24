@@ -163,6 +163,7 @@ CodeTuneStudio/
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and component overview
 - **[Plugin Development Guide](docs/PLUGIN_GUIDE.md)** - Create custom code analysis plugins
+- **[Logging Guide](LOGGING.md)** - Enhanced logging with JSON format and request tracking
 - **[Changelog](CHANGELOG.md)** - Version history and migration guides
 - **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
 

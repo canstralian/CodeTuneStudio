@@ -8,16 +8,25 @@ network binding defaults.
 from __future__ import annotations
 
 import argparse
-import logging
 import os
 from typing import Any
 
 from flask import Flask, jsonify
 
+from core.logging import get_logger, setup_logging
+from core.middleware import setup_request_logging
+
 app = Flask(__name__)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("kali_server")
+# Setup enhanced logging
+setup_logging(
+    log_level=os.environ.get("LOG_LEVEL", "INFO"),
+    log_file=os.environ.get("LOG_FILE"),
+)
+logger = get_logger("kali_server")
+
+# Setup request logging middleware
+setup_request_logging(app)
 
 API_PORT = int(os.environ.get("API_PORT", "5000"))
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "0") == "1"
@@ -59,7 +68,7 @@ if __name__ == "__main__":
 
     # Set configuration from command line arguments
     if args.debug:
-        logger.setLevel(logging.DEBUG)
+        setup_logging(log_level="DEBUG")
 
     logger.info(f"Starting Kali Linux Tools API Server on {args.ip}:{args.port}")
     app.run(host=args.ip, port=args.port, debug=args.debug)

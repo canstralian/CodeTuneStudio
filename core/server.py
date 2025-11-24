@@ -25,16 +25,19 @@ from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from core.logging import get_logger, setup_logging
+from core.middleware import setup_request_logging
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
+# Configure enhanced logging
+setup_logging(
+    log_level=os.environ.get("LOG_LEVEL", "INFO"),
+    log_file=os.environ.get("LOG_FILE"),
+    json_format=os.environ.get("LOG_JSON", "false").lower() == "true",
 )
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MLFineTuningApp:
@@ -77,6 +80,10 @@ class MLFineTuningApp:
     def __init__(self) -> None:
         """Initialize the application with improved error handling and caching"""
         self.flask_app = Flask(__name__)
+        
+        # Setup request logging middleware for Flask
+        setup_request_logging(self.flask_app)
+        
         self._configure_database()
         self._configure_streamlit()
 
