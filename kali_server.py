@@ -5,6 +5,7 @@ endpoints for the Trading Bot Swarm integration tests. It mirrors the
 expected behavior from the upstream repository while enforcing safe
 network binding defaults.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,6 +23,7 @@ app = Flask(__name__)
 setup_logging(
     log_level=os.environ.get("LOG_LEVEL", "INFO"),
     log_file=os.environ.get("LOG_FILE"),
+    json_format=os.environ.get("LOG_JSON", "false").lower() == "true",
 )
 logger = get_logger("kali_server")
 

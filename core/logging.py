@@ -90,8 +90,14 @@ def sanitize_for_logging(data: Any, max_depth: int = 5) -> Any:
         sanitized = {}
         for key, value in data.items():
             key_lower = str(key).lower()
-            # Check if key contains any sensitive keywords
-            if any(sensitive in key_lower for sensitive in SENSITIVE_KEYS):
+            # Check if key contains any sensitive keywords (optimized with early exit)
+            is_sensitive = False
+            for sensitive in SENSITIVE_KEYS:
+                if sensitive in key_lower:
+                    is_sensitive = True
+                    break
+
+            if is_sensitive:
                 sanitized[key] = "***REDACTED***"
             else:
                 sanitized[key] = sanitize_for_logging(value, max_depth - 1)
