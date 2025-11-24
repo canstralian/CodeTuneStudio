@@ -127,6 +127,7 @@ jobs:
           ruff check .
           black --check .
           mypy .
+          pnpm lint
       - name: Run tests
         run: |
           pytest -q
