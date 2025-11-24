@@ -12,7 +12,7 @@
 - Require green test runs before approving pull requests or triggering deployments.
 
 ### Linting and Static Analysis
-- Enforce `ruff` and `flake8` for Python, `eslint` for JavaScript/TypeScript, and `shellcheck` for Bash utilities.
+- Enforce `ruff` for Python, `eslint` for JavaScript/TypeScript, and `shellcheck` for Bash utilities.
 - Integrate type checking (`mypy`, `pyright`, `tsc`) into the CI gate.
 - Block commits that fail linting or introduce new warnings.
 
