@@ -98,6 +98,9 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
+      issues: write
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
