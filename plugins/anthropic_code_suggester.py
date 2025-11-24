@@ -60,6 +60,11 @@ class AnthropicCodeSuggesterTool(AgentTool):
         )
         self.last_request_time: float = 0.0
 
+        # Model configuration
+        self.model_name = os.environ.get(
+            "ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022"
+        )
+
         # Initialize Anthropic client
         self.client: Optional[Anthropic] = None
         self._api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -132,7 +137,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
                 self._apply_rate_limiting()
 
                 message = self.client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
+                    model=self.model_name,
                     max_tokens=4096,
                     messages=[
                         {

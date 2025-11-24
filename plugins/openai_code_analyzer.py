@@ -55,6 +55,10 @@ class OpenAICodeAnalyzerTool(AgentTool):
         )
         self.last_request_time: float = 0.0
 
+        # Model configuration
+        self.model_name = os.environ.get("OPENAI_MODEL", "gpt-4o")
+        self.temperature = float(os.environ.get("OPENAI_TEMPERATURE", "0.7"))
+
         # Initialize OpenAI client
         self.client: Optional[OpenAI] = None
         self._api_key = os.environ.get("OPENAI_API_KEY")
@@ -126,7 +130,8 @@ class OpenAICodeAnalyzerTool(AgentTool):
                 self._apply_rate_limiting()
 
                 response = self.client.chat.completions.create(
-                    model="gpt-4o",
+                    model=self.model_name,
+                    temperature=self.temperature,
                     messages=[
                         {
                             "role": "system",

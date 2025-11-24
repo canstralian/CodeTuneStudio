@@ -211,12 +211,15 @@ No immediate migration required. Existing code continues to work:
 
 ### OpenAI Plugin
 - `OPENAI_API_KEY`: OpenAI API key (required)
+- `OPENAI_MODEL`: Model name (default: gpt-4o)
+- `OPENAI_TEMPERATURE`: Response creativity (default: 0.7)
 - `OPENAI_MAX_RETRIES`: Maximum retry attempts (default: 3)
 - `OPENAI_RETRY_DELAY`: Initial retry delay in seconds (default: 1.0)
 - `OPENAI_RATE_LIMIT_DELAY`: Delay between requests (default: 0.5)
 
 ### Anthropic Plugin
 - `ANTHROPIC_API_KEY`: Anthropic API key (required)
+- `ANTHROPIC_MODEL`: Model name (default: claude-3-5-sonnet-20241022)
 - `ANTHROPIC_MAX_RETRIES`: Maximum retry attempts (default: 3)
 - `ANTHROPIC_RETRY_DELAY`: Initial retry delay in seconds (default: 1.0)
 - `ANTHROPIC_RATE_LIMIT_DELAY`: Delay between requests (default: 0.5)
