@@ -5,6 +5,7 @@ endpoints for the Trading Bot Swarm integration tests. It mirrors the
 expected behavior from the upstream repository while enforcing safe
 network binding defaults.
 """
+
 from __future__ import annotations
 
 import argparse
