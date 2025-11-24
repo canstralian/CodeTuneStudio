@@ -193,7 +193,7 @@ jobs:
       - name: Node audit
         run: pnpm audit --audit-level=high
       - name: Container scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: filesystem
           ignore-unfixed: true
