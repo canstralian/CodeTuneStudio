@@ -1,10 +1,11 @@
-import logging
 import os
 
 import streamlit as st
 from transformers import AutoTokenizer
 
-logger = logging.getLogger(__name__)
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def tokenizer_builder() -> None:

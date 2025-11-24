@@ -1,4 +1,3 @@
-import logging
 from contextlib import contextmanager
 from typing import Any
 
@@ -12,11 +11,9 @@ from peft import (
 )
 from transformers import PreTrainedModel
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class PEFTTrainer:

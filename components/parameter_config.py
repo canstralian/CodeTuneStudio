@@ -1,15 +1,11 @@
-import logging
 from typing import Any
 
 import streamlit as st
 
+from core.logging import get_logger
 from utils.config_validator import sanitize_string, validate_config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def get_model_parameters(col) -> dict[str, Any]:

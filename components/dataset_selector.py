@@ -1,12 +1,12 @@
-import logging
 import re
 from functools import lru_cache
 
 import streamlit as st
 
+from core.logging import get_logger
 from utils.argilla_dataset import ArgillaDatasetManager
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 AVAILABLE_DATASETS = {
     "code_search_net",

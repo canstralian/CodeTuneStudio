@@ -1,14 +1,12 @@
-import logging
 import os
 from typing import Any
 
 from openai import OpenAI
 
+from core.logging import get_logger
 from utils.plugins.base import AgentTool, ToolMetadata
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class OpenAICodeAnalyzerTool(AgentTool):

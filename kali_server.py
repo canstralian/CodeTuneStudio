@@ -12,12 +12,14 @@ import logging
 import os
 from typing import Any
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+
+from core.logging import clear_request_id, get_logger, get_request_id, set_request_id, setup_logging
 
 app = Flask(__name__)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("kali_server")
+setup_logging()
+logger = get_logger("kali_server")
 
 API_PORT = int(os.environ.get("API_PORT", "5000"))
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "0") == "1"
@@ -52,6 +54,21 @@ def healthcheck() -> Any:
     """Simple health endpoint for monitoring."""
 
     return jsonify(status="ok")
+
+
+@app.before_request
+def _assign_request_id() -> None:
+    request_id = set_request_id(request.headers.get("X-Request-ID"))
+    request.environ["REQUEST_ID"] = request_id
+
+
+@app.after_request
+def _inject_request_id(response):  # type: ignore[unused-ignore]
+    request_id = get_request_id()
+    if request_id:
+        response.headers["X-Request-ID"] = request_id
+    clear_request_id()
+    return response
 
 
 if __name__ == "__main__":

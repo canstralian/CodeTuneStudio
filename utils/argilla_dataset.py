@@ -1,13 +1,12 @@
-import logging
 import os
 from typing import Any
 
 import argilla as rg
 from datasets import Dataset
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class ArgillaDatasetManager:
