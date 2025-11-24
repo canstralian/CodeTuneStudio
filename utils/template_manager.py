@@ -8,7 +8,6 @@ previously scattered across multiple modules.
 
 import logging
 import random
-from functools import lru_cache
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -163,15 +162,11 @@ class TemplateManager:
                 del self._templates[language_key]
                 logger.info(f"Cleared templates for language: {language_key}")
 
-    @lru_cache(maxsize=256)
     def generate_template_variations(
         self, language: str, count: int = 1
     ) -> List[str]:
         """
         Generate multiple template variations for a language.
-
-        This method is cached to improve performance when generating
-        the same number of variations repeatedly.
 
         Args:
             language: Programming language identifier

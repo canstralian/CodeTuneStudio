@@ -1,10 +1,10 @@
 import os
-from typing import Optional
+from typing import Any, Optional
 
 import streamlit as st
 
 # Lazy import to avoid loading documentation module unless needed
-_doc_generator_cache: Optional[any] = None
+_doc_generator_cache: Optional[Any] = None
 
 
 def _get_documentation_generator():
