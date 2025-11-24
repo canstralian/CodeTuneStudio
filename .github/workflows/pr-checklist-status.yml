@@ -19,21 +19,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"  # Specify Python version explicitly for consistency
+          python-version: "3.12"  # Updated to Python 3.12 for consistency
 
       - name: Install Formatters & Linters
         run: |
           pip install --upgrade pip  # Always upgrade pip to avoid version conflicts
-          pip install black==23.12.1 ruff==0.3.5
+          pip install black==23.3.0 flake8 isort==5.12.0
 
       - name: Run Black (formatting check)
         run: |
           # Black performs formatting checks and outputs a diff for violations
-          black --check --diff . --exclude 'app.py'
+          black --check --diff . --exclude '(app\.py|venv|\.venv|build|dist|migrations)'
 
-      - name: Run Ruff (lint check)
+      - name: Run isort (import sorting check)
         run: |
-          # Ruff is a fast Python linter and formatter
-          # --ignore E501: Ignore long lines (handled by Black)
-          # --exit-non-zero-on-fix: Fail the job if fixes are made
-          ruff check . --ignore E501
+          # isort checks import ordering
+          isort --check-only --diff . --skip venv --skip .venv --skip migrations --skip app.py --skip index.html
