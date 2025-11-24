@@ -1,112 +1,104 @@
-# GitHub Copilot + Codex Configuration Guide for Trading Bot Swarm
+# GitHub Copilot and Codex Configuration Guide for the Trading Bot Swarm Ecosystem
 
 ## Purpose and Scope
-- Establish a standard for using GitHub Copilot and Codex as pair programmers that propose code but never bypass required checks.
-- Align AI assistance with Trading Bot Swarm goals: reliability, performance, and safety in trading automation.
-- Ensure consistent defaults for testing, linting, security, observability, and CI/CD so generated code always meets the same bar.
-
-## Copilot and Codex Roles
-- **Pair programmer only:** AI may suggest diffs, but humans own commits, reviews, and releases.
-- **Security-first defaults:** Prefer least-privilege APIs, sanitized inputs, and secret-less local configs (use env vars/secret managers).
-- **Guardrails:** Reject suggestions that add hardcoded secrets, weaken validation, skip logging/metrics in critical paths, or remove tests.
-- **Async discipline:** Prefer async IO for network/DB calls; keep CPU-bound work in workers; avoid blocking event loops.
-- **Reproducibility:** Preserve deterministic seeds, pinned dependencies, and idempotent migrations.
+This guide standardizes how GitHub Copilot and Codex are configured and used across the Trading Bot Swarm ecosystem to maximize code quality, reliability, performance, and safety. Copilot should operate strictly as a disciplined pair programmer that suggests code aligned with project standards while respecting security and compliance constraints. The scope covers local development, CI/CD, automation rules, and governance for contributions.
 
 ## Configuration Overview
-- **Testing:**
-  - Run unit tests on every PR; integration/e2e on main/nightly.
-  - Enforce coverage thresholds for core trading logic and risk controls.
-  - Provide fixtures for market data simulators; avoid real-exchange calls in CI.
-- **Linting & Code Style:**
-  - Use `ruff`/`flake8` + `black` for Python; `eslint` + `prettier` for JS/TS.
-  - Disallow wildcard imports and unused symbols; keep functions < 50 LOC when practical.
-- **Async Patterns:**
-  - Use `asyncio` with `async/await`; wrap blocking calls in executors.
-  - Timeouts on network calls; retries with jitter; circuit breakers around exchange gateways.
-- **Security Defaults:**
-  - No secrets in code; rotate tokens; validate all external payloads (JSON schema or pydantic).
-  - Principle of least privilege for API keys; use role-scoped credentials for automation.
-- **Logging & Observability:**
-  - Structured logging (JSON) with trace/span IDs; log key trading decisions and risk checks.
-  - Metrics: latency, error rate, fill ratio, PnL drift; alerts for risk breaches.
-- **CI/CD Integration:**
-  - Pre-commit hooks for format/lint; CI quality gate (lint + test + security scan).
-  - Require green checks before merge; protected main with required reviews.
-- **Version Control:**
-  - Conventional commits; branch naming `feature/`, `fix/`, `chore/`, `exp/`.
-  - Keep PRs small and focused; include test plan and rollback notes.
+- **Testing and linting:** Always run project tests and linters on code changes before merging. Documentation-only changes may skip automated test runs.
+- **Code style:** Follow the repository's formatting tools (e.g., `black`, `ruff`, `eslint`, `prettier`) and enforce type checks where applicable.
+- **Async patterns:** Prefer async/await for I/O-bound tasks, ensure cancellation support, and avoid blocking calls inside async contexts.
+- **Security defaults:** Never hardcode secrets; use environment variables or secret managers. Validate inputs, enforce least privilege for tokens, and enable dependency scanning.
+- **Logging and observability:** Use structured logging, correlate logs with request IDs, and emit metrics/traces where supported.
+- **CI/CD integration:** Enforce quality gates (lint, test, type check) on pull requests; require branch protection and status checks.
+- **Version control:** Use feature branches, meaningful commit messages, and semantic versioning for releases.
 
-## Custom Instruction Behavior (Copilot & Codex)
-- **Interaction Rules:**
-  - Suggest minimal, safe diffs with comments explaining rationale.
-  - Prefer standard libs before new dependencies; if needed, justify and pin versions.
-  - When changing logic, propose matching tests. Skip doc-only changes in test gating.
-- **Validation Defaults:**
-  - Run linters and tests for code changes; doc-only changes may skip tests but must state "docs-only" in PR body.
-  - Highlight potential race conditions, precision issues, and latency impact in trading paths.
+## Custom Instruction Behavior for Codex and Copilot
+Copilot and Codex should comply with explicit rules that guide suggestions and automations.
 
-### Example Custom Instructions (Conceptual YAML)
+### Example Rules
+- Prefer explicit imports and typing annotations.
+- Suggest secure defaults (parameter validation, timeouts, retries with backoff).
+- Avoid generating credentials, PII, or speculative business logic.
+- Always propose tests alongside code changes.
+- Ignore documentation-only edits when prompting to run tests.
+
+### Conceptual YAML for Custom Instructions
 ```yaml
-ai_assist:
-  role: "pair_programmer"
-  principles:
-    - "Never commit secrets or credentials"
-    - "Prefer deterministic, testable code"
-    - "Surface risks: latency, race conditions, precision"
-  coding_guides:
-    testing: "Add/extend unit tests for logic changes; run pytest"
-    lint: "Run ruff/flake8 + black; no unused imports"
-    async: "Use async IO; wrap blocking calls in executor; set timeouts"
-    security: "Validate inputs; avoid eval/exec; use typed schemas"
-    logging: "Structured JSON logs with correlation IDs"
-  workflow:
-    - "If only docs changed: note 'docs-only', skip tests"
-    - "Else: run lint and tests before PR"
+copilot:
+  role: "Disciplined pair programmer"
+  rules:
+    - "Follow repository lint/format/type checks."
+    - "Suggest test updates for behavioral changes."
+    - "Enforce security: no secrets, validate inputs, set timeouts."
+    - "Prefer async/await for I/O and avoid blocking patterns."
+    - "Use structured logging and propagate correlation IDs."
+    - "Skip test prompts for docs-only edits."
+    - "Respect code owners and review gates."
+  commit_message: "Encourage semantic, meaningful commits"
+
+codex:
+  role: "Automation orchestrator"
+  rules:
+    - "Run lint and tests before merge; allow docs-only bypass."
+    - "Ensure branch protection status checks are green."
+    - "Keep dependency versions pinned; require scans."
+    - "Trigger semantic release on main after quality gate."
+    - "Fail fast on secrets exposure or policy violations."
 ```
 
-## GitHub Workflow: Lint & Test Automation
-**Trigger:** `pull_request` on feature/fix branches; `push` to `main` for full suite.
+## GitHub Workflow Example: Lint and Test Automation
+Trigger the workflow on pull requests and protected branches, skipping documentation-only paths.
 
 ```yaml
 name: quality-gate
 on:
   pull_request:
-    branches: ["main", "develop"]
+    branches: ["main", "release/*"]
     paths-ignore:
       - "**/*.md"
       - "docs/**"
   push:
-    branches: ["main"]
+    branches: ["main", "release/*"]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
 
 jobs:
-  lint-and-test:
+  lint-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install deps
+      - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Lint
         run: |
-          ruff check .
           black --check .
-      - name: Tests
-        run: pytest --maxfail=1 --disable-warnings --cov
+          ruff check .
+      - name: Type check
+        run: mypy .
+      - name: Test
+        run: pytest --maxfail=1 --disable-warnings -q
 ```
 
-## Best Practices: Release & Security Automation
+## Semantic Release and Version Tagging Workflow
+Use semantic commits and automated release tagging on main after quality gates pass.
 
-### Semantic Release and Version Tagging
 ```yaml
 name: semantic-release
 on:
-  push:
+  workflow_run:
+    workflows: ["quality-gate"]
+    types: ["completed"]
     branches: ["main"]
 
 jobs:
   release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -115,51 +107,59 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm ci
-      - run: npx semantic-release
+      - name: Install release tooling
+        run: npm ci
+      - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
 ```
 
-### Security & Dependency Scanning
+## Security and Dependency Scanning
+Automate scanning on a schedule and on pull requests to block vulnerable code.
+
 ```yaml
 name: security-scan
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * 1" # Mondays
   pull_request:
-    branches: ["main", "develop"]
+    branches: ["main", "release/*"]
 
 jobs:
   sast-deps:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Dependency audit (pip)
+      - name: Dependency audit
         run: pip install pip-audit && pip-audit
-      - name: CodeQL Init
+      - name: SAST
         uses: github/codeql-action/init@v3
         with:
-          languages: python, javascript
-      - name: CodeQL Analyze
+          languages: python
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 ```
 
 ## Contributor Guidelines
-- Open an issue describing the change, risks, and rollout/rollback plan.
-- For code changes: include tests, benchmark notes (if performance-sensitive), and security impact.
-- Require at least one reviewer with domain knowledge; block merges on failing checks.
-- Validation checklist: lint passes, tests green, threat model unchanged or improved, logs/metrics updated.
+- Propose changes via feature branches and pull requests with clear descriptions.
+- Ensure lint, type checks, and tests pass; attach evidence in the PR.
+- Follow semantic commit messages and link relevant issues.
+- Review criteria: correctness, security posture, performance impact, test coverage, observability, and adherence to style guides.
+- Validation: reviewers confirm automated checks are green and code paths are covered by tests; security reviewers sign off on sensitive changes.
 
-## Troubleshooting & Optimization
-- **Copilot noise:** Reduce scope with inline comments; disable in secrets or credentials files.
-- **Flaky tests:** Use deterministic seeds and isolated fixtures; quarantine and fix before merge.
-- **Slow CI:** Enable caching (`pip cache`, `actions/cache`), shard tests, and parallelize lint/test.
-- **False positives in scanners:** Suppress with documented allowlists and expiration dates.
+## Troubleshooting and Optimization Tips
+- **Copilot noise:** Refine prompts with file context and enforce rules from this guide.
+- **Flaky tests:** Isolate with `pytest -k` and add retries or deterministic fixtures.
+- **Performance regressions:** Use profiling tools and add benchmarks where possible.
+- **CI timeouts:** Cache dependencies and parallelize lint/test jobs.
+- **False-positive scans:** Suppress with documented allowlists and follow-up fixes.
 
 ## Maintenance Schedule
-- Review this guide quarterly or with major dependency/CI changes.
-- After each incident or postmortem, update guardrails, test cases, and release rules.
+- Review this guide quarterly or after major platform changes.
+- Update workflow snippets when tooling versions change or new checks are adopted.
+- Validate instructions against current branch protection and CI configurations.
 
 ## Closing Note
-Standardizing excellence keeps Trading Bot Swarm reliable, performant, and safe—Copilot and Codex assist, but engineering rigor leads the way.
+Standardizing Copilot and Codex behaviors elevates engineering excellence and strengthens the reliability, performance, and safety of the Trading Bot Swarm ecosystem.
