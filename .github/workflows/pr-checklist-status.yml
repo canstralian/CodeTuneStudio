@@ -1,39 +1,78 @@
 name: PR Checklist Status
-permissions:
-  contents: read
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Ensure only one run per PR at a time; cancel older runs on the same branch
+concurrency:
+  group: pr-check-${{ github.head_ref }}
+  cancel-in-progress: true
 
 jobs:
+  # -----------------------------------------
+  # Lint & Format Check
+  # -----------------------------------------
   lint-and-format:
     name: Lint & Format Check
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4  # Use the latest stable version of the action
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"  # Specify Python version explicitly for consistency
+          python-version: "3.10"
 
-      - name: Install Formatters & Linters
-        run: |
-          pip install --upgrade pip  # Always upgrade pip to avoid version conflicts
-          pip install black==23.12.1 ruff==0.3.5
+      # Cache pip packages to speed up subsequent runs
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Run Black (formatting check)
+      # Install latest stable versions of formatting and linting tools
+      - name: Install Black and Ruff
         run: |
-          # Black performs formatting checks and outputs a diff for violations
+          python -m pip install --upgrade pip
+          # Pin to current releases (Nov 2025)
+          pip install black==25.11.0 ruff==0.14.6
+
+      # Check formatting using Black (fail if changes would be needed)
+      - name: Run Black (format check)
+        run: |
           black --check --diff . --exclude 'app.py'
 
+      # Lint code using Ruff (fail if fixes would be applied)
       - name: Run Ruff (lint check)
         run: |
-          # Ruff is a fast Python linter and formatter
-          # --ignore E501: Ignore long lines (handled by Black)
-          # --exit-non-zero-on-fix: Fail the job if fixes are made
-          ruff check . --ignore E501
+          # Ignore long-line rule (handled by Black)
+          # Fail if Ruff would apply any fixes (--exit-non-zero-on-fix)
+          ruff check . --ignore E501 --exit-non-zero-on-fix
+
+  # -----------------------------------------
+  # Verify PR Task List
+  # -----------------------------------------
+  checklist-validation:
+    name: Checklist Validation
+    runs-on: ubuntu-latest
+
+    # Skip validation on draft PRs
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Validate completed tasks
+        # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
+        # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
+        uses: kentaro-m/task-completed-checker-action@v0.1.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
