@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
     """
     Parse command-line arguments for CodeTune Studio.
-    
+
     Args:
         args: List of arguments to parse. If None, uses sys.argv[1:].
-    
+
     Returns:
         Parsed arguments namespace.
     """
@@ -73,7 +73,10 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
         "--database-url",
         type=str,
         default=os.environ.get("DATABASE_URL", "sqlite:///database.db"),
-        help="Database connection URL (default: sqlite:///database.db, env: DATABASE_URL)",
+        help=(
+            "Database connection URL (default: sqlite:///database.db, "
+            "env: DATABASE_URL)"
+        ),
     )
 
     parser.add_argument(
@@ -93,7 +96,10 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
     parser.add_argument(
         "--server-headless",
         action="store_true",
-        default=os.environ.get("SERVER_HEADLESS", "false").lower() in ("true", "1", "yes"),
+        default=(
+            os.environ.get("SERVER_HEADLESS", "false").lower()
+            in ("true", "1", "yes")
+        ),
         help="Run server in headless mode (default: false, env: SERVER_HEADLESS)",
     )
 
@@ -103,14 +109,14 @@ For more information, visit: https://github.com/canstralian/CodeTuneStudio
 def configure_logging(log_level: str) -> None:
     """
     Configure application logging.
-    
+
     Args:
         log_level: Logging level as a string (DEBUG, INFO, WARNING, ERROR, CRITICAL).
     """
     numeric_level = getattr(logging, log_level.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError(f"Invalid log level: {log_level}")
-    
+
     logging.basicConfig(
         level=numeric_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -124,33 +130,33 @@ def configure_logging(log_level: str) -> None:
 def main(args: Optional[list[str]] = None) -> int:
     """
     Main CLI entrypoint for CodeTune Studio.
-    
+
     Args:
         args: Optional list of arguments. If None, uses sys.argv[1:].
-    
+
     Returns:
         Exit code (0 for success, non-zero for failure).
     """
     try:
         # Parse arguments
         parsed_args = parse_args(args)
-        
+
         # Configure logging
         configure_logging(parsed_args.log_level)
-        
+
         logger.info(f"Starting CodeTune Studio v{__version__}")
         logger.info(f"Host: {parsed_args.host}")
         logger.info(f"Port: {parsed_args.port}")
         logger.info(f"Database: {parsed_args.database_url}")
-        
+
         # Set environment variables for the application
         os.environ["DATABASE_URL"] = parsed_args.database_url
         os.environ["LOG_LEVEL"] = parsed_args.log_level
-        
+
         # Import and run the Streamlit app
         # We use subprocess to run streamlit as it expects to be run as a script
         import subprocess
-        
+
         # Build streamlit command
         streamlit_cmd = [
             sys.executable,
@@ -161,19 +167,19 @@ def main(args: Optional[list[str]] = None) -> int:
             f"--server.address={parsed_args.host}",
             f"--server.port={parsed_args.port}",
         ]
-        
+
         if parsed_args.server_headless:
             streamlit_cmd.append("--server.headless=true")
-        
+
         if parsed_args.no_browser:
             streamlit_cmd.append("--server.headless=true")
-        
+
         logger.info(f"Launching Streamlit: {' '.join(streamlit_cmd)}")
-        
+
         # Run streamlit
         result = subprocess.run(streamlit_cmd, check=False)
         return result.returncode
-        
+
     except KeyboardInterrupt:
         logger.info("Application interrupted by user")
         return 0
