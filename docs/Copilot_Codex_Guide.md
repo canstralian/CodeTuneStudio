@@ -142,7 +142,7 @@ jobs:
       - name: JavaScript security
         run: |
           npm install --package-lock-only
-          npm audit --audit-level=high || true
+          npm audit --audit-level=high
 ```
 
 ## Contributor Guidelines
