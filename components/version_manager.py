@@ -1,9 +1,8 @@
 import streamlit as st
-
 from utils.model_versioning import ModelVersion
 
 
-def version_manager() -> None:
+def version_manager():
     """
     Display and manage model versions through a Streamlit interface.
 

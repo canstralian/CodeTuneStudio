@@ -1,12 +1,11 @@
 import logging
+from typing import Optional, Dict, List, Any, Tuple
 import os
 import random
-from functools import lru_cache
-from typing import Any
-
-import numpy as np
 from datasets import load_dataset
 from tqdm import tqdm
+import numpy as np
+from functools import lru_cache
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -16,14 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class RedditDatasetManager:
-    """Handle Reddit dataset operations.
-
-    Enhanced validation and performance optimization for Reddit datasets.
+    """
+    Handle Reddit dataset operations with enhanced validation and performance optimization
     """
 
-    def __init__(
-        self, cache_dir: str | None = None, max_cache_size: int = 1000
-    ) -> None:
+    def __init__(self, cache_dir: Optional[str] = None, max_cache_size: int = 1000):
         """
         Initialize Reddit dataset manager with improved caching
 
@@ -73,38 +69,14 @@ class RedditDatasetManager:
         """
         templates = {
             "python": [
-                (
-                    "def dance_with_bytes(rainbow_bits):\n"
-                    "    return ''.join([chr((ord(b) << 2) >> 1) "
-                    "for b in rainbow_bits])"
-                ),
-                (
-                    "class QuantumPancake:\n"
-                    "    def flip_in_time(self, syrup_waves):\n"
-                    "        return float('inf') if syrup_waves else None"
-                ),
-                (
-                    "async def dream_compiler(thoughts):\n"
-                    "    return await sorted(thoughts, "
-                    "key=lambda x: hash(str(x)))"
-                ),
+                "def dance_with_bytes(rainbow_bits):\n    return ''.join([chr((ord(b) << 2) >> 1) for b in rainbow_bits])",
+                "class QuantumPancake:\n    def flip_in_time(self, syrup_waves):\n        return float('inf') if syrup_waves else None",
+                "async def dream_compiler(thoughts):\n    return await sorted(thoughts, key=lambda x: hash(str(x)))",
             ],
             "javascript": [
-                (
-                    "function whisperToPromises(dreamState) {\n"
-                    "    return new Promise(resolve => "
-                    "setTimeout(() => resolve(undefined ?? dreamState), "
-                    "Infinity))}"
-                ),
-                (
-                    "const floatingPixels = bytes => bytes.map(b => "
-                    "typeof b === 'number' ? String.fromCharCode(b) : '🌈')"
-                ),
-                (
-                    "class TimeTravel {\n"
-                    "    static async rewind(memories) {\n"
-                    "        return [...memories].reverse().filter(Boolean)}}"
-                ),
+                "function whisperToPromises(dreamState) {\n    return new Promise(resolve => setTimeout(() => resolve(undefined ?? dreamState), Infinity))}",
+                "const floatingPixels = bytes => bytes.map(b => typeof b === 'number' ? String.fromCharCode(b) : '🌈')",
+                "class TimeTravel {\n    static async rewind(memories) {\n        return [...memories].reverse().filter(Boolean)}",
             ],
         }
 
@@ -113,8 +85,8 @@ class RedditDatasetManager:
 
     @lru_cache(maxsize=128)
     def augment_with_amphigory(
-        self, texts: tuple[str, ...], ratio: float = 0.1
-    ) -> list[str]:
+        self, texts: Tuple[str, ...], ratio: float = 0.1
+    ) -> List[str]:
         """
         Augment dataset with nonsensical but syntactically valid code
 
@@ -126,8 +98,7 @@ class RedditDatasetManager:
             Augmented list of texts
         """
         if not 0 <= ratio <= 1:
-            msg = "Ratio must be between 0 and 1"
-            raise ValueError(msg)
+            raise ValueError("Ratio must be between 0 and 1")
 
         augmented_texts = list(texts)
         num_amphigory = int(len(texts) * ratio)
@@ -146,10 +117,10 @@ class RedditDatasetManager:
     def get_training_data(
         self,
         min_score: int = 100,
-        max_samples: int | None = None,
+        max_samples: Optional[int] = None,
         include_amphigory: bool = True,
         amphigory_ratio: float = 0.1,
-    ) -> list[str]:
+    ) -> List[str]:
         """
         Get processed data ready for model training with enhanced filtering
 
@@ -180,10 +151,10 @@ class RedditDatasetManager:
             return texts
 
         except Exception as e:
-            logger.exception(f"Error preparing training data: {e!s}")
+            logger.error(f"Error preparing training data: {str(e)}")
             return []
 
-    def load_reddit_updates_dataset(self) -> dict[str, Any] | None:
+    def load_reddit_updates_dataset(self) -> Optional[Dict[str, Any]]:
         """
         Load and process the Reddit dataset with batched processing
 
@@ -221,12 +192,14 @@ class RedditDatasetManager:
             return processed_data
 
         except Exception as e:
-            logger.exception(f"Failed to load Reddit dataset: {e!s}")
+            logger.error(f"Failed to load Reddit dataset: {str(e)}")
             return None
 
     def get_filtered_data(
-        self, min_score: int | None = None, date_range: tuple[int, int] | None = None
-    ) -> dict[str, list]:
+        self,
+        min_score: Optional[int] = None,
+        date_range: Optional[Tuple[int, int]] = None,
+    ) -> Dict[str, List]:
         """
         Get filtered dataset with improved validation
 
@@ -266,5 +239,5 @@ class RedditDatasetManager:
             return {"texts": filtered_texts, "metadata": filtered_metadata}
 
         except Exception as e:
-            logger.exception(f"Error filtering dataset: {e!s}")
+            logger.error(f"Error filtering dataset: {str(e)}")
             return {"texts": [], "metadata": []}

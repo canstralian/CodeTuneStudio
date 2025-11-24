@@ -1,7 +1,5 @@
-import logging
-
 import streamlit as st
-
+import logging
 from utils.plugins.registry import registry
 
 # Configure logging
@@ -9,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def plugin_manager() -> None:
+def plugin_manager():
     """
     Display and manage loaded plugins in the Streamlit interface
     """
@@ -82,5 +80,5 @@ def plugin_manager() -> None:
                             st.error("Inactive")
 
     except Exception as e:
-        logger.exception(f"Error in plugin manager: {e!s}")
-        st.error(f"Failed to load plugin manager: {e!s}")
+        logger.error(f"Error in plugin manager: {str(e)}")
+        st.error(f"Failed to load plugin manager: {str(e)}")

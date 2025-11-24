@@ -69,7 +69,7 @@ class TestCorePackage(unittest.TestCase):
     def test_cli_version_flag(self):
         """Test that version flag works"""
         from core.cli import parse_args
-        from core import __version__
+        from core import __version__  # noqa: F401
         
         with self.assertRaises(SystemExit) as cm:
             parse_args(["--version"])

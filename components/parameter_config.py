@@ -1,9 +1,7 @@
-import logging
-from typing import Any
-
 import streamlit as st
-
-from utils.config_validator import sanitize_string, validate_config
+from typing import Dict, Any, Optional
+from utils.config_validator import validate_config, sanitize_string
+import logging
 
 # Configure logging
 logging.basicConfig(
@@ -12,14 +10,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_model_parameters(col) -> dict[str, Any]:
+def get_model_parameters(col) -> Dict[str, Any]:
     """
     Get model architecture and training parameters with enhanced validation.
 
-    This function creates and manages the UI elements for configuring core
-    model parameters including architecture selection, batch size, and
-    learning rate. It handles input validation and provides helpful tooltips
-    for each parameter.
+    This function creates and manages the UI elements for configuring core model parameters
+    including architecture selection, batch size, and learning rate. It handles input
+    validation and provides helpful tooltips for each parameter.
 
     Args:
         col: Streamlit column object for layout
@@ -54,18 +51,14 @@ def get_model_parameters(col) -> dict[str, Any]:
             st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
             st.subheader("🤖 Model Architecture")
             st.markdown(
-                '<p class="parameter-help">Select the base model and '
-                "configure its core parameters.</p>",
+                '<p class="parameter-help">Select the base model and configure its core parameters.</p>',
                 unsafe_allow_html=True,
             )
 
             model_type = st.selectbox(
                 "Model Architecture",
                 ["CodeT5", "Replit-v1.5"],
-                help=(
-                    "Select the base model architecture for fine-tuning. "
-                    "Each architecture is optimized for different tasks."
-                ),
+                help="Select the base model architecture for fine-tuning. Each architecture is optimized for different tasks.",
             )
 
             batch_size = st.number_input(
@@ -73,10 +66,7 @@ def get_model_parameters(col) -> dict[str, Any]:
                 min_value=1,
                 max_value=128,
                 value=16,
-                help=(
-                    "Number of samples processed in each training step. "
-                    "Larger values use more memory but can train faster."
-                ),
+                help="Number of samples processed in each training step. Larger values use more memory but can train faster.",
             )
 
             learning_rate = st.number_input(
@@ -85,10 +75,7 @@ def get_model_parameters(col) -> dict[str, Any]:
                 max_value=1e-2,
                 value=2e-5,
                 format="%.0e",
-                help=(
-                    "Step size for gradient updates. Too high can cause "
-                    "unstable training, too low can make training very slow."
-                ),
+                help="Step size for gradient updates. Too high can cause unstable training, too low can make training very slow.",
             )
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -98,11 +85,11 @@ def get_model_parameters(col) -> dict[str, Any]:
             "learning_rate": float(learning_rate),
         }
     except Exception as e:
-        logger.exception(f"Error getting model parameters: {e!s}")
+        logger.error(f"Error getting model parameters: {str(e)}")
         raise
 
 
-def get_training_parameters(col) -> dict[str, Any]:
+def get_training_parameters(col) -> Dict[str, Any]:
     """
     Get training configuration parameters with enhanced validation
 
@@ -117,8 +104,7 @@ def get_training_parameters(col) -> dict[str, Any]:
             st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
             st.subheader("⚙️ Training Configuration")
             st.markdown(
-                '<p class="parameter-help">Configure the training process '
-                "parameters.</p>",
+                '<p class="parameter-help">Configure the training process parameters.</p>',
                 unsafe_allow_html=True,
             )
 
@@ -127,10 +113,7 @@ def get_training_parameters(col) -> dict[str, Any]:
                 min_value=1,
                 max_value=100,
                 value=3,
-                help=(
-                    "Number of complete passes through the dataset. More "
-                    "epochs can improve results but take longer to train."
-                ),
+                help="Number of complete passes through the dataset. More epochs can improve results but take longer to train.",
             )
 
             max_seq_length = st.number_input(
@@ -138,10 +121,7 @@ def get_training_parameters(col) -> dict[str, Any]:
                 min_value=64,
                 max_value=512,
                 value=128,
-                help=(
-                    "Maximum length of input sequences. Longer sequences "
-                    "provide more context but require more memory."
-                ),
+                help="Maximum length of input sequences. Longer sequences provide more context but require more memory.",
             )
 
             warmup_steps = st.number_input(
@@ -149,10 +129,7 @@ def get_training_parameters(col) -> dict[str, Any]:
                 min_value=0,
                 max_value=1000,
                 value=100,
-                help=(
-                    "Number of steps for learning rate warmup. "
-                    "Helps stabilize early training."
-                ),
+                help="Number of steps for learning rate warmup. Helps stabilize early training.",
             )
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -162,42 +139,35 @@ def get_training_parameters(col) -> dict[str, Any]:
             "warmup_steps": int(warmup_steps),
         }
     except Exception as e:
-        logger.exception(f"Error getting training parameters: {e!s}")
+        logger.error(f"Error getting training parameters: {str(e)}")
         raise
 
 
-def get_dataset_enhancement_options() -> dict[str, Any]:
+def get_dataset_enhancement_options() -> Dict[str, Any]:
     """
     Get dataset enhancement configuration with validation.
 
-    Manages UI elements for configuring dataset enhancement options
-    including amphigory examples generation and ratio settings. These
-    options help improve model robustness by introducing controlled
-    variations in training data.
+    Manages UI elements for configuring dataset enhancement options including
+    amphigory examples generation and ratio settings. These options help improve
+    model robustness by introducing controlled variations in training data.
 
     Returns:
         Dictionary containing dataset enhancement options with keys:
-        - include_amphigory: Boolean indicating whether to include
-          amphigory examples
-        - amphigory_ratio: Float between 0.0 and 0.3 indicating ratio
-          of examples
+        - include_amphigory: Boolean indicating whether to include amphigory examples
+        - amphigory_ratio: Float between 0.0 and 0.3 indicating ratio of examples
     """
     try:
         st.markdown('<div class="parameter-section">', unsafe_allow_html=True)
         st.subheader("🔄 Data Enhancement")
         st.markdown(
-            '<p class="parameter-help">Configure additional data '
-            "enhancement options.</p>",
+            '<p class="parameter-help">Configure additional data enhancement options.</p>',
             unsafe_allow_html=True,
         )
 
         include_amphigory = st.checkbox(
             "Include Amphigory Examples",
             value=True,
-            help=(
-                "Include nonsensical but syntactically valid code "
-                "examples to enhance model robustness"
-            ),
+            help="Include nonsensical but syntactically valid code examples to enhance model robustness",
         )
 
         amphigory_ratio = 0.1
@@ -217,11 +187,11 @@ def get_dataset_enhancement_options() -> dict[str, Any]:
             "amphigory_ratio": float(amphigory_ratio),
         }
     except Exception as e:
-        logger.exception(f"Error getting enhancement options: {e!s}")
+        logger.error(f"Error getting enhancement options: {str(e)}")
         raise
 
 
-def training_parameters() -> dict[str, Any] | None:
+def training_parameters() -> Optional[Dict[str, Any]]:
     """
     Configure and validate training parameters with enhanced error handling.
 
@@ -268,6 +238,6 @@ def training_parameters() -> dict[str, Any] | None:
         return config
 
     except Exception as e:
-        logger.exception(f"Error in training parameter configuration: {e!s}")
-        st.error(f"Configuration error: {e!s}")
+        logger.error(f"Error in training parameter configuration: {str(e)}")
+        st.error(f"Configuration error: {str(e)}")
         return None

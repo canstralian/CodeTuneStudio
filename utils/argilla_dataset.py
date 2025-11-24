@@ -1,9 +1,8 @@
-import logging
-import os
-from typing import Any
-
 import argilla as rg
 from datasets import Dataset
+import logging
+from typing import Optional, Dict, Any, List
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +14,10 @@ class ArgillaDatasetManager:
 
     def __init__(
         self,
-        workspace: str | None = None,
-        api_url: str | None = None,
-        api_key: str | None = None,
-    ) -> None:
+        workspace: Optional[str] = None,
+        api_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
         """
         Initialize Argilla dataset manager
 
@@ -30,7 +29,7 @@ class ArgillaDatasetManager:
         self.workspace = workspace or os.getenv("ARGILLA_WORKSPACE")
         self._init_argilla(api_url, api_key)
 
-    def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
+    def _init_argilla(self, api_url: Optional[str], api_key: Optional[str]) -> None:
         """Initialize Argilla client"""
         try:
             # Using the new login method instead of init
@@ -42,24 +41,24 @@ class ArgillaDatasetManager:
             )
             logger.info("Argilla client initialized successfully")
         except Exception as e:
-            logger.exception(f"Failed to initialize Argilla client: {e!s}")
+            logger.error(f"Failed to initialize Argilla client: {str(e)}")
             raise
 
-    def list_datasets(self) -> list[str]:
+    def list_datasets(self) -> List[str]:
         """List available datasets in the workspace"""
         try:
             # Using the new method to list datasets
             datasets = rg.get_datasets()
             return [ds.name for ds in datasets]
         except Exception as e:
-            logger.exception(f"Failed to list datasets: {e!s}")
+            logger.error(f"Failed to list datasets: {str(e)}")
             raise
 
     def load_dataset(
         self,
         dataset_name: str,
-        query: str | None = None,
-        filter_by: dict[str, Any] | None = None,
+        query: Optional[str] = None,
+        filter_by: Optional[Dict[str, Any]] = None,
     ) -> Dataset:
         """
         Load and prepare an Argilla dataset for fine-tuning
@@ -96,13 +95,12 @@ class ArgillaDatasetManager:
             )
 
             logger.info(
-                f"Successfully loaded dataset '{dataset_name}' with "
-                f"{len(hf_dataset)} records"
+                f"Successfully loaded dataset '{dataset_name}' with {len(hf_dataset)} records"
             )
             return hf_dataset
 
         except Exception as e:
-            logger.exception(f"Failed to load dataset '{dataset_name}': {e!s}")
+            logger.error(f"Failed to load dataset '{dataset_name}': {str(e)}")
             raise
 
     def prepare_for_training(
@@ -122,11 +120,9 @@ class ArgillaDatasetManager:
         try:
             # Ensure required columns exist
             if text_column not in dataset.column_names:
-                msg = f"Dataset missing required column: {text_column}"
-                raise ValueError(msg)
+                raise ValueError(f"Dataset missing required column: {text_column}")
             if label_column not in dataset.column_names:
-                msg = f"Dataset missing required column: {label_column}"
-                raise ValueError(msg)
+                raise ValueError(f"Dataset missing required column: {label_column}")
 
             # Remove any rows with missing values
             dataset = dataset.filter(
@@ -139,5 +135,5 @@ class ArgillaDatasetManager:
             return dataset
 
         except Exception as e:
-            logger.exception(f"Failed to prepare dataset for training: {e!s}")
+            logger.error(f"Failed to prepare dataset for training: {str(e)}")
             raise

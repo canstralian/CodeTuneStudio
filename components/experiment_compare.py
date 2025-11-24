@@ -1,6 +1,5 @@
-import plotly.graph_objects as go
 import streamlit as st
-
+import plotly.graph_objects as go
 from utils.database import TrainingConfig, TrainingMetric, db
 
 
@@ -19,7 +18,7 @@ def fetch_experiments():
     return db.session.query(TrainingConfig).all()
 
 
-def experiment_compare() -> None:
+def experiment_compare():
     st.header("Experiment Comparison")
 
     # Get all experiments with caching
@@ -46,11 +45,11 @@ def experiment_compare() -> None:
                     name=f"{exp_name} - Train",
                     hovertemplate=(
                         "<b>%{fullData.name}</b><br>"
-                        "Epoch: %{x}<br>"
-                        "Loss: %{y:.4f}<br>"
-                        "<extra></extra>"
+                        + "Epoch: %{x}<br>"
+                        + "Loss: %{y:.4f}<br>"
+                        + "<extra></extra>"
                     ),
-                    line={"width": 2},
+                    line=dict(width=2),
                 )
             )
 
@@ -62,11 +61,11 @@ def experiment_compare() -> None:
                     name=f"{exp_name} - Eval",
                     hovertemplate=(
                         "<b>%{fullData.name}</b><br>"
-                        "Epoch: %{x}<br>"
-                        "Loss: %{y:.4f}<br>"
-                        "<extra></extra>"
+                        + "Epoch: %{x}<br>"
+                        + "Loss: %{y:.4f}<br>"
+                        + "<extra></extra>"
                     ),
-                    line={"width": 2, "dash": "dash"},
+                    line=dict(width=2, dash="dash"),
                 )
             )
 
@@ -75,6 +74,6 @@ def experiment_compare() -> None:
             xaxis_title="Epoch",
             yaxis_title="Loss",
             hovermode="x unified",
-            hoverlabel={"bgcolor": "white", "font_size": 14, "font_family": "Roboto"},
+            hoverlabel=dict(bgcolor="white", font_size=14, font_family="Roboto"),
         )
         st.plotly_chart(fig, use_container_width=True)
