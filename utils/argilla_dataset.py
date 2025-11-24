@@ -71,10 +71,19 @@ class ArgillaDatasetManager:
 
         Returns:
             HuggingFace dataset object
+
+        Raises:
+            ValueError: If filter_by is used (not supported in argilla v1.29.1)
         """
         try:
+            # Validate that unsupported parameters are not used
+            if filter_by is not None:
+                raise ValueError(
+                    "filter_by parameter is not supported in argilla v1.29.1. "
+                    "Please use the query parameter instead for filtering."
+                )
+
             # Load dataset from Argilla (compatible with v1.29.1)
-            # Note: filter_by parameter is not supported in v1.29.1
             dataset = rg.load(
                 name=dataset_name,
                 workspace=self.workspace,
