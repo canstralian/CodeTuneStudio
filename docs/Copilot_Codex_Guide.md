@@ -24,6 +24,8 @@ This guide standardizes how GitHub Copilot and Codex operate inside the Trading 
 - Respect dependency constraints and prefer stable versions over latest when uncertain.
 
 ### Conceptual YAML for Custom Instructions
+**Note:** The following YAML structure is a conceptual model for organizing custom instructions and does not represent a feature currently supported by GitHub Copilot or Codex. It serves as an illustrative framework to help visualize how AI assistant rules could be structured.
+
 ```yaml
 copilot:
   role: "strict pair programmer"
