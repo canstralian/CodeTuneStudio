@@ -1,23 +1,38 @@
 # Core frameworks
-streamlit>=1.37.0
-flask==3.0.0
+# Streamlit for interactive UI, Flask for API backend
+streamlit>=1.42.0
+flask>=3.1.0
 
-# Flask extensions
-flask-sqlalchemy==3.0.5
-flask-migrate==4.0.4
-sqlalchemy==2.0.22
-psycopg2-binary==2.9.11
+# Flask extensions for database management
+flask-sqlalchemy>=3.1.1
+flask-migrate>=4.1.0
+sqlalchemy>=2.0.37
+psycopg2-binary>=2.9.10
 
 # Machine learning stack
-torch>=2.2.0
-transformers==4.53.0
-datasets==4.3.0
-evaluate==0.4.6
-accelerate==1.10.1
-numpy>=1.19.3,<2
+# PyTorch and transformers ecosystem for model training
+torch>=2.6.0
+transformers>=4.48.2
+datasets>=3.2.0
+evaluate>=0.4.3
+accelerate>=1.3.0
+peft>=0.14.0
+bitsandbytes>=0.45.1
+
+# Scientific computing
+# NumPy 2.x required for Python 3.12+ compatibility
+numpy>=2.2.2
 
 # Visualization
-plotly==6.4.0
+plotly>=6.0.0
 
-# Annotation & feedback
-argilla==1.24.0
+# AI API clients
+openai>=1.61.1
+anthropic>=0.45.2
+
+# Communication & annotation
+twilio>=9.4.4
+argilla>=2.7.0
+
+# Database migrations
+alembic>=1.14.1
