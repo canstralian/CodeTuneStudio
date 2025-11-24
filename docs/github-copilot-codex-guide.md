@@ -17,7 +17,7 @@
 - Block commits that fail linting or introduce new warnings.
 
 ### Code Style and Patterns
-- Follow the project `pyproject.toml` formatter settings (Black-compatible 120-column limit, import sorting via `ruff`).
+- Follow the project `pyproject.toml` formatter settings (Black-compatible 88-column limit, import sorting via `ruff`).
 - Prefer dependency injection over singletons; document side effects explicitly.
 - Design asynchronous flows using `asyncio` tasks, `anyio`, or project-approved concurrency helpers.
 - Avoid blocking calls inside async contexts; wrap external I/O in asynchronous adapters when available.
