@@ -134,8 +134,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pip-audit bandit
-          pip-audit || true
-          bandit -r . || true
+          pip-audit
+          bandit -r .
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
