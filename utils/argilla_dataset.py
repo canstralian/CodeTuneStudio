@@ -33,8 +33,8 @@ class ArgillaDatasetManager:
     def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
         """Initialize Argilla client"""
         try:
-            # Using the new login method instead of init
-            rg.login(
+            # Initialize Argilla client (compatible with v1.29.1)
+            rg.init(
                 api_url=api_url
                 or os.getenv("ARGILLA_API_URL", "https://api.argilla.io"),
                 api_key=api_key or os.getenv("ARGILLA_API_KEY"),
@@ -48,8 +48,8 @@ class ArgillaDatasetManager:
     def list_datasets(self) -> list[str]:
         """List available datasets in the workspace"""
         try:
-            # Using the new method to list datasets
-            datasets = rg.get_datasets()
+            # List datasets from workspace (compatible with v1.29.1)
+            datasets = rg.list_datasets(workspace=self.workspace)
             return [ds.name for ds in datasets]
         except Exception as e:
             logger.exception(f"Failed to list datasets: {e!s}")
@@ -67,15 +67,19 @@ class ArgillaDatasetManager:
         Args:
             dataset_name: Name of the dataset in Argilla
             query: Optional query to filter records
-            filter_by: Optional dictionary of filters
+            filter_by: Optional dictionary of filters (not supported in v1.29.1)
 
         Returns:
             HuggingFace dataset object
         """
         try:
-            # Load dataset from Argilla using the new method
-            dataset = rg.get_dataset(
-                name=dataset_name, query=query, filter_by=filter_by
+            # Load dataset from Argilla (compatible with v1.29.1)
+            # Note: filter_by parameter is not supported in v1.29.1
+            dataset = rg.load(
+                name=dataset_name,
+                workspace=self.workspace,
+                query=query,
+                as_pandas=False,
             )
 
             # Convert to HuggingFace dataset format
