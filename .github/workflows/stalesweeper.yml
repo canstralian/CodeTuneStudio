@@ -1,0 +1,22 @@
+            - name: StaleSweeper
+  # You may pin to the exact commit or the version.
+  # uses: steffen-karlsson/stalesweeper@cbed739a89b490f703d8466fb59b37ddc0915889
+  uses: steffen-karlsson/stalesweeper@v1.1.1
+  with:
+    # Token for the repository. Can be passed in using `{{ secrets.GITHUB_TOKEN }}`.
+    repo-token: # optional, default is ${{ github.token }}
+    # The message to post on the discussion when closing it. Defaults to no message.
+    message: # optional
+    # The number of days to wait before closing a stale discussion.
+    days-before-close: 
+    # If set to `true`, stale discussions that have not been marked as answered will also be closed.
+    close-unanswered: # optional, default is false
+    # The category of discussions to close. Defaults to all discussion types
+    category: # optional
+    # The reason to use when closing a discussion. Options include `DUPLICATE`, `OUTDATED`, and `RESOLVED`.
+    close-reason: # optional, default is outdated
+    # If set to `true`, the processor will run in debug mode without performing any operations on live discussions.
+    dry-run: # optional, default is false
+    # If set to `true`, the processor will print out relevant information on all steps, including usage of GitHub API rate limits.
+    verbose: # optional, default is false
+          
