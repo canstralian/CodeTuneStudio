@@ -2,6 +2,7 @@ import os
 import sys
 
 from flask import Flask
+from sqlalchemy import text
 
 from utils.database import db, init_db
 
@@ -42,7 +43,7 @@ def check_database() -> bool | None:
         with app.app_context():
             init_db(app)
             # Check connection
-            result = db.session.execute("SELECT 1").scalar()
+            result = db.session.execute(text("SELECT 1")).scalar()
             if result == 1:
                 print("Database connection successful!")
             else:
