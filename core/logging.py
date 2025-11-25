@@ -103,7 +103,8 @@ def sanitize_for_logging(data: Any, max_depth: int = 5) -> Any:
                 sanitized[key] = sanitize_for_logging(value, max_depth - 1)
         return sanitized
     elif isinstance(data, (list, tuple)):
-        return [sanitize_for_logging(item, max_depth - 1) for item in data]
+        sanitized = [sanitize_for_logging(item, max_depth - 1) for item in data]
+        return tuple(sanitized) if isinstance(data, tuple) else sanitized
     elif isinstance(data, str):
         # Don't log very long strings (potential tokens/keys)
         if len(data) > 1000:
