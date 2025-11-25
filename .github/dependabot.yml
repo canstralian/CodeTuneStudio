@@ -1,42 +1,30 @@
 version: 2
 
 updates:
-  # Python dependencies (pip)
+  # ------------------------------------------------------
+  # Python / Pip ecosystem
+  # ------------------------------------------------------
   - package-ecosystem: "pip"
-    directory: "/" # Root directory for Python dependencies
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "06:00"
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
+    versioning-strategy: "increase"   # Avoid sudden major jumps unless allowed
     allow:
-      - dependency-type: "all" # Update both direct and indirect dependencies
+      - dependency-type: "all"
     ignore:
       - dependency-name: "django"
-        versions: ["<3.2"] # Ignore Django versions below 3.2 (security baseline)
-      # Add Flask-specific version constraints if needed
+        versions: ["<3.2"]
       - dependency-name: "flask"
-        update-types: ["version-update:semver-major"] # Only allow minor/patch updates
-    assignees:
-      - "canstralian"
-    reviewers:
-      - "canstralian"
-    commit-message:
-      prefix: "build(deps):"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "python"
-      - "auto-update"
-    rebase-strategy: "auto"
-    pull-request-branch-name:
-      separator: "-"
-    # Group updates to reduce PR noise
+        update-types: ["version-update:semver-major"]
     groups:
       flask-ecosystem:
         patterns:
-          - "flask*"
+          - "flask"
+          - "flask-*"
           - "werkzeug"
           - "jinja2"
       security-packages:
@@ -47,27 +35,61 @@ updates:
           - "passlib"
       testing:
         patterns:
-          - "pytest*"
+          - "pytest"
+          - "pytest-*"
           - "coverage"
           - "mock"
+      numerical-stack:
+        patterns:
+          - "numpy"
+          - "pandas"
+          - "pydantic*"
+          - "scipy"
+          - "scikit*"
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
+    labels:
+      - "dependencies"
+      - "python"
+      - "auto-update"
+    commit-message:
+      prefix: "build(deps):"
+      include: "scope"
+    rebase-strategy: "auto"
+    pull-request-branch-name:
+      separator: "-"
 
-  # GitHub Actions
+  # ------------------------------------------------------
+  # GitHub Actions ecosystem
+  # ------------------------------------------------------
   - package-ecosystem: "github-actions"
-    directory: "/" # Location of GitHub Actions workflows
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "06:00"
       timezone: "Etc/UTC"
     open-pull-requests-limit: 3
-    assignees:
-      - "canstralian"
-    reviewers:
-      - "canstralian"
+    groups:
+      github-core:
+        patterns:
+          - "actions/*"
+          - "github/*"
+      ci-helpers:
+        patterns:
+          - "*cache*"
+          - "*artifact*"
+          - "*upload*"
     labels:
       - "github-actions"
       - "ci"
       - "auto-update"
+    assignees:
+      - "canstralian"
+    reviewers:
+      - "canstralian"
     commit-message:
       prefix: "ci:"
       include: "scope"
@@ -75,9 +97,11 @@ updates:
     pull-request-branch-name:
       separator: "-"
 
-  # npm/yarn for React dependencies (if applicable)
+  # ------------------------------------------------------
+  # Node ecosystem (React + toolchain)
+  # ------------------------------------------------------
   - package-ecosystem: "npm"
-    directory: "/" # Adjust if React app is in subdirectory (e.g., "/frontend")
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -86,11 +110,33 @@ updates:
     open-pull-requests-limit: 5
     versioning-strategy: "increase"
     ignore:
-      # Prevent major version bumps for React (manual review recommended)
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-*"
+          - "@testing-library/*"
+      build-tools:
+        patterns:
+          - "webpack"
+          - "webpack-*"
+          - "babel"
+          - "babel-*"
+          - "vite"
+      security-js:
+        patterns:
+          - "jsonwebtoken"
+          - "bcryptjs"
+          - "helmet"
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "react"
+      - "auto-update"
     assignees:
       - "canstralian"
     reviewers:
@@ -98,32 +144,34 @@ updates:
     commit-message:
       prefix: "build(deps):"
       include: "scope"
-    labels:
-      - "dependencies"
-      - "javascript"
-      - "react"
-      - "auto-update"
     rebase-strategy: "auto"
-    groups:
-      react-ecosystem:
-        patterns:
-          - "react*"
-          - "@testing-library/*"
-      build-tools:
-        patterns:
-          - "webpack*"
-          - "babel*"
-          - "vite"
+    pull-request-branch-name:
+      separator: "-"
 
-  # Docker (if using containerization)
+  # ------------------------------------------------------
+  # Docker ecosystem
+  # ------------------------------------------------------
   - package-ecosystem: "docker"
-    directory: "/" # Location of Dockerfile
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "08:00"
       timezone: "Etc/UTC"
     open-pull-requests-limit: 2
+    groups:
+      base-images:
+        patterns:
+          - "*python*"
+          - "*node*"
+          - "*alpine*"
+      security-hardened:
+        patterns:
+          - "*slim*"
+          - "*distroless*"
+    labels:
+      - "docker"
+      - "infrastructure"
     assignees:
       - "canstralian"
     reviewers:
@@ -131,7 +179,6 @@ updates:
     commit-message:
       prefix: "build(docker):"
       include: "scope"
-    labels:
-      - "docker"
-      - "infrastructure"
-      - "auto-update"
+    rebase-strategy: "auto"
+    pull-request-branch-name:
+      separator: "-"

@@ -3,115 +3,125 @@ name: Release & Publish
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v0.2.0, v1.0.0, etc.
-  workflow_dispatch:  # Allow manual triggering
+      - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
   contents: write
-  id-token: write  # Required for trusted publishing to PyPI
+  id-token: write
 
 jobs:
   validate:
     name: Validate Release
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Get version from tag
+      - name: Extract version from tag
         id: get_version
         run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
           else
             VERSION="dev"
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Verify version matches core/__init__.py
-        if: github.event_name == 'push'
+      - name: Verify version sync with core/__init__.py
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+          TAG_VERSION="${{ steps.get_version.outputs.version }}"
           PACKAGE_VERSION=$(python -c "from core import __version__; print(__version__)")
+
           echo "Tag version: $TAG_VERSION"
           echo "Package version: $PACKAGE_VERSION"
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match package version ($PACKAGE_VERSION)"
+
+          if [[ "$TAG_VERSION" != "$PACKAGE_VERSION" ]]; then
+            echo "Mismatch: Tag version ($TAG_VERSION) != Package version ($PACKAGE_VERSION)"
             exit 1
+          fi
+
+      - name: Validate changelog entry
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "::warning::CHANGELOG.md does not contain entry for $VERSION"
           fi
 
   build:
     name: Build Distribution
     runs-on: ubuntu-latest
     needs: validate
+
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       - name: Install build dependencies
         run: |
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
           pip install build setuptools wheel twine
 
-      - name: Build distributions
+      - name: Build distributions (sdist + wheel)
         run: |
           python -m build
-          echo "Built packages:"
           ls -lh dist/
 
-      - name: Check distribution
+      - name: Validate distributions
         run: |
           twine check dist/*
 
       - name: Upload distributions
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: release-distributions
+          name: release-dist
           path: dist/
 
   test-install:
     name: Test Installation
     runs-on: ubuntu-latest
     needs: build
+
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
+
     steps:
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Download distributions
-        uses: actions/download-artifact@v3
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
-          name: release-distributions
+          name: release-dist
           path: dist/
 
-      - name: Install wheel
+      - name: Install package from wheel
         run: |
           pip install dist/*.whl
 
-      - name: Test import
+      - name: Validate import
         run: |
-          python -c "from core import __version__; print(f'Version: {__version__}')"
+          python -c "import core; print('Version:', core.__version__)"
 
-      - name: Test CLI
+      - name: Validate CLI
         run: |
           codetune-studio --version
 
@@ -119,21 +129,22 @@ jobs:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: [build, test-install]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
+
     environment:
       name: pypi
       url: https://pypi.org/project/codetune-studio/
+
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v3
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
-          name: release-distributions
+          name: release-dist
           path: dist/
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
           print-hash: true
@@ -142,51 +153,40 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [build, test-install]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
+
     permissions:
       contents: write
+
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download distributions
-        uses: actions/download-artifact@v3
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
-          name: release-distributions
+          name: release-dist
           path: dist/
 
-      - name: Extract changelog for this version
-        id: changelog
+      - name: Extract release notes
+        id: notes
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Extracting changelog for version $VERSION"
-          
-          # Extract the relevant section from CHANGELOG.md
-          if [ -f CHANGELOG.md ]; then
-            # Get content between this version and the next heading
-            CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="Release $VERSION"
-            fi
-          else
-            CHANGELOG="Release $VERSION"
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [[ -f CHANGELOG.md ]]; then
+            NOTES=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
           fi
-          
-          # Save to file for multiline output
-          echo "$CHANGELOG" > release_notes.txt
-          echo "Release notes prepared"
+          echo "${NOTES:-"Release $VERSION"}" > release_notes.txt
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
           body_path: release_notes.txt
           files: dist/*
           draft: false
-          prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -194,10 +194,12 @@ jobs:
     name: Notify Release
     runs-on: ubuntu-latest
     needs: [publish-pypi, create-release]
-    if: always() && github.event_name == 'push'
+    if: always()
+
     steps:
-      - name: Release status
+      - name: Log release results
         run: |
-          echo "Release workflow completed"
-          echo "PyPI publish status: ${{ needs.publish-pypi.result }}"
-          echo "GitHub release status: ${{ needs.create-release.result }}"
+          echo "PyPI publish result: ${{ needs.publish-pypi.result }}"
+          echo "GitHub release result: ${{ needs.create-release.result }}"
+
+

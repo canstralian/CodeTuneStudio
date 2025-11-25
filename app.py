@@ -14,7 +14,7 @@ from core.server import run_app
 def main() -> None:
     """
     Legacy application entry point.
-    
+
     This function maintains backward compatibility with existing deployments
     that directly run app.py. New deployments should use the CLI entrypoint
     via `codetune-studio` command.

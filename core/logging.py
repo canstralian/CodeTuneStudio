@@ -239,7 +239,7 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record with optional color support and request ID.
+        Format the log record with optional color support.
 
         Args:
             record: The log record to format.
@@ -267,7 +267,7 @@ def setup_logging(
     json_format: Optional[bool] = None,
 ) -> None:
     """
-    Configure application-wide logging with JSON formatting support.
+    Configure application-wide logging.
 
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
@@ -284,10 +284,6 @@ def setup_logging(
     if not isinstance(numeric_level, int):
         raise ValueError(f"Invalid log level: {log_level}")
 
-    # Determine JSON format preference
-    if json_format is None:
-        json_format = os.environ.get("LOG_JSON", "false").lower() == "true"
-
     # Create formatters
     simple_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
@@ -299,7 +295,7 @@ def setup_logging(
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # Console handler
+    # Console handler with color support
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(numeric_level)
 
@@ -315,7 +311,7 @@ def setup_logging(
     console_handler.setFormatter(console_formatter)
     root_logger.addHandler(console_handler)
 
-    # File handler (optional) - always use JSON format for files
+    # File handler (optional)
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
