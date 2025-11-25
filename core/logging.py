@@ -199,7 +199,17 @@ class JSONFormatter(logging.Formatter):
             if extras:
                 log_data["extras"] = sanitize_for_logging(extras)
 
-        return json.dumps(log_data)
+        try:
+            return json.dumps(log_data, default=str)
+        except (TypeError, ValueError) as e:
+            # Fallback to a safe representation
+            fallback = {
+                "timestamp": log_data.get("timestamp"),
+                "level": log_data.get("level"),
+                "message": f"Error formatting log: {e}",
+                "original_message": str(record.getMessage())
+            }
+            return json.dumps(fallback, default=str)
 
 
 class StructuredFormatter(logging.Formatter):

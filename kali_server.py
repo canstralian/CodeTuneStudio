@@ -70,7 +70,11 @@ if __name__ == "__main__":
 
     # Set configuration from command line arguments
     if args.debug:
-        setup_logging(log_level="DEBUG")
+        setup_logging(
+            log_level="DEBUG",
+            log_file=os.environ.get("LOG_FILE"),
+            json_format=os.environ.get("LOG_JSON", "false").lower() == "true",
+        )
 
     logger.info(f"Starting Kali Linux Tools API Server on {args.ip}:{args.port}")
     app.run(host=args.ip, port=args.port, debug=args.debug)

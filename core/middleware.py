@@ -12,9 +12,9 @@ from typing import Any, Callable, Optional
 
 from flask import Flask, Response, g, request
 
-from core.logging import generate_request_id, set_request_id
+from core.logging import generate_request_id, set_request_id, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RequestLoggingMiddleware:

@@ -80,9 +80,11 @@ def demonstrate_sensitive_data_sanitization():
         },
     }
 
-    # Log without sanitization (not recommended)
-    print("\nBefore sanitization (DO NOT DO THIS):")
-    print(user_data)
+    # ⚠️ WARNING: This is for demonstration purposes ONLY!
+    # NEVER print or log unsanitized user data in production code!
+    print("\nBefore sanitization (DO NOT DO THIS IN PRODUCTION):")
+    # print(user_data)  # Commented out to prevent accidental sensitive data exposure
+    print("(Sensitive data would be shown here if uncommented)")
 
     # Log with sanitization (recommended)
     print("\nAfter sanitization (RECOMMENDED):")

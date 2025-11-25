@@ -6,7 +6,7 @@ and middleware integration.
 """
 
 import json
-import logging
+
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -208,7 +208,7 @@ class TestSetupLogging(unittest.TestCase):
         setup_logging()
 
         root_logger = logging.getLogger()
-        self.assertTrue(len(root_logger.handlers) > 0)
+        self.assertGreater(len(root_logger.handlers), 0)
 
     def test_setup_logging_with_level(self):
         """Test logging setup with custom level."""
