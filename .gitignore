@@ -58,3 +58,7 @@ Thumbs.db
 # Temporary files
 /tmp/
 *.tmp
+
+# Package artifacts
+*.whl
+*.tar.gz
