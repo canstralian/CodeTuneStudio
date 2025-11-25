@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Code of Conduct**: Contributor Covenant Code of Conduct for community guidelines
 
 #### CI/CD & Automation
-- **Dependency Graph Auto-Submission Workflow**: Automated dependency tracking with Python 3.11 compatibility
+- **Dependency Graph Auto-Submission Workflow**: Automated dependency tracking with Python 3.10 compatibility
 - **PR Review Checklist Automation**:
   - Automated checklist status workflow
   - Script to update checklist for merged PRs
