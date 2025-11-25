@@ -67,11 +67,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - **Updated Major Packages**:
-  - plotly: 5.17.0 → 6.4.0
-  - datasets: 2.14.5 → 4.3.0
-  - accelerate: 0.23.0 → 1.10.1
-  - numpy: 1.25.2 → 2.3.3
-  - psycopg2-binary: 2.9.7 → 2.9.11
+  - plotly: 5.17.0 → >=6.0.0
+  - datasets: 2.14.5 → >=3.2.0
+  - accelerate: 0.23.0 → >=1.3.0
+  - numpy: 1.25.2 → >=2.2.2
+  - psycopg2-binary: 2.9.7 → >=2.9.10
   - transformers: Updated to latest compatible version
 - **Added Flask Dependencies**: Enhanced web framework functionality
 
