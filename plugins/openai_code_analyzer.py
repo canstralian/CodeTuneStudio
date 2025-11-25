@@ -147,7 +147,6 @@ class OpenAICodeAnalyzerTool(AgentTool):
                         },
                         {"role": "user", "content": f"Analyze this code:\n\n{code}"},
                     ],
-                    temperature=0.7,
                 )
 
                 return {
