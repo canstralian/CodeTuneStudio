@@ -6,7 +6,7 @@ and middleware integration.
 """
 
 import json
-
+import logging
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -119,6 +119,43 @@ class TestSanitizeForLogging(unittest.TestCase):
         sanitized = sanitize_for_logging(deeply_nested, max_depth=2)
 
         self.assertIn("***MAX_DEPTH***", str(sanitized))
+
+    def test_sanitize_circular_reference(self):
+        """Test handling of circular references in data structures."""
+        # Create a circular reference
+        circular_dict: dict = {"key": "value"}
+        circular_dict["self"] = circular_dict
+
+        sanitized = sanitize_for_logging(circular_dict)
+
+        # Should not raise and should mark circular reference
+        self.assertEqual(sanitized["key"], "value")
+        self.assertEqual(sanitized["self"], "***CIRCULAR_REFERENCE***")
+
+    def test_sanitize_circular_reference_in_list(self):
+        """Test handling of circular references in lists."""
+        # Create a circular reference in a list
+        circular_list: list = [1, 2, 3]
+        circular_list.append(circular_list)
+
+        sanitized = sanitize_for_logging(circular_list)
+
+        # Should not raise and should mark circular reference
+        self.assertEqual(sanitized[0], 1)
+        self.assertEqual(sanitized[1], 2)
+        self.assertEqual(sanitized[2], 3)
+        self.assertEqual(sanitized[3], "***CIRCULAR_REFERENCE***")
+
+    def test_sanitize_preserves_tuple_type(self):
+        """Test that tuples are preserved as tuples after sanitization."""
+        data = ({"username": "test", "password": "secret"}, "value")
+
+        sanitized = sanitize_for_logging(data)
+
+        self.assertIsInstance(sanitized, tuple)
+        self.assertEqual(sanitized[0]["username"], "test")
+        self.assertEqual(sanitized[0]["password"], "***REDACTED***")
+        self.assertEqual(sanitized[1], "value")
 
 
 class TestJSONFormatter(unittest.TestCase):

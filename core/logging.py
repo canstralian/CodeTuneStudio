@@ -10,6 +10,7 @@ tracking for enhanced observability.
 import json
 import logging
 import os
+import re
 import sys
 import uuid
 from contextvars import ContextVar
@@ -40,6 +41,11 @@ SENSITIVE_KEYS = {
     "access_token",
     "refresh_token",
 }
+
+# Precompile regex for faster sensitive key matching
+SENSITIVE_PATTERN = re.compile(
+    "|".join(re.escape(k) for k in SENSITIVE_KEYS), re.IGNORECASE
+)
 
 
 def generate_request_id() -> str:
@@ -72,46 +78,69 @@ def set_request_id(request_id: str) -> None:
     request_id_var.set(request_id)
 
 
-def sanitize_for_logging(data: Any, max_depth: int = 5) -> Any:
+def sanitize_for_logging(
+    data: Any, max_depth: int = 5, _visited: Optional[set] = None
+) -> Any:
     """
     Sanitize data to prevent logging sensitive information.
 
     Args:
         data: Data to sanitize (can be dict, list, or primitive).
         max_depth: Maximum recursion depth to prevent infinite loops.
+        _visited: Internal parameter to track visited objects for circular
+                  reference detection. Do not pass this parameter directly.
 
     Returns:
         Sanitized data with sensitive values replaced.
+
+    Note:
+        This function sanitizes data structures but does NOT sanitize log message
+        strings. Never include sensitive data directly in log message strings
+        (e.g., logger.info(f"Password: {password}") is unsafe). Always pass
+        sensitive data via the `extra` parameter where it will be sanitized.
     """
+    if _visited is None:
+        _visited = set()
+
+    # Check for circular references using id()
+    if isinstance(data, (dict, list)):
+        obj_id = id(data)
+        if obj_id in _visited:
+            return "***CIRCULAR_REFERENCE***"
+        _visited.add(obj_id)
+
     if max_depth <= 0:
         return "***MAX_DEPTH***"
 
-    if isinstance(data, dict):
-        sanitized = {}
-        for key, value in data.items():
-            key_lower = str(key).lower()
-            # Check if key contains any sensitive keywords (optimized with early exit)
-            is_sensitive = False
-            for sensitive in SENSITIVE_KEYS:
-                if sensitive in key_lower:
-                    is_sensitive = True
-                    break
-
-            if is_sensitive:
-                sanitized[key] = "***REDACTED***"
-            else:
-                sanitized[key] = sanitize_for_logging(value, max_depth - 1)
-        return sanitized
-    elif isinstance(data, (list, tuple)):
-        sanitized = [sanitize_for_logging(item, max_depth - 1) for item in data]
-        return tuple(sanitized) if isinstance(data, tuple) else sanitized
-    elif isinstance(data, str):
-        # Don't log very long strings (potential tokens/keys)
-        if len(data) > 1000:
-            return f"***TRUNCATED:{len(data)}chars***"
-        return data
-    else:
-        return data
+    try:
+        if isinstance(data, dict):
+            sanitized = {}
+            for key, value in data.items():
+                # Check if key contains any sensitive keywords using precompiled regex
+                if SENSITIVE_PATTERN.search(str(key)):
+                    sanitized[key] = "***REDACTED***"
+                else:
+                    sanitized[key] = sanitize_for_logging(
+                        value, max_depth - 1, _visited
+                    )
+            return sanitized
+        elif isinstance(data, (list, tuple)):
+            sanitized = [
+                sanitize_for_logging(item, max_depth - 1, _visited) for item in data
+            ]
+            return tuple(sanitized) if isinstance(data, tuple) else sanitized
+        elif isinstance(data, str):
+            # Don't log very long strings (potential tokens/keys)
+            if len(data) > 1000:
+                return f"***TRUNCATED:{len(data)}chars***"
+            return data
+        else:
+            return data
+    finally:
+        # Remove object from visited set after processing to allow
+        # the same object appearing in different branches
+        if isinstance(data, (dict, list)):
+            _visited.discard(id(data))
 
 
 class JSONFormatter(logging.Formatter):
@@ -207,7 +236,7 @@ class JSONFormatter(logging.Formatter):
                 "timestamp": log_data.get("timestamp"),
                 "level": log_data.get("level"),
                 "message": f"Error formatting log: {e}",
-                "original_message": str(record.getMessage())
+                "original_message": str(record.getMessage()),
             }
             return json.dumps(fallback, default=str)
 
@@ -239,7 +268,7 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record with optional color support.
+        Format the log record with optional color support and request ID.
 
         Args:
             record: The log record to format.
@@ -247,10 +276,9 @@ class StructuredFormatter(logging.Formatter):
         Returns:
             Formatted log string.
         """
-        # Add request ID if available
+        # Add request ID if available, otherwise use '-' as placeholder
         request_id = get_request_id()
-        if request_id:
-            record.request_id = request_id
+        record.request_id = request_id if request_id else "-"
 
         if self.use_color:
             levelname = record.levelname
@@ -284,8 +312,10 @@ def setup_logging(
     if not isinstance(numeric_level, int):
         raise ValueError(f"Invalid log level: {log_level}")
 
-    # Create formatters
-    simple_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    # Create formatters - include request_id in human-readable format
+    simple_format = (
+        "%(asctime)s - %(name)s - %(levelname)s - [%(request_id)s] - %(message)s"
+    )
 
     # Configure root logger
     root_logger = logging.getLogger()

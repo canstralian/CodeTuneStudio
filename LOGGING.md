@@ -119,6 +119,27 @@ sanitized = sanitize_for_logging(user_data)
 2. **Use structured logging** with extra fields instead of string formatting
 3. **Avoid logging entire request/response bodies** unless necessary
 4. **Review logs periodically** to ensure no sensitive data leakage
+5. **⚠️ Never include sensitive data directly in log message strings**
+
+### Important Security Note
+
+The `sanitize_for_logging()` function only sanitizes data passed via the `extra` parameter. **It does NOT sanitize the log message string itself.** 
+
+**DON'T DO THIS:**
+```python
+# ❌ UNSAFE - password will be logged in plain text!
+logger.info(f"User authenticated with password: {password}")
+logger.info(f"API key used: {api_key}")
+```
+
+**DO THIS INSTEAD:**
+```python
+# ✅ SAFE - sensitive data is passed via extra and will be sanitized
+logger.info("User authenticated", extra={"password": password})
+logger.info("API request made", extra={"api_key": api_key})
+```
+
+Always pass sensitive data via the `extra` parameter where automatic sanitization will redact it.
 
 ## 🆔 Request ID Tracking
 

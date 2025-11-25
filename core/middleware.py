@@ -5,14 +5,18 @@ This module provides middleware components for Flask applications to handle
 request ID generation, propagation, and logging of HTTP requests/responses.
 """
 
-import logging
 import time
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from flask import Flask, Response, g, request
 
-from core.logging import generate_request_id, set_request_id, get_logger
+from core.logging import (
+    generate_request_id,
+    get_logger,
+    sanitize_for_logging,
+    set_request_id,
+)
 
 logger = get_logger(__name__)
 
@@ -148,6 +152,10 @@ def with_request_logging(
     This decorator logs function entry and exit, optionally including
     arguments and return values, with the current request ID.
 
+    Note: When log_args or log_result is True, the data is automatically
+    sanitized using sanitize_for_logging() to prevent accidental exposure
+    of sensitive information like passwords, API keys, or tokens.
+
     Args:
         log_args: Whether to log function arguments (default: False).
         log_result: Whether to log function return value (default: False).
@@ -167,10 +175,11 @@ def with_request_logging(
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             func_name = f"{func.__module__}.{func.__qualname__}"
 
-            extra_info = {"function": func_name}
+            extra_info: Dict[str, Any] = {"function": func_name}
             if log_args:
-                extra_info["args"] = args
-                extra_info["kwargs"] = kwargs
+                # Sanitize args and kwargs to prevent logging sensitive data
+                extra_info["args"] = sanitize_for_logging(args)
+                extra_info["kwargs"] = sanitize_for_logging(kwargs)
 
             logger.debug(f"Entering {func_name}", extra=extra_info)
 
@@ -178,7 +187,8 @@ def with_request_logging(
                 result = func(*args, **kwargs)
 
                 if log_result:
-                    extra_info["result"] = result
+                    # Sanitize result to prevent logging sensitive data
+                    extra_info["result"] = sanitize_for_logging(result)
 
                 logger.debug(f"Exiting {func_name}", extra=extra_info)
 
