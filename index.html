@@ -9,86 +9,18 @@
   <link rel="canonical" href="https://codetunestudio.app">
   <link rel="stylesheet" href="styles.css">
   
-  <!-- Structured Data JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "CodeTune Studio Lite",
-    "applicationCategory": "DeveloperApplication",
-    "description": "Boost your productivity with CodeTune Studio Lite — the AI-powered code optimizer that automatically refactors, debugs, and improves your Python, JavaScript, and Bash scripts.",
-    "operatingSystem": "Web-based",
-    "url": "https://codetunestudio.app",
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Free Plan",
-        "price": "0",
-        "priceCurrency": "USD",
-        "description": "1 AI optimization per day with limited support."
-      },
-      {
-        "@type": "Offer",
-        "name": "Developer Plan",
-        "price": "10.00",
-        "priceCurrency": "USD",
-        "priceSpecification": {
-          "@type": "PriceSpecification",
-          "price": "10.00",
-          "priceCurrency": "USD",
-          "billingCycle": "P1M"
-        },
-        "description": "Unlimited AI refactors, priority queue access, and code history."
-      }
-    ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "2",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
-    "review": [
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "Alex, Full Stack Developer"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "I run all my Python scripts through CodeTune before production — it's like having a senior engineer review my work."
-      },
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "Priya, Data Scientist"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "It helped me spot performance issues I missed for months."
-      }
-    ],
-    "potentialAction": {
-      "@type": "Action",
-      "name": "Try CodeTune Studio Lite for Free",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://codetunestudio.app/register",
-        "inLanguage": "en-US",
-        "actionPlatform": [
-          "http://schema.org/DesktopWebPlatform",
-          "http://schema.org/IOSPlatform",
-          "http://schema.org/AndroidPlatform"
-        ]
-      }
-    }
-  }
+  <!-- Structured Data JSON-LD - Loaded from external file for easier management -->
+  <script>
+    // Load structured data from external JSON file for easier management
+    fetch('structured_data.json')
+      .then(response => response.json())
+      .then(data => {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(data);
+        document.head.appendChild(script);
+      })
+      .catch(err => console.error('Failed to load structured data:', err));
   </script>
 </head>
 <body>
@@ -119,17 +51,17 @@
           <h1 class="hero-title">AI Code Optimizer That Actually Works</h1>
           <p class="hero-subtitle">Boost your productivity with CodeTune Studio Lite — the AI-powered code refactoring tool that automatically debugs, optimizes, and improves your Python, JavaScript, and Bash scripts.</p>
           
-          <div class="hero-stats">
-            <div class="stat">
-              <span class="stat-number">87%</span>
+          <div class="hero-stats" role="list" aria-label="Key performance metrics">
+            <div class="stat" role="listitem">
+              <span class="stat-number" aria-label="87 percent">87%</span>
               <span class="stat-label">Faster Debugging</span>
             </div>
-            <div class="stat">
-              <span class="stat-number">4.9★</span>
+            <div class="stat" role="listitem">
+              <span class="stat-number" aria-label="4.9 star rating">4.9★</span>
               <span class="stat-label">Developer Rating</span>
             </div>
-            <div class="stat">
-              <span class="stat-number">1,200+</span>
+            <div class="stat" role="listitem">
+              <span class="stat-number" aria-label="1,200 plus">1,200+</span>
               <span class="stat-label">Scripts Optimized Daily</span>
             </div>
           </div>
@@ -175,39 +107,39 @@
           <p>Our AI developer tools analyze your code and provide intelligent suggestions for Python optimization, JavaScript refactoring, and security improvements.</p>
         </div>
 
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🔍</div>
+        <div class="features-grid" role="list" aria-label="Product features">
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">🔍</div>
             <h3>Code Security Scanner</h3>
             <p>Automatically detect vulnerabilities, SQL injection risks, and security anti-patterns before they reach production.</p>
           </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">⚡</div>
             <h3>Performance Optimization</h3>
             <p>AI-powered analysis identifies bottlenecks and suggests optimizations that can improve your code speed by up to 87%.</p>
           </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">✨</div>
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">✨</div>
             <h3>PEP 8 Style Checker</h3>
             <p>Ensure your Python code follows best practices with automated style checking and formatting suggestions.</p>
           </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">🔧</div>
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">🔧</div>
             <h3>Automated Code Cleanup</h3>
             <p>Remove dead code, optimize imports, and clean up your codebase with intelligent refactoring suggestions.</p>
           </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">📚</div>
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">📚</div>
             <h3>Multi-Language Support</h3>
             <p>Works with Python, JavaScript, TypeScript, and Bash scripts. More languages coming soon.</p>
           </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">⚙️</div>
+          <div class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">⚙️</div>
             <h3>CI/CD Integration</h3>
             <p>Seamlessly integrate with your existing workflow through our API and command-line tools.</p>
           </div>
