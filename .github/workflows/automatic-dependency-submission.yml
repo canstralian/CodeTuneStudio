@@ -21,7 +21,8 @@ jobs:
         with:
           python-version: "3.11"
 
-
       - name: Submit dependency graph
-        uses: actions/dependency-submission-action@v4
+        uses: advanced-security/pip-dependency-submission-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
