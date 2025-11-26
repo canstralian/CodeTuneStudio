@@ -129,10 +129,9 @@ class OpenAICodeAnalyzerTool(AgentTool):
             try:
                 self._apply_rate_limiting()
 
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    temperature=self.temperature,
-                    messages=[
+                request_params = {
+                    "model": self.model_name,
+                    "messages": [
                         {
                             "role": "system",
                             "content": (
@@ -147,7 +146,10 @@ class OpenAICodeAnalyzerTool(AgentTool):
                         },
                         {"role": "user", "content": f"Analyze this code:\n\n{code}"},
                     ],
-                )
+                    "temperature": self.temperature,
+                }
+
+                response = self.client.chat.completions.create(**request_params)
 
                 return {
                     "analysis": response.choices[0].message.content,
