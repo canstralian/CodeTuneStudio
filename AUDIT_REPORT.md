@@ -137,7 +137,11 @@ scanners: vuln,secret
 ## Security Scan Results
 
 ### Bandit Security Scan
-Ran Bandit security scanner on the entire repository:
+
+**Tool**: Bandit v1.7.10 (Python security linter)  
+**Date**: 2025-11-26  
+**Command**: `bandit -r . -f json -o /tmp/bandit-report.json`  
+**Scope**: Entire repository codebase
 
 **Results**:
 - Total issues: 563
@@ -147,7 +151,7 @@ Ran Bandit security scanner on the entire repository:
 
 **Issues in Changed Files**: None
 
-**Note**: The 13 high-severity issues found are in other parts of the codebase (mainly `components/` directory) and relate to Hugging Face model downloads without revision pinning. These are pre-existing and not introduced by these changes.
+**Note**: The 13 high-severity issues found are in other parts of the codebase (mainly `components/` directory) and relate to Hugging Face model downloads without revision pinning (CWE-494). These are pre-existing issues not introduced by these changes and should be addressed in a separate security-focused PR.
 
 ---
 
