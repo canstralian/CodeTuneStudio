@@ -115,6 +115,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
   sast-and-secrets:
+    permissions:
+      contents: read
+      security-events: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -122,6 +125,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs
+          scanners: vuln,secret
           format: table
           severity: HIGH,CRITICAL
 ```

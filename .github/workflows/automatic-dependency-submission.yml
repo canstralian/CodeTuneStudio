@@ -8,7 +8,6 @@ on:
 permissions:
   contents: read
   security-events: write
-  id-token: write
 
 jobs:
   submit-dependencies:
@@ -22,15 +21,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
 
       - name: Submit dependency graph
         uses: actions/dependency-submission-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          directory: .
-          ecosystem: pip
-          manifest: requirements.txt
+
