@@ -91,7 +91,10 @@ jobs:
         with:
           node-version: "lts/*"
       - run: npm ci
-      - run: npx semantic-release
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
 ```
 - **Security & Dependency Scanning**: Run regularly and on pull requests.
 ```yaml
