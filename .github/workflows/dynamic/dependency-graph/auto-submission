@@ -26,12 +26,13 @@ jobs:
           # Fetch full history for accurate dependency analysis
           fetch-depth: 0
       
-      # Step 2: Set up Python 3.11
+      # Step 2: Set up Python 3.10
       # Uses actions/setup-python@v5 for Python environment configuration
-      - name: Set up Python 3.11
+      # Python 3.10 chosen for maximum compatibility with dependencies
+      - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
           # Enable caching for faster subsequent runs
           cache: 'pip'
       
@@ -224,7 +225,7 @@ jobs:
           echo "📋 Workflow Summary"
           echo "==================="
           echo "Runner: ubuntu-latest"
-          echo "Python Version: 3.11"
+          echo "Python Version: 3.10"
           echo "Dependency Files Found: ${{ steps.validate-structure.outputs.dependency-files-found }}"
           
           if [ "${{ job.status }}" = "success" ]; then
