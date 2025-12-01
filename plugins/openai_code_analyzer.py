@@ -50,9 +50,7 @@ class OpenAICodeAnalyzerTool(AgentTool):
         # Rate limiting configuration
         self.max_retries = int(os.environ.get("OPENAI_MAX_RETRIES", "3"))
         self.retry_delay = float(os.environ.get("OPENAI_RETRY_DELAY", "1.0"))
-        self.rate_limit_delay = float(
-            os.environ.get("OPENAI_RATE_LIMIT_DELAY", "0.5")
-        )
+        self.rate_limit_delay = float(os.environ.get("OPENAI_RATE_LIMIT_DELAY", "0.5"))
         self.last_request_time: float = 0.0
 
         # Model configuration
@@ -105,9 +103,51 @@ class OpenAICodeAnalyzerTool(AgentTool):
 
         self.last_request_time = time.time()
 
-    def _make_api_call_with_retry(
-        self, code: str
-    ) -> dict[str, Any]:
+    def _build_api_payload(self, code: str) -> dict[str, Any]:
+        """
+        Build the API payload for OpenAI chat completion.
+
+        This method ensures that all parameters are explicitly set once
+        and only once, preventing any duplicate parameter issues.
+
+        Args:
+            code: Code to analyze
+
+        Returns:
+            Dictionary containing the API payload with:
+                - model: Model name
+                - temperature: Temperature setting (set only once)
+                - messages: List of message dictionaries
+        """
+        payload = {
+            "model": self.model_name,
+            "temperature": self.temperature,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert code analyzer. Analyze the "
+                        "given code and provide insights about:\n"
+                        "1. Code quality\n"
+                        "2. Potential improvements\n"
+                        "3. Performance considerations\n"
+                        "4. Security considerations\n"
+                        "Provide the analysis in JSON format."
+                    ),
+                },
+                {"role": "user", "content": f"Analyze this code:\n\n{code}"},
+            ],
+        }
+
+        # Log payload for debugging (without the code content for brevity)
+        logger.debug(
+            f"API payload constructed: model={payload['model']}, "
+            f"temperature={payload['temperature']}"
+        )
+
+        return payload
+
+    def _make_api_call_with_retry(self, code: str) -> dict[str, Any]:
         """
         Make API call with retry logic.
 
@@ -129,25 +169,11 @@ class OpenAICodeAnalyzerTool(AgentTool):
             try:
                 self._apply_rate_limiting()
 
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    temperature=self.temperature,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are an expert code analyzer. Analyze the "
-                                "given code and provide insights about:\n"
-                                "1. Code quality\n"
-                                "2. Potential improvements\n"
-                                "3. Performance considerations\n"
-                                "4. Security considerations\n"
-                                "Provide the analysis in JSON format."
-                            ),
-                        },
-                        {"role": "user", "content": f"Analyze this code:\n\n{code}"},
-                    ],
-                )
+                # Build payload using explicit method to ensure no duplicates
+                payload = self._build_api_payload(code)
+
+                # Use **payload to unpack the dictionary
+                response = self.client.chat.completions.create(**payload)
 
                 return {
                     "analysis": response.choices[0].message.content,
@@ -163,7 +189,7 @@ class OpenAICodeAnalyzerTool(AgentTool):
 
                 if attempt < self.max_retries - 1:
                     # Exponential backoff
-                    delay = self.retry_delay * (2 ** attempt)
+                    delay = self.retry_delay * (2**attempt)
                     logger.info(f"Retrying in {delay:.2f}s...")
                     time.sleep(delay)
 
