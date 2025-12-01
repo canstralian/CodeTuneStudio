@@ -30,6 +30,7 @@ class TestWorkflows(unittest.TestCase):
         self.assertGreater(len(workflow_files), 0, "No workflow files found")
 
         # Skip known broken files that are pre-existing issues
+        # stalesweeper.yml: Malformed YAML (missing document start, improper nesting)
         skip_files = {"stalesweeper.yml"}
 
         for workflow_file in workflow_files:
