@@ -1,16 +1,24 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+  # Black code formatter
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        args: ['--config', 'pyproject.toml']
+
+  # Ruff linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.8.2
     hooks:
-      # Run the linter.
+      # Run the linter
       - id: ruff
-        args: [ --fix ]
-      # Run the formatter.
+        args: [--fix, --exit-non-zero-on-fix]
+      # Run the formatter
       - id: ruff-format
 
+  # Pre-commit hooks for general file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
