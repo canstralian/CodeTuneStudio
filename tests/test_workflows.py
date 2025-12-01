@@ -5,7 +5,6 @@ This module validates the syntax and structure of workflow YAML files
 to ensure they are properly configured.
 """
 
-import os
 import unittest
 from pathlib import Path
 
@@ -168,7 +167,8 @@ class TestWorkflows(unittest.TestCase):
 
         self.assertTrue(
             fallback_step_found,
-            "Workflow must have 'Verify Checklist Items (Shell Script Alternative)' step",
+            "Workflow must have 'Verify Checklist Items (Shell Script "
+            "Alternative)' step",
         )
 
 
