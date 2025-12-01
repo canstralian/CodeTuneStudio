@@ -51,7 +51,7 @@ jobs:
         id: black-check
         continue-on-error: true
         run: |
-          black --check --diff . --exclude 'app.py'
+          black --check --diff .
 
       # Log Black results
       - name: Log Black results
