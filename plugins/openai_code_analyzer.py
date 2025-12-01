@@ -20,18 +20,31 @@ class OpenAICodeAnalyzerTool(AgentTool):
     model (e.g., GPT-4o) to evaluate code for quality, improvements,
     performance, and security considerations.
 
+    The implementation ensures that API payloads are constructed properly
+    with no duplicate parameters, particularly for the temperature setting.
+
     Attributes:
         metadata (ToolMetadata): Metadata describing the tool, including
             name, description, version, author, and tags.
         client (OpenAI): An instance of the OpenAI client initialized
             with the API key from environment variables.
+        temperature (float): Temperature setting for API calls, loaded
+            from OPENAI_TEMPERATURE environment variable (default: 0.7).
+        model_name (str): Model to use for API calls, loaded from
+            OPENAI_MODEL environment variable (default: "gpt-4o").
 
     Methods:
         __init__(): Initializes the tool, sets up metadata, and creates
             the OpenAI client.
+        init(): Initialize the OpenAI client with API key.
+        teardown(): Clean up resources.
         validate_inputs(inputs: Dict[str, Any]) -> bool:
             Validates the input dictionary to ensure it contains a
             'code' key with a string value.
+        _build_api_payload(code: str) -> Dict[str, Any]:
+            Constructs the API payload ensuring no duplicate parameters.
+        _make_api_call_with_retry(code: str) -> Dict[str, Any]:
+            Makes API calls with retry logic and exponential backoff.
         execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
             Executes the code analysis using OpenAI's API.
     """
