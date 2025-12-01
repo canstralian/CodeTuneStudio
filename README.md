@@ -190,12 +190,30 @@ Feel free to check out the [CONTRIBUTING.md](CONTRIBUTING.md) for details on how
 We maintain high code quality standards using automated tools:
 
 - 🎨 **Code Formatting**: [Black](https://github.com/psf/black) with 88 character line length
-- 🔍 **Linting**: [Flake8](https://flake8.pycqa.org/) for PEP 8 compliance
-- 🪝 **Pre-commit Hooks**: Automated checks before each commit
+- ⚡ **Modern Linting**: [Ruff](https://github.com/astral-sh/ruff) for fast, comprehensive code checks
+- 🔍 **Legacy Linting**: [Flake8](https://flake8.pycqa.org/) for PEP 8 compliance
+- 🪝 **Pre-commit Hooks**: Automated checks before each commit (Black + Ruff)
 
 **Quick Setup:**
 ```bash
+# Install pre-commit hooks
+pip install pre-commit
+pre-commit install
+
+# Or use the setup script
 ./scripts/setup-pre-commit.sh
+```
+
+**Run manually:**
+```bash
+# Format code with Black
+black .
+
+# Check and fix with Ruff
+ruff check . --fix
+
+# Run all pre-commit hooks
+pre-commit run --all-files
 ```
 
 For detailed information, see [Code Quality Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md).

@@ -29,20 +29,44 @@ jobs:
           pip install ruff flake8 black
 
       - name: Run Ruff linter
+        id: ruff-check
         run: |
           ruff check . --output-format=github
         continue-on-error: true
 
+      - name: Log Ruff results
+        if: always()
+        run: |
+          if [ "${{ steps.ruff-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Ruff Linting::Linting issues detected (non-blocking)"
+          fi
+
       - name: Run Flake8
+        id: flake8-check
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=18 --max-line-length=88 --statistics
         continue-on-error: true
 
+      - name: Log Flake8 results
+        if: always()
+        run: |
+          if [ "${{ steps.flake8-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Flake8 Linting::Style issues detected (non-blocking)"
+          fi
+
       - name: Check code formatting with Black
+        id: black-check
         run: |
           black --check --diff .
         continue-on-error: true
+
+      - name: Log Black results
+        if: always()
+        run: |
+          if [ "${{ steps.black-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Black Formatting::Formatting issues detected (non-blocking)"
+          fi
 
   type-check:
     name: Type Checking
