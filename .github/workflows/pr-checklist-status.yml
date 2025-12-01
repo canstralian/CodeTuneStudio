@@ -5,6 +5,7 @@ on:
     branches: [main]
 
 permissions:
+  pull-requests: write
   contents: read
 
 # Ensure only one run per PR at a time; cancel older runs on the same branch
@@ -70,6 +71,13 @@ jobs:
     if: github.event.pull_request.draft == false
 
     steps:
+      - name: Debug Token Permissions
+        run: |
+          echo 'Inspecting token permissions'
+          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github+json" \
+               https://api.github.com/repos/${{ github.repository }}/actions/permissions
+
       - name: Validate completed tasks
         # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
         # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
