@@ -5,6 +5,14 @@ All notable changes to CodeTune Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **GitHub Actions Workflow**: Fixed 'Resource not accessible by integration' error in PR Checklist Status workflow
+  - Added `pull-requests: write` permission to `pr-checklist-status.yml` workflow
+  - Added debug step to inspect GitHub token permissions
+  - Implemented fallback shell script for checklist verification as an alternative to `kentaro-m/task-completed-checker-action`
+
 ## [0.2.0] - 2024-11-19
 
 ### Added
