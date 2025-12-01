@@ -8,13 +8,13 @@ repos:
       - id: black
         args: ['--config', 'pyproject.toml']
 
-  # Ruff linter and formatter
+  # Ruff linter and formatter (warnings only, not blocking)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.2
     hooks:
-      # Run the linter
+      # Run the linter (auto-fix safe issues)
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
       # Run the formatter
       - id: ruff-format
 

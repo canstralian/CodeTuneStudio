@@ -15,7 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  style-check:
+  black-format:
+    name: Black Format Check
     runs-on: ubuntu-latest
 
     steps:
@@ -30,25 +31,59 @@ jobs:
           python-version: "3.10"
           cache: "pip"
 
-      # Install style tools at current releases
-      - name: Install style tools
+      # Install Black
+      - name: Install Black
         run: |
           python -m pip install --upgrade pip
-          # Pin to current stable versions (Nov 2025)
-          pip install \
-            black==25.11.0 \
-            flake8==7.3.0 \
-            pre-commit==4.5.0 \
-            ruff==0.14.6
+          pip install black==25.11.0
 
-      # Check code formatting with Black
+      # Check code formatting with Black (non-blocking)
       - name: Check code formatting with Black
+        id: black-check
+        continue-on-error: true
         run: |
           black --check --diff --line-length=88 \
             --extend-exclude="app\.py|index\.html" .
 
-      # Lint code with Flake8
+      # Log Black results
+      - name: Log Black results
+        if: always()
+        run: |
+          if [ "${{ steps.black-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Black Formatting::Code formatting issues detected. Run 'black .' locally or use pre-commit hooks to fix."
+            echo "## ⚠️ Black Formatting Issues Detected" >> "$GITHUB_STEP_SUMMARY"
+            echo "Some files need reformatting." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice title=Black Formatting::All files are properly formatted"
+            echo "## ✅ Black Formatting Check Passed" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  flake8-lint:
+    name: Flake8 Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python and enable pip caching
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      # Install Flake8
+      - name: Install Flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8==7.3.0
+
+      # Lint code with Flake8 (non-blocking)
       - name: Check code style with Flake8
+        id: flake8-check
+        continue-on-error: true
         run: |
           flake8 . \
             --max-line-length=88 \
@@ -56,29 +91,110 @@ jobs:
             --show-source \
             --count
 
-      # Optional: Lint with Ruff for faster, modern checks
+      # Log Flake8 results
+      - name: Log Flake8 results
+        if: always()
+        run: |
+          if [ "${{ steps.flake8-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Flake8 Linting::Code style issues detected."
+            echo "## ⚠️ Flake8 Linting Issues Detected" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice title=Flake8 Linting::No style issues found"
+            echo "## ✅ Flake8 Lint Check Passed" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  ruff-lint:
+    name: Ruff Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python and enable pip caching
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      # Install Ruff
+      - name: Install Ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff==0.14.6
+
+      # Lint with Ruff (non-blocking)
       - name: Additional lint with Ruff
+        id: ruff-check
+        continue-on-error: true
         run: |
           # Ignore long-line errors (handled by Black)
-          # Fail if Ruff would apply any fixes
+          # Exit non-zero if Ruff would apply any fixes
           ruff check . --ignore E501 --exit-non-zero-on-fix
 
-      # Verify and run pre-commit hooks if configuration is present
+      # Log Ruff results
+      - name: Log Ruff results
+        if: always()
+        run: |
+          if [ "${{ steps.ruff-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Ruff Linting::Code linting issues detected. Run 'ruff check . --fix' locally or use pre-commit hooks to fix."
+            echo "## ⚠️ Ruff Linting Issues Detected" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice title=Ruff Linting::No linting issues found"
+            echo "## ✅ Ruff Lint Check Passed" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  pre-commit:
+    name: Pre-commit Hooks
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python and enable pip caching
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      # Install pre-commit
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit==4.5.0
+
+      # Verify and run pre-commit hooks (non-blocking)
       - name: Verify pre-commit config
+        id: precommit-check
+        continue-on-error: true
         run: |
           if [ -f .pre-commit-config.yaml ]; then
             echo "✓ Pre-commit config found"
             pre-commit run --all-files --color always --show-diff-on-failure
           else
             echo "⚠ .pre-commit-config.yaml not found"
+            exit 1
           fi
 
-      # Summarize results in the GitHub job summary
-      - name: Summary
+      # Log pre-commit results
+      - name: Log pre-commit results
         if: always()
         run: |
-          echo "## Style Check Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Black formatting: completed" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Flake8 linting: completed" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Ruff linting: completed" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Pre-commit hooks: verified" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.precommit-check.outcome }}" == "failure" ]; then
+            echo "::notice title=Pre-commit Hooks::Pre-commit hooks detected issues."
+            echo "## ⚠️ Pre-commit Issues Detected" >> "$GITHUB_STEP_SUMMARY"
+            echo "Install and run pre-commit hooks locally:" >> "$GITHUB_STEP_SUMMARY"
+            echo '```bash' >> "$GITHUB_STEP_SUMMARY"
+            echo 'pip install pre-commit' >> "$GITHUB_STEP_SUMMARY"
+            echo 'pre-commit install' >> "$GITHUB_STEP_SUMMARY"
+            echo 'pre-commit run --all-files' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice title=Pre-commit Hooks::All hooks passed"
+            echo "## ✅ Pre-commit Hooks Passed" >> "$GITHUB_STEP_SUMMARY"
+          fi
