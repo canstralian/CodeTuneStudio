@@ -98,7 +98,7 @@ jobs:
       - name: Type check
         run: mypy .
       - name: Test
-        run: pytest --maxfail=1 --disable-warnings -q
+        run: pytest --cov=. --cov-report=xml:coverage.xml --maxfail=1 --disable-warnings -q
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
