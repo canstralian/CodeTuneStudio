@@ -148,7 +148,7 @@ on:
 
 jobs:
   codeql:
-    uses: github/codeql-action/.github/workflows/codeql.yml@v3
+    uses: github/codeql-action/codeql-analysis.yml@v3
 
   deps:
     runs-on: ubuntu-latest
