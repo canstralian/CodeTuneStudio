@@ -124,10 +124,8 @@ jobs:
       - name: Test
         run: |
           pytest --maxfail=1 --disable-warnings --cov --cov-report=xml
-      - name: Generate summary
-        run: |
-          coverage xml
-          coverage html
+      - name: Generate HTML coverage report
+        run: coverage html
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
