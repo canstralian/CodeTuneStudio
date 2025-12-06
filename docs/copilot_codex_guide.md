@@ -157,7 +157,7 @@ jobs:
       - name: Python dependency scan
         uses: pypa/gh-action-pip-audit@v1
       - name: Node audit (optional)
-        run: npm audit --audit-level=high || true  # fail on high/critical in gating job
+        run: npm audit --audit-level=high  # fail on high/critical in gating job
 ```
 
 ## Contributor Guidelines
