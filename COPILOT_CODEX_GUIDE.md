@@ -114,7 +114,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install -r requirements-dev.txt || true
+          test -f requirements-dev.txt && pip install -r requirements-dev.txt
       - name: Lint
         run: |
           ruff check .
