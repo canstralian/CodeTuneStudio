@@ -58,3 +58,7 @@ Thumbs.db
 # Temporary files
 /tmp/
 *.tmp
+
+# Quality reports
+reports/
+*.report

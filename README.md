@@ -163,6 +163,8 @@ CodeTuneStudio/
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and component overview
 - **[Plugin Development Guide](docs/PLUGIN_GUIDE.md)** - Create custom code analysis plugins
+- **[Code Quality Report](CODE_QUALITY_REPORT.md)** - Current code quality metrics and analysis
+- **[Refactoring Tasks](docs/REFACTORING_TASKS.md)** - Prioritized refactoring and improvement tasks
 - **[Changelog](CHANGELOG.md)** - Version history and migration guides
 - **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
 
