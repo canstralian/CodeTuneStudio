@@ -53,8 +53,8 @@ echo -e "   ${GREEN}Critical errors: $FLAKE8_CRITICAL${NC}"
 
 # 3. Bandit Security Analysis
 echo "3️⃣  Running Bandit security scanner..."
-bandit -r . -f json -o "$REPORT_DIR/bandit_${TIMESTAMP}.json" 2>&1 || true
-bandit -r . -f txt -o "$REPORT_DIR/bandit_${TIMESTAMP}.txt" 2>&1 || true
+bandit -r . -f json -o "$REPORT_DIR/bandit_${TIMESTAMP}.json" --exclude "./venv/*,./ENV/*,./env/*,./.venv/*" 2>&1 || true
+bandit -r . -f txt -o "$REPORT_DIR/bandit_${TIMESTAMP}.txt" --exclude "./venv/*,./ENV/*,./env/*,./.venv/*" 2>&1 || true
 
 # Extract security summary
 if [ -f "$REPORT_DIR/bandit_${TIMESTAMP}.json" ]; then
