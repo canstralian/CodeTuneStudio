@@ -315,9 +315,9 @@ class LogConfig:
     handlers = []  # Shared across instances!
 
 # After
-from typing import ClassVar
 class LogConfig:
-    handlers: ClassVar[list] = []
+    def __init__(self):
+        self.handlers: list = []
 ```
 
 #### 15. Add Missing Function Annotations
