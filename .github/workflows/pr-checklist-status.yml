@@ -50,7 +50,7 @@ jobs:
       # Check formatting using Black (fail if changes would be needed)
       - name: Run Black (format check)
         run: |
-          black --check --diff . --exclude 'app.py'
+          black --check --diff .
 
       # Lint code using Ruff (fail if fixes would be applied)
       - name: Run Ruff (lint check)
