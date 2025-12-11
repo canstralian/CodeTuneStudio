@@ -493,15 +493,15 @@ repos:
 
 ## Metrics Summary
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Flake8 Violations | 38 | 0 |
-| Ruff Violations | 100+ | <20 |
-| Mypy Errors | 30 | 0 |
-| Test Coverage | ~15% | >80% |
-| Cyclomatic Complexity (max) | 22 | <10 |
-| Line Length Violations | 22 | 0 |
-| Files with Tests | 7/47 (15%) | >80% |
+Metric | Current | Target
+-------|---------|--------
+Flake8 Violations | 38 | 0
+Ruff Violations | 100+ | <20
+Mypy Errors | 30 | 0
+Test Coverage | ~15% | >80%
+Cyclomatic Complexity (max) | 22 | <10
+Line Length Violations | 22 | 0
+Files with Tests | 7/47 (15%) | >80%
 
 ## Conclusion
 
