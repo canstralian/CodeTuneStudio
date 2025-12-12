@@ -5,7 +5,6 @@ This module contains the main application logic refactored from app.py,
 providing a clean separation between server logic and CLI entrypoint.
 """
 
-import logging
 import os
 import time
 from contextlib import contextmanager
@@ -17,7 +16,13 @@ import streamlit as st
 from flask import Flask
 from sqlalchemy.pool import QueuePool
 
-# Local imports
+# Local imports - Initialize logging first
+from core.logging_config import get_logger, setup_logging
+
+# Set up centralized logging configuration
+setup_logging()
+
+from config.constants import DATABASE_POOL_CONFIG, UI_CONFIG
 from components.dataset_selector import dataset_browser, validate_dataset_name
 from components.documentation_viewer import documentation_viewer
 from components.experiment_compare import experiment_compare
@@ -29,12 +34,7 @@ from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
 
-# Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MLFineTuningApp:
@@ -96,10 +96,10 @@ class MLFineTuningApp:
                 "SQLALCHEMY_TRACK_MODIFICATIONS": False,
                 "SQLALCHEMY_ENGINE_OPTIONS": {
                     "poolclass": QueuePool,
-                    "pool_size": 10,
-                    "max_overflow": 20,
-                    "pool_timeout": 30,
-                    "pool_recycle": 1800,
+                    "pool_size": DATABASE_POOL_CONFIG["pool_size"],
+                    "max_overflow": DATABASE_POOL_CONFIG["max_overflow"],
+                    "pool_timeout": DATABASE_POOL_CONFIG["pool_timeout"],
+                    "pool_recycle": DATABASE_POOL_CONFIG["pool_recycle"],
                     "pool_pre_ping": True,
                     "echo": bool(os.environ.get("SQL_DEBUG", False)),
                 },

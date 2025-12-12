@@ -1,14 +1,13 @@
 import importlib.util
 import inspect
-import logging
 import sys
 from pathlib import Path
 
+from core.logging_config import get_logger
+
 from .base import AgentTool
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PluginRegistry:
