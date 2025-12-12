@@ -60,6 +60,74 @@ class PluginRegistry:
         self._tools.clear()
         logger.info("Cleared all registered tools")
 
+    def _validate_plugin_directory(self, plugin_dir: str) -> Path | None:
+        """
+        Validate and resolve the plugin directory path
+
+        Args:
+            plugin_dir: Directory containing plugin files
+
+        Returns:
+            Resolved Path object if valid, None otherwise
+        """
+        plugin_path = Path(plugin_dir).resolve()
+        if not plugin_path.exists():
+            logger.warning(f"Plugin directory {plugin_dir} does not exist")
+            return None
+        return plugin_path
+
+    def _ensure_path_accessible(self, plugin_path: Path) -> None:
+        """
+        Ensure the plugin parent directory is in sys.path
+
+        Args:
+            plugin_path: Path to the plugin directory
+        """
+        plugin_parent = str(plugin_path.parent)
+        if plugin_parent not in sys.path:
+            sys.path.insert(0, plugin_parent)
+
+    def _load_module_from_file(self, file_path: Path) -> object | None:
+        """
+        Load a Python module from a file path
+
+        Args:
+            file_path: Path to the Python file
+
+        Returns:
+            Loaded module object or None if loading fails
+        """
+        module_name = file_path.stem
+        spec = importlib.util.spec_from_file_location(module_name, str(file_path))
+
+        if not spec or not spec.loader:
+            logger.warning(f"Could not find spec for module: {module_name}")
+            return None
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def _extract_tool_classes(self, module: object) -> list[type[AgentTool]]:
+        """
+        Extract AgentTool subclasses from a module
+
+        Args:
+            module: Python module to inspect
+
+        Returns:
+            List of AgentTool subclass types found in the module
+        """
+        tool_classes = []
+        for _name, obj in inspect.getmembers(module):
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, AgentTool)
+                and obj != AgentTool
+            ):
+                tool_classes.append(obj)
+        return tool_classes
+
     def discover_tools(self, plugin_dir: str = "plugins") -> None:
         """
         Discover and load tools from plugin directory
@@ -68,43 +136,24 @@ class PluginRegistry:
             plugin_dir: Directory containing plugin files
         """
         try:
-            # Convert to absolute path
-            plugin_path = Path(plugin_dir).resolve()
-            if not plugin_path.exists():
-                logger.warning(f"Plugin directory {plugin_dir} does not exist")
+            plugin_path = self._validate_plugin_directory(plugin_dir)
+            if not plugin_path:
                 return
 
-            # Add plugin directory to Python path if not already there
-            plugin_parent = str(plugin_path.parent)
-            if plugin_parent not in sys.path:
-                sys.path.insert(0, plugin_parent)
+            self._ensure_path_accessible(plugin_path)
 
             for file_path in plugin_path.glob("*.py"):
                 if file_path.name.startswith("__"):
                     continue
 
                 try:
-                    # Import module using spec
-                    module_name = file_path.stem
-                    spec = importlib.util.spec_from_file_location(
-                        module_name, str(file_path)
-                    )
-
-                    if not spec or not spec.loader:
-                        logger.warning(f"Could not find spec for module: {module_name}")
+                    module = self._load_module_from_file(file_path)
+                    if not module:
                         continue
 
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-
-                    # Find and register tool classes
-                    for _name, obj in inspect.getmembers(module):
-                        if (
-                            inspect.isclass(obj)
-                            and issubclass(obj, AgentTool)
-                            and obj != AgentTool
-                        ):
-                            self.register_tool(obj)
+                    tool_classes = self._extract_tool_classes(module)
+                    for tool_class in tool_classes:
+                        self.register_tool(tool_class)
 
                 except Exception as e:
                     logger.exception(f"Failed to load plugin {file_path}: {e!s}")
