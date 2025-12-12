@@ -20,4 +20,6 @@ numpy>=1.19.3,<2
 plotly==6.4.0
 
 # Annotation & feedback
-argilla==1.24.0
+# Note: argilla 1.24.0 does not exist; using latest stable 1.x version
+# Version 1.29.1 is the last 1.x release before 2.x which has breaking API changes
+argilla==1.29.1
