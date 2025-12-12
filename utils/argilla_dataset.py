@@ -73,7 +73,15 @@ class ArgillaDatasetManager:
         """
         try:
             # Load dataset from Argilla 2.x client
-            argilla_dataset = self.client.datasets(dataset_name)
+            # Access dataset by name from the datasets collection
+            argilla_dataset = None
+            for ds in self.client.datasets:
+                if ds.name == dataset_name:
+                    argilla_dataset = ds
+                    break
+            
+            if not argilla_dataset:
+                raise ValueError(f"Dataset '{dataset_name}' not found")
             
             # Fetch all records from the dataset
             records = list(argilla_dataset.records)
@@ -93,9 +101,11 @@ class ArgillaDatasetManager:
                 
                 # Get responses/annotations if available
                 responses = record.responses if hasattr(record, 'responses') else []
-                dataset_dict["label"].append(
-                    responses[0].values if responses else None
-                )
+                # Safely extract values from first response
+                label_value = None
+                if responses and len(responses) > 0:
+                    label_value = getattr(responses[0], 'values', None)
+                dataset_dict["label"].append(label_value)
                 
                 # Get metadata if available
                 dataset_dict["metadata"].append(

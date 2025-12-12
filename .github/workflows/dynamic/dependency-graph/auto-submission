@@ -134,9 +134,11 @@ jobs:
           if [ -f "pyproject.toml" ]; then
             echo "📝 Validating pyproject.toml..."
             
-            # Check if pyproject.toml has valid syntax
-            if python -c "import tomli; tomli.load(open('pyproject.toml', 'rb'))" 2>/dev/null || \
-               python -c "import tomllib; tomllib.load(open('pyproject.toml', 'rb'))" 2>/dev/null; then
+            # Check if pyproject.toml has valid syntax using proper file handling
+            if python -c "import sys; \
+               try: import tomli; \
+               except ImportError: import tomllib as tomli; \
+               with open('pyproject.toml', 'rb') as f: tomli.load(f)" 2>/dev/null; then
               echo "✅ pyproject.toml syntax validation passed"
             else
               echo "⚠️  pyproject.toml syntax validation failed"
