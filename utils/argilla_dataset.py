@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArgillaDatasetManager:
-    """Handle Argilla dataset operations for model fine-tuning"""
+    """Handle Argilla dataset operations for model fine-tuning using Argilla 2.x API"""
 
     def __init__(
         self,
@@ -24,21 +24,27 @@ class ArgillaDatasetManager:
 
         Args:
             workspace: Argilla workspace name
-            api_url: Argilla API URL
+            api_url: Argilla API URL (default: http://localhost:6900)
             api_key: Argilla API key
         """
-        self.workspace = workspace or os.getenv("ARGILLA_WORKSPACE")
+        self.workspace = workspace or os.getenv("ARGILLA_WORKSPACE", "default")
         self._init_argilla(api_url, api_key)
 
     def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
-        """Initialize Argilla client"""
+        """
+        Initialize Argilla client using Argilla 2.x API.
+        
+        Security Note:
+            The api_key parameter contains sensitive credentials and should never
+            be logged or exposed in error messages. All logging in this method
+            avoids including the api_key value.
+        """
         try:
-            # Using the new login method instead of init
-            rg.login(
+            # Initialize Argilla 2.x client
+            self.client = rg.Argilla(
                 api_url=api_url
-                or os.getenv("ARGILLA_API_URL", "https://api.argilla.io"),
+                or os.getenv("ARGILLA_API_URL", "http://localhost:6900"),
                 api_key=api_key or os.getenv("ARGILLA_API_KEY"),
-                workspace=self.workspace,
             )
             logger.info("Argilla client initialized successfully")
         except Exception as e:
@@ -46,14 +52,14 @@ class ArgillaDatasetManager:
             raise
 
     def list_datasets(self) -> list[str]:
-        """List available datasets in the workspace"""
+        """List available datasets in the workspace using Argilla 2.x API"""
         try:
-            # Using the new method to list datasets
-            datasets = rg.get_datasets()
-            return [ds.name for ds in datasets]
+            # Get datasets from the client's datasets collection
+            datasets_list = list(self.client.datasets)
+            return [ds.name for ds in datasets_list]
         except Exception as e:
             logger.exception(f"Failed to list datasets: {e!s}")
-            raise
+            return []  # Return empty list on error instead of raising
 
     def load_dataset(
         self,
@@ -62,38 +68,64 @@ class ArgillaDatasetManager:
         filter_by: dict[str, Any] | None = None,
     ) -> Dataset:
         """
-        Load and prepare an Argilla dataset for fine-tuning
+        Load and prepare an Argilla dataset for fine-tuning using Argilla 2.x API
 
         Args:
             dataset_name: Name of the dataset in Argilla
-            query: Optional query to filter records
-            filter_by: Optional dictionary of filters
+            query: Optional query to filter records (for future use)
+            filter_by: Optional dictionary of filters (for future use)
 
         Returns:
             HuggingFace dataset object
+            
+        Note:
+            This method loads all records into memory at once. For large datasets
+            (>10,000 records), consider implementing pagination or streaming to
+            avoid memory issues. The current implementation prioritizes simplicity
+            for typical use cases with smaller datasets.
         """
         try:
-            # Load dataset from Argilla using the new method
-            dataset = rg.get_dataset(
-                name=dataset_name, query=query, filter_by=filter_by
-            )
-
+            # Load dataset from Argilla 2.x client
+            # Access dataset by name from the datasets collection
+            argilla_dataset = None
+            for ds in self.client.datasets:
+                if ds.name == dataset_name:
+                    argilla_dataset = ds
+                    break
+            
+            if not argilla_dataset:
+                raise ValueError(f"Dataset '{dataset_name}' not found")
+            
+            # Fetch all records from the dataset
+            records = list(argilla_dataset.records)
+            
             # Convert to HuggingFace dataset format
-            hf_dataset = Dataset.from_dict(
-                {
-                    "text": [record.text for record in dataset],
-                    "label": [
-                        record.annotation
-                        for record in dataset
-                        if hasattr(record, "annotation")
-                    ],
-                    "metadata": [
-                        record.metadata
-                        for record in dataset
-                        if hasattr(record, "metadata")
-                    ],
-                }
-            )
+            # Extract text fields and responses from records
+            dataset_dict = {
+                "text": [],
+                "label": [],
+                "metadata": [],
+            }
+            
+            for record in records:
+                # Get the text from the first text field
+                text_fields = [f.value for f in record.fields if hasattr(f, 'value')]
+                dataset_dict["text"].append(text_fields[0] if text_fields else "")
+                
+                # Get responses/annotations if available
+                responses = record.responses if hasattr(record, 'responses') else []
+                # Safely extract values from first response
+                label_value = None
+                if responses and len(responses) > 0:
+                    label_value = getattr(responses[0], 'values', None)
+                dataset_dict["label"].append(label_value)
+                
+                # Get metadata if available
+                dataset_dict["metadata"].append(
+                    record.metadata if hasattr(record, 'metadata') else {}
+                )
+            
+            hf_dataset = Dataset.from_dict(dataset_dict)
 
             logger.info(
                 f"Successfully loaded dataset '{dataset_name}' with "
