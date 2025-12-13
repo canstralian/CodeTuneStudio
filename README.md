@@ -168,7 +168,7 @@ CodeTuneStudio/
 - **[Refactoring Tasks](docs/REFACTORING_TASKS.md)** - Prioritized refactoring and improvement tasks
 - **[Quick Start Refactoring](QUICK_START_REFACTORING.md)** - Fast-track guide to code improvements
 - **[Changelog](CHANGELOG.md)** - Version history and migration guides
-- **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
+- **[Code Quality Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md)** - Code quality standards and contributing workflow
 
 ---
 
@@ -187,7 +187,7 @@ See the [Plugin Development Guide](docs/PLUGIN_GUIDE.md) for details.
 ## 🤝 Contributing
 
 We welcome contributions! 🫶  
-Feel free to check out the [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get involved.
+See our [Code Quality Guidelines](docs/CONTRIBUTING_CODE_QUALITY.md) and [GitHub Copilot Guide](docs/COPILOT_GUIDE.md) for details on how to contribute.
 
 ### Code Quality
 

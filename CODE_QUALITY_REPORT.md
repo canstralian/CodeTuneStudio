@@ -287,7 +287,7 @@ Documentation: Excellent (maintained)
 
 ## 📋 Refactoring Checklist
 
-For detailed refactoring tasks, see [REFACTORING_TASKS.md](REFACTORING_TASKS.md)
+For detailed refactoring tasks, see [REFACTORING_TASKS.md](docs/REFACTORING_TASKS.md)
 
 ### Quick Reference
 
@@ -338,11 +338,11 @@ pre-commit run --all-files
 ## 📚 References
 
 ### Internal Documentation
-- [REFACTORING_TASKS.md](REFACTORING_TASKS.md) - Detailed refactoring tasks
-- [CONTRIBUTING_CODE_QUALITY.md](CONTRIBUTING_CODE_QUALITY.md) - Code quality guidelines
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [REFACTORING_TASKS.md](docs/REFACTORING_TASKS.md) - Detailed refactoring tasks
+- [CONTRIBUTING_CODE_QUALITY.md](docs/CONTRIBUTING_CODE_QUALITY.md) - Code quality guidelines
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture
 - [COPILOT_GUIDE.md](docs/COPILOT_GUIDE.md) - AI code generation guide for contributors
-- [.github/copilot-instructions.md](../.github/copilot-instructions.md) - AI coding agent instructions
+- [.github/copilot-instructions.md](.github/copilot-instructions.md) - AI coding agent instructions
 
 ### External Resources
 - [Ruff Rules](https://docs.astral.sh/ruff/rules/)

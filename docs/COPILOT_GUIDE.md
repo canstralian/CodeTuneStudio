@@ -417,8 +417,7 @@ All PRs must pass:
 ### Project-Specific Documentation
 - [Architecture Guide](ARCHITECTURE.md) - System design and component overview
 - [Plugin Development Guide](PLUGIN_GUIDE.md) - Create custom code analysis plugins
-- [Contributing Guidelines](../CONTRIBUTING.md) - How to contribute to the project
-- [Code Quality Guidelines](CONTRIBUTING_CODE_QUALITY.md) - Detailed code quality standards
+- [Code Quality Guidelines](CONTRIBUTING_CODE_QUALITY.md) - Detailed code quality standards and contributing workflow
 
 ---
 
