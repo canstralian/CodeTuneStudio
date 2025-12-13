@@ -180,16 +180,16 @@ class TestSecurityWorkflow(unittest.TestCase):
             "Requirements file should exist for pip-audit",
         )
 
-    def test_workflow_checks_for_precommit_config(self):
-        """Test that workflow verifies pre-commit config"""
+    def test_workflow_has_all_required_jobs(self):
+        """Test that security workflow defines all required jobs"""
         with open(self.workflow_file, "r") as f:
-            content = f.read()
+            content = yaml.safe_load(f)
 
-        self.assertIn(
-            ".pre-commit-config.yaml",
-            content,
-            "Workflow should check for pre-commit config",
-        )
+        required_jobs = ["secrets", "dependencies", "sbom"]
+        jobs = content.get("jobs", {})
+
+        for job in required_jobs:
+            self.assertIn(job, jobs, f"Missing required job: {job}")
 
 
 class TestReleaseWorkflow(unittest.TestCase):
