@@ -1,0 +1,109 @@
+================================================================================
+CODETUNESTUDIO REFACTORING REPORT
+================================================================================
+File: /home/runner/work/CodeTuneStudio/CodeTuneStudio/examples/refactoring/before/inefficient_code.py
+Timestamp: 2025-12-13T07:34:24.744047
+Estimated Complexity: HIGH
+Safe to Apply: NO
+
+Issues Found: 14
+
+## PERFORMANCE
+--------------------------------------------------------------------------------
+1. Line 18 [HIGH]
+   Description: String concatenation in loop
+   Confidence: high
+   Rationale: String concatenation in loops is O(n²). Use list append + join or io.StringIO.
+
+2. Line 27 [HIGH]
+   Description: String concatenation in loop
+   Confidence: high
+   Rationale: String concatenation in loops is O(n²). Use list append + join or io.StringIO.
+
+3. Line 27 [MEDIUM]
+   Description: Nested loops detected (possible O(n²) complexity)
+   Confidence: medium
+   Rationale: Consider using set operations or hash maps for O(n) complexity.
+
+4. Line 38 [HIGH]
+   Description: String concatenation in loop
+   Confidence: high
+   Rationale: String concatenation in loops is O(n²). Use list append + join or io.StringIO.
+
+5. Line 44 [HIGH]
+   Description: String concatenation in loop
+   Confidence: high
+   Rationale: String concatenation in loops is O(n²). Use list append + join or io.StringIO.
+
+6. Line 28 [HIGH]
+   Description: String concatenation in loop
+   Confidence: high
+   Rationale: String concatenation in loops is O(n²). Use list append + join or io.StringIO.
+
+## DOCUMENTATION
+--------------------------------------------------------------------------------
+1. Line 68 [MEDIUM]
+   Description: Missing docstring for __init__
+   Confidence: high
+   Rationale: All public functions and classes should have docstrings.
+
+## TYPE SAFETY
+--------------------------------------------------------------------------------
+1. Line 9 [LOW]
+   Description: Function process_data missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+2. Line 24 [LOW]
+   Description: Function find_duplicates missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+3. Line 34 [LOW]
+   Description: Function calculate_statistics missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+4. Line 68 [LOW]
+   Description: Function __init__ missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+5. Line 74 [LOW]
+   Description: Function add_data missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+6. Line 78 [LOW]
+   Description: Function process missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+7. Line 85 [LOW]
+   Description: Function get_result missing type hints
+   Confidence: medium
+   Rationale: Type hints improve code clarity and enable static analysis.
+
+================================================================================
+EXECUTION RESULT
+================================================================================
+Success: True
+Execution Time: 0.000s
+
+Changes Applied:
+  - Would apply: String concatenation in loop at line 18
+  - Would apply: String concatenation in loop at line 27
+  - Would apply: Nested loops detected (possible O(n²) complexity) at line 27
+  - Would apply: String concatenation in loop at line 38
+  - Would apply: String concatenation in loop at line 44
+  - Would apply: String concatenation in loop at line 28
+  - Would apply: Missing docstring for __init__ at line 68
+  - Would apply: Function process_data missing type hints at line 9
+  - Would apply: Function find_duplicates missing type hints at line 24
+  - Would apply: Function calculate_statistics missing type hints at line 34
+  - Would apply: Function __init__ missing type hints at line 68
+  - Would apply: Function add_data missing type hints at line 74
+  - Would apply: Function process missing type hints at line 78
+  - Would apply: Function get_result missing type hints at line 85
+
+================================================================================
