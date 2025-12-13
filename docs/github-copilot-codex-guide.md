@@ -200,4 +200,5 @@ jobs:
 - Align updates with the Trading Bot Swarm release calendar to ensure compatibility across services and shared libraries.
 
 ## Closing Note
-Standardizing these practices elevates reliability, performance, and safety for the trading ecosystem while enabling Copilot and Codex to contribute responsibly and efficiently.
+Standardize for excellence: by following these Copilot and Codex guardrails, contributors strengthen the reliability, performance, and safety of the Trading Bot Swarm ecosystem while keeping automation consistent and auditable.
+
