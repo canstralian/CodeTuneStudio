@@ -31,7 +31,14 @@ class ArgillaDatasetManager:
         self._init_argilla(api_url, api_key)
 
     def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
-        """Initialize Argilla client using Argilla 2.x API"""
+        """
+        Initialize Argilla client using Argilla 2.x API.
+        
+        Security Note:
+            The api_key parameter contains sensitive credentials and should never
+            be logged or exposed in error messages. All logging in this method
+            avoids including the api_key value.
+        """
         try:
             # Initialize Argilla 2.x client
             self.client = rg.Argilla(
@@ -70,6 +77,12 @@ class ArgillaDatasetManager:
 
         Returns:
             HuggingFace dataset object
+            
+        Note:
+            This method loads all records into memory at once. For large datasets
+            (>10,000 records), consider implementing pagination or streaming to
+            avoid memory issues. The current implementation prioritizes simplicity
+            for typical use cases with smaller datasets.
         """
         try:
             # Load dataset from Argilla 2.x client
