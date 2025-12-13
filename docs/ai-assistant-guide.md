@@ -175,10 +175,12 @@ jobs:
   lint-and-format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      # Pin actions to commit SHA for security (example shows tag, replace with SHA)
+      # To get SHA: Visit repo releases page and copy full commit hash
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Set up Python
-        uses: actions/setup-python@v5  # Pin to SHA: actions/setup-python@<PINNED_SHA>
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -201,10 +203,10 @@ jobs:
   type-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Set up Python
-        uses: actions/setup-python@v5  # Pin to SHA: actions/setup-python@<PINNED_SHA>
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -225,10 +227,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Set up Python
-        uses: actions/setup-python@v5  # Pin to SHA: actions/setup-python@<PINNED_SHA>
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -247,7 +249,7 @@ jobs:
                  --cov-report=xml --cov-report=term-missing
           
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4  # Pin to SHA: codecov/codecov-action@<PINNED_SHA>
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673  # v4.5.0
         with:
           file: ./coverage.xml
           fail_ci_if_error: true
@@ -257,8 +259,9 @@ jobs:
 - **No Error Masking:** Never use `|| true` to hide failures
 - **Conditional Installs:** Use `if [ -f file ]; then install; fi` for optional files
 - **Pinned Actions:** Pin third-party actions to immutable commit SHAs (not tags like `@v3`)
-  - To obtain SHA: Go to the action's GitHub repo → Releases → Copy commit SHA for desired version
-  - Example: `actions/checkout@<PINNED_SHA>` where `<PINNED_SHA>` is the full 40-character commit hash
+  - To obtain SHA: Go to the action's GitHub repo → Releases → Copy full 40-character commit hash
+  - Example: `actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1`
+  - The SHA ensures immutability; the comment documents the version for reference
 - **Scoped Coverage:** Always scope `--cov=` to source packages, never use `--cov=.`
 - **MyPy Configuration:** Ensure `mypy.ini` or `pyproject.toml` `[tool.mypy]` exists with project settings
 
@@ -286,12 +289,12 @@ jobs:
     name: Secret Detection
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           fetch-depth: 0  # Full history for secret scanning
           
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2  # Pin to SHA: gitleaks/gitleaks-action@<PINNED_SHA>
+        uses: gitleaks/gitleaks-action@1f3d10fb50cc38ec13f03aac6a93ce761e04e672  # v2.3.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -299,10 +302,10 @@ jobs:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Set up Python
-        uses: actions/setup-python@v5  # Pin to SHA: actions/setup-python@<PINNED_SHA>
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: '3.11'
           
@@ -322,10 +325,10 @@ jobs:
     name: Static Application Security Testing
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Set up Python
-        uses: actions/setup-python@v5  # Pin to SHA: actions/setup-python@<PINNED_SHA>
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: '3.11'
           
@@ -341,22 +344,22 @@ jobs:
     name: Generate Software Bill of Materials
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Generate SBOM with Anchore
-        uses: anchore/sbom-action@v0  # Pin to SHA: anchore/sbom-action@<PINNED_SHA>
+        uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5  # v0.17.0
         with:
           format: spdx-json
           output-file: sbom.spdx.json
           
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4  # Pin to SHA: actions/upload-artifact@<PINNED_SHA>
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8  # v4.3.0
         with:
           name: sbom
           path: sbom.spdx.json
           
       - name: Scan SBOM for vulnerabilities
-        uses: anchore/scan-action@v3  # Pin to SHA: anchore/scan-action@<PINNED_SHA>
+        uses: anchore/scan-action@d43cc1dfea6a99ed123bf8f3133f1797c9b44492  # v4.1.0
         with:
           sbom: sbom.spdx.json
           fail-build: true
@@ -370,15 +373,15 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3  # Pin to SHA: github/codeql-action/init@<PINNED_SHA>
+        uses: github/codeql-action/init@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a  # v3.25.15
         with:
           languages: python
           
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3  # Pin to SHA: github/codeql-action/analyze@<PINNED_SHA>
+        uses: github/codeql-action/analyze@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a  # v3.25.15
 ```
 
 ### Security Best Practices
@@ -412,13 +415,13 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4  # Pin to SHA: actions/checkout@<PINNED_SHA>
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           fetch-depth: 0
           persist-credentials: false
           
       - name: Set up Node.js
-        uses: actions/setup-node@v4  # Pin to SHA: actions/setup-node@<PINNED_SHA>
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8  # v4.0.2
         with:
           node-version: '20'
           
@@ -680,9 +683,14 @@ Use Conventional Commits format:
    from ..utils.database import db
    ```
 
-4. **Check for missing `__init__.py`:**
+4. **Check for missing `__init__.py` in package directories:**
    ```bash
-   find . -type d -name "*.py" -not -path "./venv/*" -exec test -f {}/__init__.py \; -print
+   # Find Python package directories that might be missing __init__.py
+   for dir in utils components core models plugins; do
+     if [ -d "$dir" ] && [ ! -f "$dir/__init__.py" ]; then
+       echo "Missing __init__.py in $dir"
+     fi
+   done
    ```
 
 ---
