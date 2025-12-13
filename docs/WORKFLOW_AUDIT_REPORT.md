@@ -240,39 +240,82 @@ This report provides a comprehensive audit of all GitHub workflows in the CodeTu
 
 ---
 
-### 7. ✅ python-style-checks.yml
+### 7. ✅ quality.yml (Replaces python-style-checks.yml)
 
-**Purpose:** Comprehensive Python code style enforcement
+**Purpose:** Blocking code quality checks with hardened configuration
 
-**Status:** VALIDATED
+**Status:** ACTIVE (Replaces ci.yml + python-style-checks.yml)
 
 **Configuration:**
-- Triggers: Pull requests and pushes to main
-- Python Version: 3.10
-- Tools: black==25.11.0, flake8==7.3.0, pre-commit==4.5.0, ruff==0.14.6
+- Triggers: Push and pull requests to all branches
+- Python Version: 3.11
+- Tools: black==25.11.0, flake8==7.3.0, ruff==0.14.6, mypy==1.13.0
 
 **Checks Performed:**
-1. Black formatting check
-2. Flake8 linting
-3. Ruff linting (modern, fast)
-4. Pre-commit hooks verification
+1. **style job**: Black, Flake8, Ruff on core/models/utils/plugins/components
+2. **types job**: MyPy type checking
+3. **tests job**: Pytest with 80% coverage threshold (blocking)
 
-**Validation:**
-- ✅ All style tools properly configured
-- ✅ Pre-commit config verification
-- ✅ Exclusion patterns for special files
-- ✅ Concurrency control
-- ✅ Summary output to GitHub job summary
-
-**Recommendations:**
-- Excellent comprehensive style checking
-- Consider caching pre-commit environments
-- Tool versions are current and pinned
+**Improvements Over Legacy:**
+- ✅ All checks are blocking (no continue-on-error)
+- ✅ Actions pinned to commit SHAs (supply chain security)
+- ✅ Scoped coverage (not --cov=.)
+- ✅ Coverage threshold enforcement (80% minimum)
+- ✅ Focused on actual code directories
 
 **Security:**
 - ✅ Read-only permissions
 - ✅ No secrets required
-- ✅ Safe dependencies
+- ✅ SHA-pinned actions
+- ✅ Codecov integration for coverage tracking
+
+---
+
+### 7a. ✅ security.yml (New)
+
+**Purpose:** Blocking security scanning and SBOM generation
+
+**Status:** ACTIVE (New workflow)
+
+**Configuration:**
+- Triggers: Push and pull requests to all branches
+- Python Version: 3.11
+- Actions: All pinned to commit SHAs
+
+**Checks Performed:**
+1. **secrets job**: TruffleHog with --only-verified
+2. **dependencies job**: pip-audit vulnerability scanning
+3. **sbom job**: Anchore SBOM generation (CycloneDX JSON)
+
+**Security Features:**
+- ✅ Full git history scan for secrets
+- ✅ Only verified secrets block CI (reduces false positives)
+- ✅ Dependency vulnerability blocking
+- ✅ SBOM artifact with 90-day retention
+- ✅ Supply chain transparency
+
+**Compliance:**
+- Software Bill of Materials (SBOM) generation
+- CycloneDX format (industry standard)
+- Supports security audits and compliance reporting
+
+---
+
+### 7b. 📦 ci.yml.legacy (Archived)
+
+**Purpose:** Former CI pipeline (deprecated)
+
+**Status:** ARCHIVED
+
+**Reason for Archival:**
+- Used continue-on-error: true to mask failures
+- Overly broad test coverage (--cov=.)
+- Mutable action tags (@v3, @v4)
+- Soft-fail allowed broken code to merge
+
+**Replacement:**
+- Functionality split into quality.yml and security.yml
+- All issues addressed in new workflows
 
 ---
 

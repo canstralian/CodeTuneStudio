@@ -25,7 +25,9 @@ Following the principle of least privilege, added explicit minimal permissions t
   
 - **huggingface-deploy.yml**: `contents: read`
 
-- **python-style-checks.yml**: `contents: read`
+- **quality.yml**: `contents: read` (replaces python-style-checks.yml)
+
+- **security.yml**: `contents: read` (new workflow)
 
 - **auto-update-checklist.yml**: `contents: write` (needs to commit checklist updates)
 
@@ -81,9 +83,10 @@ flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 ### Files Modified
 - `.env.example` (new file)
 - `.flake8` (updated exclude list)
-- `.github/workflows/ci.yml` (added permissions)
+- `.github/workflows/ci.yml.legacy` (archived - was ci.yml)
+- `.github/workflows/quality.yml` (new - replaces python-style-checks.yml)
+- `.github/workflows/security.yml` (new - security scanning)
 - `.github/workflows/huggingface-deploy.yml` (added permissions)
-- `.github/workflows/python-style-checks.yml` (added permissions)
 - `.github/workflows/auto-update-checklist.yml` (added permissions)
 - `.github/workflows/pr-checklist-status.yml` (added permissions)
 - `PR_REVIEW_CHECKLIST.md` (added recommendations section)

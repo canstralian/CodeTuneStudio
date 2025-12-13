@@ -172,9 +172,19 @@ Our GitHub Actions workflow automatically checks code quality on every pull requ
 2. **Flake8 Linting**: Checks for style violations and errors
 3. **Pre-commit Validation**: Runs all configured hooks
 
-### Workflow File
+### Workflow Files
 
-Located at `.github/workflows/python-style-checks.yml`
+**Quality Pipeline**: `.github/workflows/quality.yml` (blocking)
+- Style checks (Black, Flake8, Ruff)
+- Type checking (MyPy)
+- Tests with 80% coverage threshold
+
+**Security Pipeline**: `.github/workflows/security.yml` (blocking)
+- Secret scanning (TruffleHog)
+- Dependency audit (pip-audit)
+- SBOM generation (Anchore)
+
+For complete workflow documentation, see [`docs/ai-assistant-guide.md`](./ai-assistant-guide.md).
 
 ## Troubleshooting
 

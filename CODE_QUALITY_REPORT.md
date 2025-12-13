@@ -196,17 +196,21 @@ Action: Review for security best practices
 
 #### Current Workflows
 
-✅ **Working:**
-- `ci.yml` - Linting, type checking, tests, build
-- `python-style-checks.yml` - Black, Flake8, Ruff
+✅ **Active (Hardened):**
+- `quality.yml` - Black, Flake8, Ruff, MyPy, Pytest with 80% coverage (blocking)
+- `security.yml` - TruffleHog, pip-audit, SBOM generation (blocking)
 - `huggingface-deploy.yml` - Model deployment
 - `release.yml` - Package publishing
 
-⚠️ **Issues:**
-- Test job passes despite broken tests (continue-on-error: true)
-- Linting jobs set to continue-on-error (not blocking)
-- No security scanning in CI
-- No test coverage enforcement
+📦 **Archived:**
+- `ci.yml.legacy` - Deprecated; replaced by quality.yml and security.yml
+- `python-style-checks.yml` - Removed; redundant with quality.yml
+
+✅ **Improvements:**
+- All quality checks are now blocking (no continue-on-error)
+- Security scanning integrated (TruffleHog + pip-audit)
+- Test coverage enforcement at 80% threshold
+- Actions pinned to commit SHAs for supply chain security
 
 #### Recommendations
 

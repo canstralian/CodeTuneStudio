@@ -12,30 +12,29 @@ import subprocess
 import sys
 
 
-class TestStyleCheckSimulation(unittest.TestCase):
-    """Simulate python-style-checks.yml workflow"""
+class TestQualityWorkflowSimulation(unittest.TestCase):
+    """Simulate quality.yml workflow"""
 
     def setUp(self):
         """Set up test fixtures"""
         self.repo_root = Path(__file__).parent.parent
+        self.target_dirs = ["core/", "models/", "utils/", "plugins/", "components/"]
 
     def test_black_check_execution(self):
-        """Simulate Black formatting check"""
+        """Simulate Black formatting check on target directories"""
         # This simulates the workflow step:
-        # black --check --diff --line-length=88 .
+        # black --check --diff --line-length=88 core/ models/ utils/ plugins/ components/
         
         try:
-            # Use shell=True for proper regex handling in exclude pattern
             result = subprocess.run(
-                'black --check --diff --line-length=88 --exclude "app\\.py|index\\.html" .',
+                ["black", "--check", "--diff", "--line-length=88"] + self.target_dirs,
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=30,
-                shell=True
+                timeout=30
             )
             
-            # Workflow uses continue-on-error, but we check it ran
+            # Workflow is blocking, so we verify it can execute
             self.assertIsNotNone(result.returncode)
             
         except FileNotFoundError:
@@ -44,13 +43,13 @@ class TestStyleCheckSimulation(unittest.TestCase):
             self.fail("Black check timed out")
 
     def test_ruff_check_execution(self):
-        """Simulate Ruff linting check"""
+        """Simulate Ruff linting check on target directories"""
         # This simulates the workflow step:
-        # ruff check . --ignore E501
+        # ruff check core/ models/ utils/ plugins/ components/
         
         try:
             result = subprocess.run(
-                ["ruff", "check", ".", "--ignore", "E501"],
+                ["ruff", "check"] + self.target_dirs,
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
