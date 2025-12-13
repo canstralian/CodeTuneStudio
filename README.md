@@ -163,6 +163,7 @@ CodeTuneStudio/
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and component overview
 - **[Plugin Development Guide](docs/PLUGIN_GUIDE.md)** - Create custom code analysis plugins
+- **[GitHub Copilot Guide](docs/COPILOT_GUIDE.md)** - AI code generation best practices and standards
 - **[Code Quality Report](CODE_QUALITY_REPORT.md)** - Current code quality metrics and analysis
 - **[Refactoring Tasks](docs/REFACTORING_TASKS.md)** - Prioritized refactoring and improvement tasks
 - **[Quick Start Refactoring](QUICK_START_REFACTORING.md)** - Fast-track guide to code improvements

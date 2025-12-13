@@ -243,6 +243,10 @@ git commit --no-verify -m "Emergency fix"
 
 ## Additional Resources
 
+### CodeTuneStudio Documentation
+- [GitHub Copilot Guide](COPILOT_GUIDE.md) - AI code generation best practices and standards
+
+### External Resources
 - [Black Documentation](https://black.readthedocs.io/)
 - [Flake8 Documentation](https://flake8.pycqa.org/)
 - [Pre-commit Documentation](https://pre-commit.com/)

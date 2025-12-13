@@ -691,7 +691,8 @@ When reviewing refactoring PRs:
 - [CONTRIBUTING_CODE_QUALITY.md](CONTRIBUTING_CODE_QUALITY.md) - Code quality guidelines
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 - [PLUGIN_GUIDE.md](PLUGIN_GUIDE.md) - Plugin development
-- [.github/copilot-instructions.md](../.github/copilot-instructions.md) - AI coding guidelines
+- [COPILOT_GUIDE.md](COPILOT_GUIDE.md) - AI code generation guide for contributors
+- [.github/copilot-instructions.md](../.github/copilot-instructions.md) - AI coding agent instructions
 
 ---
 

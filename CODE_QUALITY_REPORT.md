@@ -341,7 +341,8 @@ pre-commit run --all-files
 - [REFACTORING_TASKS.md](REFACTORING_TASKS.md) - Detailed refactoring tasks
 - [CONTRIBUTING_CODE_QUALITY.md](CONTRIBUTING_CODE_QUALITY.md) - Code quality guidelines
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
-- [.github/copilot-instructions.md](../.github/copilot-instructions.md) - AI coding standards
+- [COPILOT_GUIDE.md](docs/COPILOT_GUIDE.md) - AI code generation guide for contributors
+- [.github/copilot-instructions.md](../.github/copilot-instructions.md) - AI coding agent instructions
 
 ### External Resources
 - [Ruff Rules](https://docs.astral.sh/ruff/rules/)
