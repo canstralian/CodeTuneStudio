@@ -1,22 +1,57 @@
-            - name: StaleSweeper
-  # You may pin to the exact commit or the version.
-  # uses: steffen-karlsson/stalesweeper@cbed739a89b490f703d8466fb59b37ddc0915889
-  uses: steffen-karlsson/stalesweeper@v1.1.1
-  with:
-    # Token for the repository. Can be passed in using `{{ secrets.GITHUB_TOKEN }}`.
-    repo-token: # optional, default is ${{ github.token }}
-    # The message to post on the discussion when closing it. Defaults to no message.
-    message: # optional
-    # The number of days to wait before closing a stale discussion.
-    days-before-close: 
-    # If set to `true`, stale discussions that have not been marked as answered will also be closed.
-    close-unanswered: # optional, default is false
-    # The category of discussions to close. Defaults to all discussion types
-    category: # optional
-    # The reason to use when closing a discussion. Options include `DUPLICATE`, `OUTDATED`, and `RESOLVED`.
-    close-reason: # optional, default is outdated
-    # If set to `true`, the processor will run in debug mode without performing any operations on live discussions.
-    dry-run: # optional, default is false
-    # If set to `true`, the processor will print out relevant information on all steps, including usage of GitHub API rate limits.
-    verbose: # optional, default is false
-          
+name: Stale Issue and Discussion Sweeper
+
+# Run daily at 1:00 AM UTC to clean up stale items
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  discussions: write
+
+jobs:
+  stale-sweep:
+    runs-on: ubuntu-latest
+    name: Clean up stale issues and discussions
+    
+    steps:
+      - name: Run StaleSweeper for discussions
+        uses: steffen-karlsson/stalesweeper@v1.1.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Close discussions after 60 days of inactivity
+          days-before-close: 60
+          # Also close unanswered discussions
+          close-unanswered: true
+          # Default reason for closing
+          close-reason: outdated
+          # Enable verbose logging
+          verbose: true
+          # Message to post when closing
+          message: |
+            This discussion has been automatically closed due to inactivity for 60 days.
+            If you believe this discussion should remain open, please reopen it and provide additional context.
+      
+      - name: Close stale issues
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Mark issues stale after 60 days
+          days-before-stale: 60
+          # Close stale issues after 7 additional days
+          days-before-close: 7
+          # Labels
+          stale-issue-label: 'stale'
+          exempt-issue-labels: 'pinned,security,bug'
+          # Messages
+          stale-issue-message: |
+            This issue has been automatically marked as stale due to inactivity for 60 days.
+            It will be closed in 7 days if no further activity occurs.
+            If this issue is still relevant, please add a comment to keep it open.
+          close-issue-message: |
+            This issue has been automatically closed due to prolonged inactivity.
+            If you believe this issue should be reopened, please create a new issue and reference this one.
+          # Don't mark PRs as stale (handle separately if needed)
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
