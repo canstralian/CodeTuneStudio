@@ -930,5 +930,177 @@ When reviewing code (AI-generated or human-written):
 
 ---
 
-*Last Updated: 2024-06-11*
+## 🤖 Behavioral Template for AI Coding Agents
+
+This section defines explicit behavioral rules that AI coding agents (Copilot, Codex, etc.) must follow when working with CodeTuneStudio.
+
+### Conceptual Instruction Template
+
+The following conceptual template defines how AI assistants should behave as disciplined pair programmers:
+
+```yaml
+ai_agent:
+  project: "CodeTuneStudio"
+  role: "Disciplined pair programmer with strict guardrails"
+  
+  core_responsibilities:
+    - Propose code that aligns with CodeTuneStudio patterns and conventions
+    - Include tests for new logic and validation for changed behavior
+    - Highlight security considerations and required environment variables
+    - Respect existing architecture and avoid speculative refactors
+    - Reference relevant documentation when suggesting changes
+  
+  must_always_do:
+    - Follow repository coding standards (PEP 8, type hints, docstrings)
+    - Use async patterns correctly (asyncio primitives, async context managers)
+    - Validate and sanitize all user inputs before processing
+    - Use parameterized queries or ORM for all database operations
+    - Keep secrets out of code and logs (use environment variables)
+    - Emit structured logs with correlation IDs for async workflows
+    - Suggest appropriate tests and linters for code changes
+    - Minimize external dependencies and justify new additions
+    - Document breaking changes and API modifications
+    
+  must_never_do:
+    - Generate untyped code when module uses type hints
+    - Use raw SQL queries or string concatenation for database access
+    - Hardcode credentials, API keys, tokens, or passwords
+    - Trust user input without validation and sanitization
+    - Expose internal system details in user-facing error messages
+    - Block the event loop with synchronous I/O in async contexts
+    - Create large refactors without explicit user request
+    - Bypass code review, CI requirements, or quality gates
+    - Mask errors with try/except or || true patterns
+    - Use mutable version tags (@v1, @latest) for GitHub Actions
+    
+  async_patterns:
+    required_practices:
+      - Use async/await for all I/O operations
+      - Wrap resources with "async with" context managers
+      - Add timeouts to all external calls (asyncio.wait_for)
+      - Handle task cancellation gracefully
+      - Emit correlation IDs for tracing async workflows
+    prohibited_practices:
+      - Blocking calls in async functions (requests, time.sleep)
+      - Missing await keywords on async functions
+      - Unhandled task cancellation
+      - Infinite loops without cancellation checks
+      
+  security_defaults:
+    secrets_management:
+      - Store all secrets in environment variables
+      - Document required variables in .env.example
+      - Validate required secrets at startup
+      - Redact sensitive fields in logs (passwords, tokens, keys)
+    input_validation:
+      - Check data types for all user inputs
+      - Validate value ranges (min/max bounds)
+      - Sanitize strings (remove SQL injection patterns)
+      - Validate enum values against whitelists
+      - Check file paths for directory traversal
+    database_security:
+      - Use SQLAlchemy ORM (preferred method)
+      - Use parameterized queries (if ORM not suitable)
+      - Never use f-strings or string concatenation for SQL
+      - Use connection pooling with timeouts
+      - Enable statement logging in development only
+      
+  logging_standards:
+    structured_logging:
+      - Use JSON-friendly structured format
+      - Include correlation IDs for request tracing
+      - Add context fields (user_id, action, resource)
+      - Log at appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    log_content_rules:
+      - Never log passwords, tokens, or API keys
+      - Redact sensitive user data (emails, addresses, PII)
+      - Include stack traces for ERROR and above
+      - Log timing metrics for performance-critical paths
+      - Emit audit logs for security-relevant actions
+    example_structured_log:
+      format: |
+        {
+          "timestamp": "2024-12-13T09:30:00Z",
+          "level": "INFO",
+          "correlation_id": "req-abc-123",
+          "module": "training.pipeline",
+          "action": "start_training",
+          "config_id": 42,
+          "duration_ms": 1250
+        }
+        
+  code_style_enforcement:
+    python:
+      - Follow PEP 8 style guidelines strictly
+      - Maximum line length: 88 characters (Black compatible)
+      - Use type hints for all function signatures
+      - Write comprehensive docstrings (Google/NumPy style)
+      - Prefer explicit imports over wildcards
+      - Use descriptive variable names (no single letters except loop indices)
+    naming_conventions:
+      - Functions and variables: snake_case
+      - Classes: PascalCase
+      - Constants: UPPER_SNAKE_CASE
+      - Private methods: _leading_underscore
+      - Modules: lowercase_with_underscores
+      
+  quality_gates:
+    before_suggesting_code:
+      - Verify change aligns with existing patterns
+      - Consider security implications
+      - Plan required tests (unit, integration, or both)
+      - Check for necessary documentation updates
+    code_review_focus:
+      - Missing tests or insufficient coverage
+      - Blocking operations in async flows
+      - Unvalidated user inputs
+      - Hardcoded configuration values
+      - Missing error handling or logging
+      - Type safety issues (missing hints, Any usage)
+      - Performance implications (N+1 queries, unnecessary loops)
+      
+  documentation_requirements:
+    when_to_update_docs:
+      - New features or capabilities added
+      - API endpoints changed (routes, parameters, responses)
+      - Configuration options modified
+      - Breaking changes introduced
+      - Security considerations changed
+    documentation_locations:
+      - Function docstrings for all public functions
+      - README.md for setup and usage changes
+      - ARCHITECTURE.md for structural changes
+      - CHANGELOG.md for version history (via semantic-release)
+      - API documentation for endpoint changes
+```
+
+### Applying the Template
+
+**For Contributors Using AI Assistants:**
+1. **Before accepting suggestions:** Verify the code follows all "must_always_do" rules
+2. **Security review:** Check against "must_never_do" prohibitions
+3. **Test coverage:** Ensure suggested tests follow quality gate requirements
+4. **Documentation:** Update docs according to documentation requirements
+
+**For Code Reviewers:**
+1. **Flag violations:** Point out any deviations from behavioral template
+2. **Security focus:** Extra scrutiny on input validation and secrets handling
+3. **Async patterns:** Verify proper async/await usage and timeout handling
+4. **Logging standards:** Check for sensitive data in logs
+
+### Integration with Development Workflow
+
+This behavioral template is designed to work alongside:
+- **Pre-commit hooks** (`.pre-commit-config.yaml`) for automated checks
+- **CI/CD pipelines** (`.github/workflows/`) for quality gates
+- **Developer workflow guide** ([`docs/ai-assistant-guide.md`](../docs/ai-assistant-guide.md)) for setup and troubleshooting
+
+**See Also:**
+- Full developer workflow and CI/CD examples: [`docs/ai-assistant-guide.md`](../docs/ai-assistant-guide.md)
+- Project architecture and design patterns: [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)
+- Contributing guidelines: [`docs/CONTRIBUTING_CODE_QUALITY.md`](../docs/CONTRIBUTING_CODE_QUALITY.md)
+
+---
+
+*Last Updated: 2025-12-13*
 *For questions or concerns, please open an issue on GitHub.*
