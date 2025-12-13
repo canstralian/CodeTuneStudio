@@ -1,0 +1,38 @@
+name: Block Copilot Documentation Sprawl
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  block-copilot-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect newly added copilot*.md files
+        run: |
+          echo "Checking for newly added Copilot-related markdown files..."
+
+          # Get list of newly added files in the PR
+          NEW_FILES=$(git diff --diff-filter=A --name-only origin/${{ github.base_ref }}...HEAD)
+
+          # Match copilot*.md (case-insensitive)
+          BLOCKED_FILES=$(echo "$NEW_FILES" | grep -iE '(^|/).*copilot.*\.md$' || true)
+
+          if [ -n "$BLOCKED_FILES" ]; then
+            echo "::error::New Copilot-related documentation files are not allowed."
+            echo "The following files violate repository policy:"
+            echo "$BLOCKED_FILES"
+            echo ""
+            echo "Policy:"
+            echo "- docs/COPILOT_GUIDE.md is the single source of truth"
+            echo "- Extend existing documentation instead of creating new files"
+            exit 1
+          fi
+
+          echo "No prohibited Copilot documentation files detected."
