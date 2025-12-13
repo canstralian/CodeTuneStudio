@@ -92,10 +92,16 @@ class TestWorkflowSecurity(unittest.TestCase):
                             f"{filename}: {key} should use GitHub secrets, found: {value}"
                         )
 
-        # Check all jobs
+        # Check all jobs - handle both 'jobs' key and YAML boolean 'on' issue
+        # YAML parsers may convert 'on:' to boolean True
         jobs = content.get("jobs", {})
-        if True in content:  # Handle YAML boolean key issue
-            jobs = content[True].get("jobs", {}) if isinstance(content[True], dict) else jobs
+        
+        # Check if the content has True key (YAML boolean parsing issue)
+        if True in content and isinstance(content[True], dict):
+            trigger_section = content[True]
+            # If jobs are nested under the trigger section (shouldn't be but defensive)
+            if "jobs" in trigger_section:
+                jobs = trigger_section["jobs"]
 
         for job_name, job_config in jobs.items():
             if not isinstance(job_config, dict):
