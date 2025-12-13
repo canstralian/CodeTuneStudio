@@ -115,7 +115,7 @@ jobs:
           pytest --maxfail=1 --disable-warnings -q
       - name: Upload coverage
         if: success()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b58a4b9c399a06d937503634254476a74c5c8c4c # pin to v4.5.0
 ```
 
 ## Best Practice Workflows
