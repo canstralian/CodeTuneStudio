@@ -136,7 +136,8 @@ Initialize `PEFTTrainer` with base model → applies LoRA config → optionally 
 - Context managers for resource management (database sessions, GPU memory)
 
 ## CI/CD Pipelines
-- **ci.yml**: Flake8 linting + unittest on push/PR to main
+- **quality.yml**: Blocking quality checks (Black, Flake8, Ruff, MyPy, Pytest with 80% coverage)
+- **security.yml**: Blocking security checks (TruffleHog, pip-audit, SBOM generation)
 - **huggingface-deploy.yml**: Auto-deploy to HF Hub on main branch push (requires HF_TOKEN secret)
-- **python-style-checks.yml**: Additional style validation
-- Tests must pass before deployment triggers
+- All quality and security checks must pass before merge
+- Actions pinned to commit SHAs for supply chain security

@@ -51,9 +51,9 @@ class TestWorkflowStructure(unittest.TestCase):
         """Test that workflows have required fields (name, on, jobs)"""
         workflow_files = [
             self.workflows_dir / "auto-update-checklist.yml",
-            self.workflows_dir / "ci.yml",
+            self.workflows_dir / "quality.yml",
+            self.workflows_dir / "security.yml",
             self.workflows_dir / "pr-checklist-status.yml",
-            self.workflows_dir / "python-style-checks.yml",
             self.workflows_dir / "release.yml",
             self.workflows_dir / "huggingface-deploy.yml",
             self.workflows_dir / "dynamic" / "dependency-graph" / "auto-submission",
@@ -129,13 +129,13 @@ class TestAutoUpdateChecklistWorkflow(unittest.TestCase):
         )
 
 
-class TestCIWorkflow(unittest.TestCase):
-    """Test ci.yml workflow"""
+class TestQualityWorkflow(unittest.TestCase):
+    """Test quality.yml workflow"""
 
     def setUp(self):
         """Set up test fixtures"""
         self.repo_root = Path(__file__).parent.parent
-        self.workflow_file = self.repo_root / ".github" / "workflows" / "ci.yml"
+        self.workflow_file = self.repo_root / ".github" / "workflows" / "quality.yml"
         self.requirements_file = self.repo_root / "requirements.txt"
 
     def test_workflow_exists(self):
@@ -151,45 +151,45 @@ class TestCIWorkflow(unittest.TestCase):
         with open(self.workflow_file, "r") as f:
             content = yaml.safe_load(f)
 
-        required_jobs = ["lint", "type-check", "test", "build"]
+        required_jobs = ["style", "types", "tests"]
         jobs = content.get("jobs", {})
 
         for job in required_jobs:
             self.assertIn(job, jobs, f"Missing required job: {job}")
 
 
-class TestPythonStyleChecksWorkflow(unittest.TestCase):
-    """Test python-style-checks.yml workflow"""
+class TestSecurityWorkflow(unittest.TestCase):
+    """Test security.yml workflow"""
 
     def setUp(self):
         """Set up test fixtures"""
         self.repo_root = Path(__file__).parent.parent
         self.workflow_file = (
-            self.repo_root / ".github" / "workflows" / "python-style-checks.yml"
+            self.repo_root / ".github" / "workflows" / "security.yml"
         )
-        self.precommit_config = self.repo_root / ".pre-commit-config.yaml"
+        self.requirements_file = self.repo_root / "requirements.txt"
 
     def test_workflow_exists(self):
         """Test that workflow file exists"""
         self.assertTrue(self.workflow_file.exists())
 
-    def test_precommit_config_exists(self):
-        """Test that pre-commit config exists"""
+    def test_requirements_file_exists(self):
+        """Test that requirements.txt exists"""
         self.assertTrue(
-            self.precommit_config.exists(),
-            "Pre-commit config file should exist",
+            self.requirements_file.exists(),
+            "Requirements file should exist for pip-audit",
         )
 
-    def test_workflow_checks_for_precommit_config(self):
-        """Test that workflow verifies pre-commit config"""
+    def test_workflow_has_all_required_jobs(self):
+        """Test that security workflow defines all required jobs"""
         with open(self.workflow_file, "r") as f:
-            content = f.read()
+            content = yaml.safe_load(f)
 
-        self.assertIn(
-            ".pre-commit-config.yaml",
-            content,
-            "Workflow should check for pre-commit config",
-        )
+        required_jobs = ["secrets", "dependencies", "sbom"]
+        jobs = content.get("jobs", {})
+
+        for job in required_jobs:
+            self.assertIn(job, jobs, f"Missing required job: {job}")
 
 
 class TestReleaseWorkflow(unittest.TestCase):

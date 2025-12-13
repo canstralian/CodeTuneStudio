@@ -6,14 +6,14 @@ Quick reference guide for GitHub workflows in CodeTuneStudio repository.
 
 | Workflow | Trigger | Purpose | Status |
 |----------|---------|---------|--------|
+| [quality.yml](#quality) | Push, Pull requests | Code quality checks (blocking) | ✅ Active |
+| [security.yml](#security) | Push, Pull requests | Security scanning (blocking) | ✅ Active |
 | [auto-update-checklist.yml](#auto-update-checklist) | Push to main, Daily cron | Auto-update PR checklist | ✅ Active |
-| [ci.yml](#ci) | Pull requests, Issue comments | CI/CD pipeline | ✅ Active |
-| [python-style-checks.yml](#python-style-checks) | PR/Push to main | Style enforcement | ✅ Active |
 | [pr-checklist-status.yml](#pr-checklist-status) | Pull requests | PR validation | ✅ Active |
 | [release.yml](#release) | Version tags, Manual | Release automation | ✅ Active |
 | [huggingface-deploy.yml](#huggingface-deploy) | Push to main | HF Hub deployment | ⚠️ Needs config |
 | [stalesweeper.yml](#stalesweeper) | Daily cron, Manual | Stale cleanup | ✅ Active |
-| [dependency-graph/auto-submission](#dependency-validation) | PR/Push, Manual | Dependency validation | ✅ Active |
+| [ci.yml.legacy](#ci-legacy) | N/A | Deprecated CI pipeline | 📦 Archived |
 
 ---
 
@@ -46,69 +46,87 @@ Permissions: contents:write
 
 ---
 
-### ci
+### quality
 
-**File:** `.github/workflows/ci.yml`
+**File:** `.github/workflows/quality.yml`
 
-**Purpose:** Comprehensive CI/CD with linting, testing, building
+**Purpose:** Blocking code quality checks (style, types, tests)
 
 **Triggers:**
-- Pull requests (opened, synchronize, reopened)
-- Issue comments
+- Push to any branch
+- Pull requests
 
 **Jobs:**
-1. **lint** - Ruff, Flake8, Black checks
-2. **type-check** - MyPy type checking
-3. **test** - Pytest with coverage
-4. **build** - Package building
-5. **ai-command** - AI command processor
+1. **style** - Black, Flake8, Ruff checks on core/models/utils/plugins/components
+2. **types** - MyPy type checking
+3. **tests** - Pytest with 80% coverage threshold
 
 **Configuration:**
 ```yaml
-Python: 3.10, 3.11
-Test Framework: pytest
-Code Coverage: Codecov
-```
-
-**AI Commands:**
-- `/gemini review`
-- `/killer optimize`
-- `/claude summarize`
-- `/dependabot rebase`
-- `/copilot explain`
-
----
-
-### python-style-checks
-
-**File:** `.github/workflows/python-style-checks.yml`
-
-**Purpose:** Enforce Python code style standards
-
-**Triggers:**
-- Pull requests to `main`
-- Push to `main`
-
-**Tools:**
-- Black 25.11.0 (formatting)
-- Flake8 7.3.0 (linting)
-- Ruff 0.14.6 (modern linting)
-- Pre-commit 4.5.0 (hooks)
-
-**Configuration:**
-```yaml
-Python: 3.10
-Line Length: 88
-Exclusions: app.py, index.html
+Python: 3.11
+Tools: black==25.11.0, flake8==7.3.0, ruff==0.14.6, mypy==1.13.0
+Coverage: 80% minimum (hard fail)
+Actions: Pinned to commit SHAs
 ```
 
 **Local Testing:**
 ```bash
-black --check --diff .
-flake8 .
-ruff check .
-pre-commit run --all-files
+black --check --diff --line-length=88 core/ models/ utils/ plugins/ components/
+flake8 core/ models/ utils/ plugins/ components/ --max-line-length=88
+ruff check core/ models/ utils/ plugins/ components/
+mypy core/ models/ utils/ plugins/ components/ --ignore-missing-imports
+pytest -v --cov=core --cov=models --cov=utils --cov=plugins --cov=components --cov-fail-under=80
 ```
+
+---
+
+### security
+
+**File:** `.github/workflows/security.yml`
+
+**Purpose:** Blocking security scanning and SBOM generation
+
+**Triggers:**
+- Push to any branch
+- Pull requests
+
+**Jobs:**
+1. **secrets** - TruffleHog secret scanning (--only-verified)
+2. **dependencies** - pip-audit vulnerability scanner
+3. **sbom** - Anchore SBOM generation (CycloneDX JSON)
+
+**Configuration:**
+```yaml
+Python: 3.11
+Actions: Pinned to commit SHAs
+SBOM Retention: 90 days
+```
+
+**Local Testing:**
+```bash
+pip-audit -r requirements.txt
+# TruffleHog requires binary installation
+```
+
+---
+
+### ci-legacy
+
+**File:** `.github/workflows/ci.yml.legacy`
+
+**Status:** 📦 Archived (deprecated)
+
+**Replacement:**
+- Quality checks moved to `quality.yml`
+- Security checks moved to `security.yml`
+
+**Reason for Archival:**
+- Used `continue-on-error: true` to mask failures
+- Overly broad test coverage (`--cov=.`)
+- Mutable action tags (security risk)
+- Soft-fail linting allowed broken code to merge
+
+See `docs/ai-assistant-guide.md` for current workflow documentation.
 
 ---
 
