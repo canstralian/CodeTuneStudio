@@ -4,6 +4,8 @@ Validate pyproject.toml syntax.
 
 This script checks if the pyproject.toml file has valid TOML syntax.
 It attempts to use tomli (Python < 3.11) or tomllib (Python >= 3.11).
+The project standardizes on Python 3.10, so tomli is the primary library used,
+but tomllib support is included for forward compatibility.
 
 Exit codes:
     0: Validation successful
@@ -29,7 +31,8 @@ def validate_pyproject(filepath: str = "pyproject.toml") -> bool:
         print(f"❌ ERROR: {filepath} not found", file=sys.stderr)
         return False
     
-    # Try to import tomli (Python < 3.11) or tomllib (Python >= 3.11)
+    # Try to import tomli (primary for Python 3.10) or tomllib (Python >= 3.11)
+    # Project uses Python 3.10, so tomli is expected, but tomllib provides forward compatibility
     try:
         import tomli
         load_func = tomli.load
