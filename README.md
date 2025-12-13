@@ -21,6 +21,31 @@ CodeTuneStudio is your all-in-one platform for intelligent code analysis, perfor
 - 🚀 **Performance Optimization** — Smart suggestions to boost code efficiency.
 - 🧑‍💻 **Best Practices** — Automated recommendations for cleaner, standard-compliant code.
 - 🎨 **Interactive Interface** — Gradio-powered UI for an intuitive developer experience.
+- 🤖 **Refactoring Agent** — Deterministic code refactoring with analysis → plan → execution workflow.
+
+---
+
+## 🚀 Quick Start: Reference Implementation
+
+Experience CodeTuneStudio's refactoring agent in action:
+
+```bash
+# Clone the repository
+git clone https://github.com/canstralian/CodeTuneStudio.git
+cd CodeTuneStudio
+
+# Run the reference implementation demo
+python examples/run_refactoring_demo.py
+```
+
+This demonstrates:
+- ✅ **Deterministic analysis** of real code
+- ✅ **Structured planning** with confidence levels
+- ✅ **Safe execution** with validation
+- ✅ **Comprehensive changelog** and audit trail
+- ✅ **Negative capability** (refusal when appropriate)
+
+📖 See [REFERENCE_IMPLEMENTATION.md](REFERENCE_IMPLEMENTATION.md) for full details.
 
 ---
 
