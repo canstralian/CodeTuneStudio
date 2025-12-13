@@ -134,16 +134,22 @@ jobs:
           if [ -f "pyproject.toml" ]; then
             echo "📝 Validating pyproject.toml..."
             
-            # Check if pyproject.toml has valid syntax using proper file handling
-            if python -c "import sys; \
-               try: import tomli; \
-               except ImportError: import tomllib as tomli; \
-               with open('pyproject.toml', 'rb') as f: tomli.load(f)" 2>/dev/null; then
+            # Use dedicated validation script for better maintainability
+            if python scripts/validate_pyproject.py pyproject.toml; then
               echo "✅ pyproject.toml syntax validation passed"
             else
-              echo "⚠️  pyproject.toml syntax validation failed"
-              echo "::warning::pyproject.toml syntax validation failed - continuing anyway"
-              validation_warnings=1
+              exit_code=$?
+              if [ $exit_code -eq 2 ]; then
+                # File not found - should not happen but treat as warning
+                echo "⚠️  pyproject.toml not found"
+                echo "::warning::pyproject.toml not found - continuing anyway"
+                validation_warnings=1
+              else
+                # Invalid syntax - this is a critical error
+                echo "❌ pyproject.toml has invalid syntax"
+                echo "::error::pyproject.toml syntax validation failed"
+                validation_failed=1
+              fi
             fi
           fi
           
@@ -189,11 +195,12 @@ jobs:
             echo "📦 Starting actual installation..."
             
             # Attempt installation with retries
+            # Using numeric flags for better bash idioms
             max_retries=3
             retry_count=0
-            install_success=false
+            install_success=0
             
-            while [ $retry_count -lt $max_retries ] && [ "$install_success" = false ]; do
+            while [ $retry_count -lt $max_retries ] && [ $install_success -eq 0 ]; do
               if [ $retry_count -gt 0 ]; then
                 echo "⚠️  Installation attempt $((retry_count + 1)) of $max_retries..."
                 sleep 5
@@ -201,7 +208,7 @@ jobs:
               
               if pip install -r requirements.txt; then
                 echo "✅ Successfully installed dependencies from requirements.txt"
-                install_success=true
+                install_success=1
               else
                 retry_count=$((retry_count + 1))
                 if [ $retry_count -lt $max_retries ]; then
@@ -210,7 +217,7 @@ jobs:
               fi
             done
             
-            if [ "$install_success" = false ]; then
+            if [ $install_success -eq 0 ]; then
               echo "❌ Failed to install dependencies after $max_retries attempts"
               echo "::error::Dependency installation failed - please check requirements.txt for invalid versions"
               exit 1
