@@ -17,6 +17,396 @@ CodeTuneStudio is a Streamlit/Flask hybrid application for ML model fine-tuning 
 
 **Development Environments:** VS Code, Kali Linux, Replit, GitHub Codespaces
 
+> **Note:** This document contains **agent behavioral rules** for GitHub Copilot Coding Agent. For **developer workflow documentation** (tool installation, CI/CD setup, troubleshooting), see [`docs/ai-assistant-guide.md`](../docs/ai-assistant-guide.md).
+
+---
+
+## 🤖 Agent Behavioral Template
+
+The following conceptual YAML template defines the behavioral constraints and expectations for AI agents working on CodeTuneStudio:
+
+```yaml
+copilot:
+  role: "pair-programmer with strict guardrails"
+  project_name: "CodeTuneStudio"
+  must_do:
+    - follow CodeTuneStudio repository coding standards and async guidelines
+    - suggest tests and lint checks for any code change
+    - minimize external calls; use mocks in tests
+    - keep prompts and completions free of secrets
+    - use parameterized SQL queries exclusively (SQLAlchemy ORM preferred)
+    - emit structured logs with correlation IDs
+    - validate all inputs at service boundaries
+    - use type hints for all function signatures
+  must_not_do:
+    - generate untyped code when the module requires types
+    - auto-create large refactors without explicit request
+    - bypass code review or CI requirements
+    - hardcode secrets, API keys, or credentials
+    - use raw SQL queries or string concatenation
+    - block the event loop with synchronous I/O in async contexts
+    - expose internal system details in error messages
+  reviewer_notes:
+    - highlight missing tests, logging, or security validations
+    - flag blocking operations inside async flows
+    - call out missing input validation or output sanitization
+    - identify opportunities for better error handling
+
+codex:
+  role: "automation copilot for CI/CD and maintenance"
+  project_name: "CodeTuneStudio"
+  must_do:
+    - enforce quality gates (lint, type-check, test) on code diffs
+    - ignore documentation-only changes for heavy test runs
+    - recommend dependency and security updates regularly
+    - pin third-party GitHub Actions to commit SHAs
+    - scope coverage targets to core/, components/, utils/, plugins/
+  must_not_do:
+    - push releases without passing quality gates
+    - downgrade security settings for speed
+    - use || true to mask test failures
+    - run MyPy on root directory (use specific packages)
+```
+
+This template guides agent behavior to align with CodeTuneStudio's architecture, security requirements, and development practices.
+
+---
+
+## 🔄 Async Pattern Mandates
+
+### Required Async Patterns
+
+**ALL asynchronous code in CodeTuneStudio MUST follow these patterns:**
+
+#### 1. Use `asyncio` Primitives
+
+```python
+import asyncio
+from typing import Optional
+
+async def fetch_data(url: str, timeout: float = 5.0) -> Optional[dict]:
+    """
+    Fetch data from API with timeout and proper error handling.
+    
+    Args:
+        url: API endpoint URL
+        timeout: Request timeout in seconds
+        
+    Returns:
+        Parsed JSON response or None on failure
+    """
+    try:
+        async with asyncio.timeout(timeout):  # Python 3.11+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    response.raise_for_status()
+                    return await response.json()
+    except asyncio.TimeoutError:
+        logger.error(f"Timeout fetching {url}", extra={"url": url})
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching {url}: {e}", exc_info=True)
+        return None
+```
+
+#### 2. Use `async with` for Resource Management
+
+```python
+# ✅ CORRECT - Automatic cleanup with async context manager
+async with aiofiles.open('file.txt', 'w') as f:
+    await f.write(data)
+
+# ❌ WRONG - No automatic cleanup
+f = await aiofiles.open('file.txt', 'w')
+await f.write(data)
+await f.close()  # Easy to forget
+```
+
+#### 3. Cancel Tasks Cleanly
+
+```python
+async def supervised_task():
+    """Run task with proper cancellation handling."""
+    task = asyncio.create_task(long_running_operation())
+    
+    try:
+        result = await task
+        return result
+    except asyncio.CancelledError:
+        logger.info("Task cancelled, cleaning up...")
+        # Perform cleanup
+        raise  # Re-raise to propagate cancellation
+```
+
+#### 4. NEVER Block the Event Loop
+
+**❌ PROHIBITED:**
+```python
+async def bad_async_function():
+    # NEVER do synchronous I/O in async context
+    with open('file.txt') as f:  # BLOCKS EVENT LOOP
+        data = f.read()
+    
+    time.sleep(5)  # BLOCKS EVENT LOOP
+    
+    requests.get(url)  # BLOCKS EVENT LOOP
+```
+
+**✅ REQUIRED:**
+```python
+async def good_async_function():
+    # Use async file I/O
+    async with aiofiles.open('file.txt') as f:
+        data = await f.read()
+    
+    # Use async sleep
+    await asyncio.sleep(5)
+    
+    # Use async HTTP client
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            data = await response.text()
+```
+
+#### 5. Use Timeouts and Semaphores
+
+```python
+from asyncio import Semaphore
+
+# Limit concurrent operations
+semaphore = Semaphore(10)
+
+async def rate_limited_operation(item):
+    """Execute operation with concurrency limit."""
+    async with semaphore:
+        return await process_item(item)
+
+# Timeout for long operations
+async def with_timeout():
+    """Execute with timeout protection."""
+    try:
+        async with asyncio.timeout(30):
+            return await expensive_operation()
+    except asyncio.TimeoutError:
+        logger.error("Operation timed out after 30s")
+        raise
+```
+
+---
+
+## 🔐 Security Defaults (Expanded)
+
+### Mandatory Security Requirements
+
+#### 1. No Secrets in Logs
+
+**❌ PROHIBITED:**
+```python
+logger.info(f"Connecting with API key: {api_key}")
+logger.debug(f"User password: {password}")
+```
+
+**✅ REQUIRED:**
+```python
+# Sanitize before logging
+def sanitize_for_logging(data: dict) -> dict:
+    """Remove sensitive fields from logging data."""
+    sensitive_keys = {'password', 'api_key', 'token', 'secret', 'credential'}
+    return {
+        k: '***REDACTED***' if k.lower() in sensitive_keys else v
+        for k, v in data.items()
+    }
+
+logger.info("User login", extra=sanitize_for_logging(request_data))
+```
+
+#### 2. Parameterized SQL (Mandatory)
+
+**ALL database queries MUST use parameterized queries or SQLAlchemy ORM.**
+
+See [Database Security section](#-database-security-postgresqlsqlite) for detailed examples.
+
+#### 3. Input Validation at Boundaries
+
+**Every external input MUST be validated before processing:**
+
+```python
+from pydantic import BaseModel, validator, Field
+
+class TrainingConfigInput(BaseModel):
+    """Validated training configuration."""
+    model_type: str = Field(..., regex="^(CodeT5|CodeBERT|GPT2)$")
+    batch_size: int = Field(..., ge=1, le=512)
+    learning_rate: float = Field(..., gt=0, le=1.0)
+    epochs: int = Field(..., ge=1, le=100)
+    
+    @validator('model_type')
+    def validate_model_type(cls, v):
+        """Ensure model type is supported."""
+        allowed = {'CodeT5', 'CodeBERT', 'GPT2'}
+        if v not in allowed:
+            raise ValueError(f"Model type must be one of {allowed}")
+        return v
+
+# Usage in API endpoint
+@app.route('/api/train', methods=['POST'])
+def start_training():
+    """Start training with validated input."""
+    try:
+        config = TrainingConfigInput(**request.json)
+        result = train_model(config.dict())
+        return jsonify(result), 200
+    except ValidationError as e:
+        return jsonify({'error': str(e)}), 400
+```
+
+---
+
+## 📊 Logging Standards
+
+### Structured Logging Requirements
+
+**ALL log entries MUST use structured logging with correlation IDs:**
+
+```python
+import logging
+import uuid
+from contextvars import ContextVar
+
+# Context variable for correlation IDs
+correlation_id: ContextVar[str] = ContextVar('correlation_id', default='')
+
+class CorrelationFilter(logging.Filter):
+    """Add correlation ID to log records."""
+    
+    def filter(self, record):
+        record.correlation_id = correlation_id.get() or 'N/A'
+        return True
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - [%(correlation_id)s] - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
+
+# Add filter to all loggers
+for handler in logging.root.handlers:
+    handler.addFilter(CorrelationFilter())
+
+logger = logging.getLogger(__name__)
+
+# Usage in request handlers
+@app.before_request
+def set_correlation_id():
+    """Set correlation ID for request tracking."""
+    request_id = request.headers.get('X-Request-ID') or str(uuid.uuid4())
+    correlation_id.set(request_id)
+    g.correlation_id = request_id
+
+@app.after_request
+def add_correlation_header(response):
+    """Add correlation ID to response."""
+    response.headers['X-Correlation-ID'] = g.get('correlation_id', 'N/A')
+    return response
+
+# Structured logging with extra context
+logger.info(
+    "Training job started",
+    extra={
+        'job_id': job.id,
+        'model_type': config.model_type,
+        'batch_size': config.batch_size
+    }
+)
+```
+
+### Log Level Guidelines
+
+**Use consistent log levels:**
+
+- **`DEBUG`**: Verbose diagnostic information (disabled in production)
+- **`INFO`**: General informational messages (state changes, milestones)
+- **`WARNING`**: Recoverable issues that don't stop execution
+- **`ERROR`**: Errors requiring attention but system continues
+- **`CRITICAL`**: Fatal errors requiring immediate intervention
+
+```python
+# Examples
+logger.debug(f"Processing item {item_id}")  # Verbose trace
+logger.info(f"Training started for job {job_id}")  # State change
+logger.warning(f"Retry attempt {attempt}/3")  # Recoverable issue
+logger.error(f"Failed to load model: {error}")  # Error occurred
+logger.critical(f"Database connection lost")  # System failure
+```
+
+---
+
+## 🎨 Code Style Enforcement (Expanded)
+
+### Mandatory Style Requirements
+
+#### 1. PEP 8 Compliance
+
+**ALL Python code MUST follow PEP 8:**
+
+- Line length: 88 characters (Black formatter compatible)
+- Indentation: 4 spaces (no tabs)
+- Imports: Grouped and sorted (stdlib, third-party, local)
+- Naming: `snake_case` for functions/variables, `PascalCase` for classes
+- Docstrings: Required for all public functions/classes
+
+#### 2. Type Hints (Mandatory)
+
+**ALL function signatures MUST include type hints:**
+
+```python
+from typing import Dict, List, Optional, Union, Any
+
+# ✅ CORRECT
+def process_data(
+    items: List[Dict[str, Any]],
+    config: Optional[Dict[str, Union[str, int]]] = None
+) -> Dict[str, float]:
+    """Process data items with optional configuration."""
+    # Implementation
+    return results
+
+# ❌ WRONG - Missing type hints
+def process_data(items, config=None):
+    # Implementation
+    return results
+```
+
+#### 3. Import Organization
+
+**Use `isort` for consistent import ordering:**
+
+```python
+# Standard library imports
+import os
+import sys
+from typing import Dict, List
+
+# Third-party imports
+import numpy as np
+import pandas as pd
+from flask import Flask, request
+
+# Local imports
+from core.models import TrainingConfig
+from utils.validators import validate_input
+```
+
+#### 4. Docstring Requirements
+
+**ALL public functions MUST have comprehensive docstrings:**
+
+See [Documentation Requirements section](#-documentation-requirements) for detailed examples.
+
 ---
 
 ## 🔒 Security-First Requirements
