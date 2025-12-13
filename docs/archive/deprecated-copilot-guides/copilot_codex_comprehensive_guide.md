@@ -1,3 +1,13 @@
+# ⚠️ DEPRECATED - This document has been archived
+
+**This guide has been superseded by the current documentation:**
+- **For developers**: See [`docs/ai-assistant-guide.md`](../../ai-assistant-guide.md)
+- **For AI agents**: See [`.github/copilot-instructions.md`](../../../.github/copilot-instructions.md)
+
+This file is preserved for historical reference only and contains outdated information, including references to non-existent projects ("Trading Bot Swarm").
+
+---
+
 # Comprehensive GitHub Copilot & Codex Guide for Trading Bot Swarm
 
 ## Purpose and Scope

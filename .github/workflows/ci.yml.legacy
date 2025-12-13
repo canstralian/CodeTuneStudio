@@ -1,4 +1,11 @@
-name: CI + AI Comment Commands
+# ⚠️ DEPRECATED - This workflow has been replaced
+# This file is archived for historical reference.
+# The functionality has been split into:
+#   - .github/workflows/quality.yml (code quality checks)
+#   - .github/workflows/security.yml (security scanning)
+# Please refer to those workflows for the current CI pipeline.
+
+name: CI + AI Comment Commands (DEPRECATED)
 
 on:
   pull_request:

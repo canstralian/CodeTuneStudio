@@ -915,6 +915,112 @@ When reviewing code (AI-generated or human-written):
 
 ---
 
+## 🤖 AI Agent Behavioral Rules
+
+### Conceptual YAML Behavioral Template
+
+This section defines how GitHub Copilot and other AI coding assistants should behave when working with CodeTuneStudio. These rules ensure consistency, security, and quality across all AI-generated contributions.
+
+```yaml
+copilot:
+  role: "pair-programmer with strict guardrails for CodeTuneStudio"
+  context:
+    project: "CodeTuneStudio - ML model fine-tuning platform"
+    stack:
+      backend: ["Flask", "Streamlit"]
+      database: ["PostgreSQL", "SQLite"]
+      ml_framework: ["PyTorch", "Transformers", "PEFT/LoRA"]
+    directories: ["core/", "models/", "utils/", "plugins/", "components/"]
+  
+  must_do:
+    - follow repository coding standards and PEP 8 guidelines
+    - use async/await patterns for I/O operations; never block the event loop
+    - suggest tests and lint checks for any code change
+    - use parameterized queries (SQLAlchemy ORM) for all database operations
+    - validate and sanitize all user inputs before processing
+    - use structured logging with correlation IDs for observability
+    - keep secrets in environment variables; never hardcode credentials
+    - scope test coverage to core/models/utils/plugins/components directories
+    - emit security-conscious code (input validation, output sanitization)
+  
+  must_not_do:
+    - generate untyped code; always include type hints
+    - use raw SQL queries or string concatenation for database access
+    - bypass code quality gates (Black, Flake8, Ruff, MyPy)
+    - commit secrets, API keys, or sensitive data
+    - use continue-on-error or || true to mask failures
+    - use overly broad test coverage (--cov=.)
+    - create large refactors without explicit request
+    - expose internal errors or stack traces to end users
+  
+  code_style:
+    formatter: "Black (88 char line length)"
+    linters: ["Flake8", "Ruff"]
+    type_checker: "MyPy"
+    async_patterns: "asyncio with proper cleanup and timeouts"
+  
+  security_defaults:
+    secrets_management: "environment variables via .env files"
+    input_validation: "mandatory for all user inputs"
+    sql_queries: "parameterized queries or ORM only"
+    logging: "structured logs without sensitive data"
+    dependency_scanning: "pip-audit and TruffleHog in CI"
+  
+  ci_integration:
+    quality_gates:
+      - "Black formatting check"
+      - "Flake8 linting"
+      - "Ruff additional checks"
+      - "MyPy type checking"
+      - "Pytest with 80% coverage threshold"
+    security_gates:
+      - "TruffleHog secret scanning"
+      - "pip-audit dependency audit"
+      - "SBOM generation (CycloneDX)"
+    enforcement: "blocking - all checks must pass before merge"
+  
+  reviewer_notes:
+    highlight:
+      - missing tests or insufficient coverage
+      - missing type hints or docstrings
+      - security vulnerabilities (injection, XSS, secrets)
+      - blocking operations inside async flows
+      - missing input validation or output sanitization
+    suggest:
+      - breaking large functions into smaller, testable units
+      - adding correlation IDs for request tracking
+      - using context managers for resource management
+
+codex:
+  role: "automation assistant for CI/CD and maintenance"
+  must_do:
+    - enforce quality and security gates on all code changes
+    - recommend dependency updates with security context
+    - validate workflow configurations before deployment
+  must_not_do:
+    - push releases without passing all quality gates
+    - downgrade security settings for convenience
+    - skip tests for "minor" changes
+```
+
+### Workflow Integration
+
+All code changes to CodeTuneStudio must pass the following automated checks:
+
+**Quality Checks** (`.github/workflows/quality.yml`):
+- **Style**: Black, Flake8, Ruff on `core/ models/ utils/ plugins/ components/`
+- **Types**: MyPy type checking on same directories
+- **Tests**: Pytest with 80% coverage threshold
+
+**Security Checks** (`.github/workflows/security.yml`):
+- **Secrets**: TruffleHog with `--only-verified` flag
+- **Dependencies**: pip-audit vulnerability scanning
+- **SBOM**: Anchore SBOM generation (CycloneDX JSON)
+
+See `docs/ai-assistant-guide.md` for complete developer workflow documentation.
+
+---
+
 ## 📝 Summary
 
 **Key Principles:**
@@ -930,5 +1036,5 @@ When reviewing code (AI-generated or human-written):
 
 ---
 
-*Last Updated: 2024-06-11*
+*Last Updated: 2025-12-13*
 *For questions or concerns, please open an issue on GitHub.*
