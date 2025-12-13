@@ -18,7 +18,7 @@ CodeTuneStudio provides a working end-to-end experience for ML fine-tuning with 
 
 ### Core Capabilities
 - **🚀 Interactive Web UI**: Streamlit-based interface (port 7860) for configuring and monitoring training jobs
-- **🔌 Plugin Architecture**: Extensible system (`utils/plugins/`) for adding custom code analysis tools
+- **🔌 Plugin Architecture**: Extensible system with base classes in `utils/plugins/` and implementations in `plugins/`
   - OpenAI GPT-4 code analyzer (`plugins/openai_code_analyzer.py`)
   - Anthropic Claude code suggester (`plugins/anthropic_code_suggester.py`)
   - Dynamic plugin discovery and lifecycle management via registry
