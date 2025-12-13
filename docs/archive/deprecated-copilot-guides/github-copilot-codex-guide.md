@@ -1,3 +1,15 @@
+# ⚠️ DEPRECATED - This Guide Has Been Archived
+
+**This document is deprecated and maintained here for historical reference only.**
+
+**Current Documentation:**
+- **Agent Rules & Behavioral Guidelines:** See [`.github/copilot-instructions.md`](../../.github/copilot-instructions.md)
+- **Developer Workflow & CI/CD Setup:** See [`docs/ai-assistant-guide.md`](../ai-assistant-guide.md)
+
+Please use the current documentation to prevent drift and ensure consistency with CodeTuneStudio standards.
+
+---
+
 # GitHub Copilot and Codex Configuration Guide for Trading Bot Swarm
 
 ## Purpose and Scope

@@ -1,7 +1,7 @@
 """Kali Linux Tools API server entrypoint.
 
 This module configures the Flask application used to surface automation
-endpoints for the Trading Bot Swarm integration tests. It mirrors the
+endpoints for CodeTuneStudio integration tests. It mirrors the
 expected behavior from the upstream repository while enforcing safe
 network binding defaults.
 """

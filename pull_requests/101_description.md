@@ -1,13 +1,13 @@
 # Pull Request Description Update
 
 ## Overview
-This pull request enhances the configuration guide for Copilot and Codex in the Trading Bot Swarm ecosystem with the following key features:
+This pull request enhances the configuration guide for Copilot and Codex in the CodeTuneStudio ecosystem with the following key features:
 
-### Compatibility with Trading Bot Swarm Ecosystem
-- Ensures that the Copilot and Codex setups are compatible with the Trading Bot Swarm architecture, enabling seamless integration.
+### Compatibility with CodeTuneStudio Ecosystem
+- Ensures that the Copilot and Codex setups are compatible with the CodeTuneStudio architecture, enabling seamless integration.
 
 ### Secure Setups Compliant with OWASP Guidelines
-- Implements security measures that adhere to OWASP guidelines, enhancing the overall security posture of the Trading Bot.
+- Implements security measures that adhere to OWASP guidelines, enhancing the overall security posture of CodeTuneStudio.
 
 ### Support for Modular Development and CI/CD Integration
 - Promotes modular development by supporting continuous integration and continuous deployment (CI/CD) practices for Python packages, allowing for efficient development workflows.
