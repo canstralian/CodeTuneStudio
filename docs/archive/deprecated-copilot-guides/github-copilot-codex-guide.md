@@ -1,3 +1,15 @@
+# ⚠️ DEPRECATED DOCUMENT ⚠️
+
+**This document is deprecated and archived as of 2025-12-13.**
+
+**Please refer to the canonical documentation:**
+- **Developer Workflow Guide**: [`docs/ai-assistant-guide.md`](../../ai-assistant-guide.md)
+- **Agent Behavioral Rules**: [`.github/copilot-instructions.md`](../../../.github/copilot-instructions.md)
+
+This file has been preserved for historical reference only.
+
+---
+
 # GitHub Copilot and Codex Configuration Guide for Trading Bot Swarm
 
 ## Purpose and Scope
