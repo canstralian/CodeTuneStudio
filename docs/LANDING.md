@@ -138,7 +138,7 @@ The `codetune-studio` command supports various options:
 
 ```bash
 # Custom host/port
-codetune-studio --host 0.0.0.0 --port 8501
+codetune-studio --host 0.0.0.0 --port 8080
 
 # Debug mode
 codetune-studio --log-level DEBUG
@@ -197,7 +197,7 @@ CodeTuneStudio is an active open-source project. We're especially looking for co
 ### Getting Started
 1. Check [open issues](https://github.com/canstralian/CodeTuneStudio/issues) tagged `help wanted` or `good first issue`
 2. Read [ARCHITECTURE.md](ARCHITECTURE.md) and [PLUGIN_GUIDE.md](PLUGIN_GUIDE.md)
-3. Review [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) and contributing guidelines
+3. Review [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) and [CONTRIBUTING_CODE_QUALITY.md](CONTRIBUTING_CODE_QUALITY.md)
 4. Fork, branch, code, test, and submit a PR!
 
 **Particularly Needed:**
