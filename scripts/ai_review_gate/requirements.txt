@@ -1,0 +1,32 @@
+# AI Code Review Gate Dependencies
+
+# Core dependencies
+anthropic>=0.18.0          # Claude API client
+requests>=2.31.0           # HTTP requests for GitHub API
+PyGithub>=2.1.1            # GitHub API wrapper
+python-dotenv>=1.0.0       # Environment variable management
+
+# Code analysis
+ast-grep-py>=0.5.0         # AST-based code pattern matching
+tree-sitter>=0.20.0        # Parser for multiple languages
+pylint>=3.0.0              # Static code analysis
+radon>=6.0.0               # Code complexity metrics
+
+# Diff handling
+unidiff>=0.7.5             # Parse and generate unified diffs
+whatthepatch>=1.0.5        # Diff parsing
+
+# Data validation
+pydantic>=2.5.0            # Data validation
+typing-extensions>=4.9.0   # Extended type hints
+
+# Utilities
+colorama>=0.4.6            # Colored terminal output
+rich>=13.7.0               # Rich text formatting
+pyyaml>=6.0.1              # YAML parsing for custom rules
+
+# Testing (dev)
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+responses>=0.24.0          # Mock HTTP requests

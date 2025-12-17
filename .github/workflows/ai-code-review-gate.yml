@@ -1,0 +1,179 @@
+name: AI Code Review Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  statuses: write
+
+# Ensure only one review runs per PR at a time
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ai-code-review:
+    name: AI Senior Engineer Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for context
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch base branch for diff
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: 'pip'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-ai-review-${{ hashFiles('scripts/ai_review_gate/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-ai-review-
+            ${{ runner.os }}-pip-
+
+      - name: Install AI review dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/ai_review_gate/requirements.txt
+
+      - name: Run AI Code Review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          # Configuration
+          FAIL_ON_INSUFFICIENT_CONTEXT: "true"
+          STRICT_MODE: "false"  # Set to "true" to fail on warnings
+          MAX_FILES_PER_PR: "50"
+          MAX_LINES_PER_PR: "5000"
+        run: |
+          set +e  # Don't exit on error, we want to capture exit code
+          python scripts/ai_review_gate/orchestrator.py
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Exit codes:
+          # 0 = passed
+          # 1 = failed with violations
+          # 2 = insufficient context
+          # 3 = system error
+
+          case $EXIT_CODE in
+            0)
+              echo "status=success" >> $GITHUB_OUTPUT
+              echo "conclusion=success" >> $GITHUB_OUTPUT
+              ;;
+            1)
+              echo "status=completed" >> $GITHUB_OUTPUT
+              echo "conclusion=failure" >> $GITHUB_OUTPUT
+              echo "❌ Review failed: Critical violations found"
+              ;;
+            2)
+              echo "status=completed" >> $GITHUB_OUTPUT
+              echo "conclusion=failure" >> $GITHUB_OUTPUT
+              echo "⛔ Review refused: Insufficient context"
+              ;;
+            3)
+              echo "status=completed" >> $GITHUB_OUTPUT
+              echo "conclusion=failure" >> $GITHUB_OUTPUT
+              echo "🔴 Review error: System failure"
+              ;;
+          esac
+
+          exit $EXIT_CODE
+
+      - name: Post review summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const exitCode = '${{ steps.review.outputs.exit_code }}';
+            const fs = require('fs');
+
+            let emoji, title, color;
+            switch(exitCode) {
+              case '0':
+                emoji = '✅';
+                title = 'AI Code Review - PASSED';
+                color = 'success';
+                break;
+              case '1':
+                emoji = '🔴';
+                title = 'AI Code Review - FAILED';
+                color = 'failure';
+                break;
+              case '2':
+                emoji = '⛔';
+                title = 'AI Code Review - INSUFFICIENT CONTEXT';
+                color = 'failure';
+                break;
+              case '3':
+                emoji = '💥';
+                title = 'AI Code Review - ERROR';
+                color = 'failure';
+                break;
+              default:
+                emoji = '❓';
+                title = 'AI Code Review - UNKNOWN';
+                color = 'neutral';
+            }
+
+            // Check if review output file exists
+            const outputPath = 'ai_review_output.md';
+            let body = '';
+            try {
+              body = fs.readFileSync(outputPath, 'utf8');
+            } catch (error) {
+              body = `${emoji} **${title}**\n\nNo detailed output available. Check workflow logs.`;
+            }
+
+            // Post as PR comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ai-review-results
+          path: |
+            ai_review_output.md
+            ai_review_detailed.json
+            ai_review_diffs.patch
+          retention-days: 30
+
+      - name: Fail if review failed
+        if: steps.review.outputs.exit_code != '0'
+        run: |
+          echo "::error::AI Code Review failed with exit code ${{ steps.review.outputs.exit_code }}"
+          exit ${{ steps.review.outputs.exit_code }}

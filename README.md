@@ -1,4 +1,4 @@
-# 🎵💻 CodeTuneStudio
+# 🛡️ CodeTuneStudio - AI Code Review Gate
 
 [![PyPI version](https://badge.fury.io/py/codetunestudio.svg)](https://pypi.org/project/codetunestudio/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,18 +9,46 @@
 
 ---
 
-🎯 **Optimize. Enhance. Perfect Your Code.**
+🎯 **Code Review That Never Sleeps. Standards That Never Slip.**
 
-CodeTuneStudio is your all-in-one platform for intelligent code analysis, performance optimization, and coding best practices — all within an intuitive Gradio-powered interface.
+CodeTuneStudio is a **CI-integrated AI code review gate** that reviews pull requests like a senior engineer and fails builds when code violates agreed-upon standards for safety, clarity, and maintainability—**without ever modifying code automatically**.
 
 ---
 
-## ✨ Features
+## 🚀 AI Code Review Gate (New!)
 
-- ⚡ **Code Analysis** — Advanced static code analysis for multiple programming languages.
-- 🚀 **Performance Optimization** — Smart suggestions to boost code efficiency.
-- 🧑‍💻 **Best Practices** — Automated recommendations for cleaner, standard-compliant code.
-- 🎨 **Interactive Interface** — Gradio-powered UI for an intuitive developer experience.
+### What You Get
+
+A **drop-in CI/CD check** (starting with GitHub Actions) that:
+
+- ✅ **Reviews PRs like a senior engineer** - Analyzes code for safety, clarity, and maintainability
+- ✅ **Fails builds on violations** - Critical issues block merges until resolved
+- ✅ **Clear explanations** - Tells you what's wrong and why it matters
+- ✅ **Suggested diffs** - Provides fixes you can review and apply manually
+- ✅ **Explicit refusals** - Refuses review when context is insufficient (no guessing!)
+
+### What It Doesn't Do
+
+- ❌ **Never auto-modifies code** - All fixes must be manually reviewed and applied
+- ❌ **Never silent edits** - Every decision is explicit and explained
+- ❌ **Never "vibes"** - Decisions based on rules and analysis, not guesswork
+
+### Quick Start
+
+1. **Add GitHub Secret**: Add your `ANTHROPIC_API_KEY` to repository secrets
+2. **Enable Workflow**: The AI review gate workflow is already configured in `.github/workflows/ai-code-review-gate.yml`
+3. **Open a PR**: The review gate will automatically analyze your changes
+
+For detailed setup and configuration, see [docs/AI_CODE_REVIEW_GATE.md](docs/AI_CODE_REVIEW_GATE.md)
+
+---
+
+## ✨ Additional Features
+
+- ⚡ **Code Analysis** — Advanced static code analysis for multiple programming languages
+- 🚀 **Performance Optimization** — Smart suggestions to boost code efficiency
+- 🧑‍💻 **Best Practices** — Automated recommendations for cleaner, standard-compliant code
+- 🎨 **Interactive Interface** — Gradio-powered UI for an intuitive developer experience
 
 ---
 
