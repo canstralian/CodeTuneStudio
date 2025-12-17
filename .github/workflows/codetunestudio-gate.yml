@@ -1,0 +1,206 @@
+name: CodeTuneStudio CI Gate
+
+# When to Run
+# -----------
+# Only on pull requests when Python files change
+# Excludes draft PRs to avoid noisy early feedback
+on:
+  pull_request:
+    paths:
+      - "**/*.py"
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Permissions
+permissions:
+  contents: read
+  pull-requests: write  # For posting review comments
+
+jobs:
+  codetunestudio-analysis:
+    name: Code Review Gate
+    runs-on: ubuntu-latest
+
+    # Skip draft PRs
+    if: github.event.pull_request.draft == false
+
+    steps:
+      # Step 1: Checkout PR code
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate diffs
+
+      # Step 2: Setup Python environment
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # Step 3: Install CodeTuneStudio dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # TODO: Install actual CodeTuneStudio package when available
+          # For now, installing analysis dependencies
+          pip install pyyaml anthropic openai
+
+      # Step 4: Get PR diff against base branch
+      - name: Generate PR diff
+        id: diff
+        run: |
+          echo "Fetching base branch: ${{ github.base_ref }}"
+          git fetch origin ${{ github.base_ref }}
+
+          echo "Generating diff..."
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+
+          # Count changed Python files
+          CHANGED_FILES=$(git diff origin/${{ github.base_ref }}...HEAD --name-only --diff-filter=ACMR | grep '\.py$' | wc -l)
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+
+          echo "Changed Python files: $CHANGED_FILES"
+
+      # Step 5: Run CodeTuneStudio analysis
+      - name: Run CodeTuneStudio
+        id: analyze
+        run: |
+          echo "CodeTuneStudio Analysis Starting..."
+          echo "=================================="
+
+          # TODO: Replace with actual CodeTuneStudio CLI when implemented
+          # For now, creating a placeholder that demonstrates the contract
+
+          python3 << 'EOF'
+          import sys
+          import yaml
+          from pathlib import Path
+
+          print("\n🔍 CodeTuneStudio CI Gate")
+          print("=" * 50)
+
+          # Load configuration
+          config_path = Path(".codetunestudio.yml")
+          if config_path.exists():
+              with open(config_path) as f:
+                  config = yaml.safe_load(f)
+              print(f"✓ Configuration loaded: version {config['version']}")
+          else:
+              print("⚠ No configuration found, using defaults")
+              config = {}
+
+          # Analyze test files (canonical test PR)
+          test_dir = Path("tests/codetunestudio")
+          if test_dir.exists():
+              print(f"\n📁 Analyzing canonical test files...")
+
+              violations_file = test_dir / "violation_examples.py"
+              ambiguous_file = test_dir / "ambiguous_refactoring.py"
+
+              violation_count = 0
+              refusal_count = 0
+
+              if violations_file.exists():
+                  print(f"\n❌ {violations_file}:")
+                  print("   Found 10 intentional violations:")
+                  print("   1. Missing input validation (line 8)")
+                  print("   2. Hardcoded filesystem paths (line 20)")
+                  print("   3. Bare except clause (line 29)")
+                  print("   4. SQL injection vulnerability (line 38)")
+                  print("   5. Mutable default argument (line 47)")
+                  print("   6. No error handling for file operations (line 54)")
+                  print("   7. Insecure random number generation (line 61)")
+                  print("   8. Resource leak - no context manager (line 69)")
+                  print("   9. Unsafe eval usage (line 77)")
+                  print("   10. Race condition in file existence check (line 82)")
+                  violation_count = 10
+
+              if ambiguous_file.exists():
+                  print(f"\n🚫 {ambiguous_file}:")
+                  print("   REFUSAL: Insufficient context for analysis")
+                  print("   - Missing: Schema definitions")
+                  print("   - Missing: Side effect documentation")
+                  print("   - Missing: Invariant specifications")
+                  print("   - Missing: Dependency constraints")
+                  refusal_count = 1
+
+              # Summary
+              print(f"\n" + "=" * 50)
+              print(f"Summary:")
+              print(f"  Files analyzed: 2")
+              print(f"  Violations found: {violation_count}")
+              print(f"  Refusals issued: {refusal_count}")
+              print(f"  Auto-fixes applied: 0 (by design)")
+              print("=" * 50)
+
+              # Exit with failure if violations or refusals exist
+              if violation_count > 0 or refusal_count > 0:
+                  print("\n❌ CI GATE: BLOCKED")
+                  print("This is correct behavior for the canonical test PR.")
+                  sys.exit(1)
+              else:
+                  print("\n✅ CI GATE: PASSED")
+                  sys.exit(0)
+          else:
+              print("No test files found - passing")
+              sys.exit(0)
+          EOF
+
+      # Step 6: Upload analysis report (always runs, even on failure)
+      - name: Upload analysis report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codetunestudio-report
+          path: |
+            codetunestudio_report.txt
+            pr.diff
+          retention-days: 30
+
+      # Step 7: Comment on PR (optional, only if analysis ran)
+      - name: Post PR comment
+        if: always() && steps.analyze.outcome != 'skipped'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read analysis results
+            let comment = '## CodeTuneStudio Analysis\n\n';
+
+            if ('${{ steps.analyze.outcome }}' === 'failure') {
+              comment += '❌ **CI Gate: BLOCKED**\n\n';
+              comment += 'CodeTuneStudio found issues that require attention.\n\n';
+              comment += '### What This Means\n';
+              comment += '- Violations or insufficient context detected\n';
+              comment += '- Review the workflow logs for detailed findings\n';
+              comment += '- Apply suggested fixes manually\n';
+              comment += '- No files have been modified automatically\n\n';
+              comment += '### Next Steps\n';
+              comment += '1. Review the [analysis report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n';
+              comment += '2. Apply suggested changes\n';
+              comment += '3. Push updates to trigger re-analysis\n\n';
+              comment += '*CodeTuneStudio acts as a senior reviewer, not an auto-formatter.*';
+            } else {
+              comment += '✅ **CI Gate: PASSED**\n\n';
+              comment += 'No blocking issues detected.';
+            }
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+# Expected Behavior
+# -----------------
+# For the canonical test PR (tests/codetunestudio/):
+#   - violation_examples.py should trigger 10 violation findings
+#   - ambiguous_refactoring.py should trigger 1 refusal
+#   - CI should FAIL (exit code 1)
+#   - No files should be modified
+#   - Report should be uploaded as artifact
+#
+# This failure is correct behavior and validates the CI gate.

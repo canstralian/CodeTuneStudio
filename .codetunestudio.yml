@@ -1,0 +1,211 @@
+# CodeTuneStudio Configuration
+# Defines rules, strictness levels, and refusal behavior for the CI gate
+
+version: 1.0
+
+# Core Philosophy
+# ---------------
+# CodeTuneStudio is a senior reviewer, not an auto-formatter.
+# - It explains risks and suggests fixes
+# - It refuses when context is insufficient
+# - It never edits code automatically
+# - Human judgment is always required
+
+# Analysis Scope
+scope:
+  # Only analyze Python files in pull requests
+  file_patterns:
+    - "**/*.py"
+
+  # Exclude generated files and dependencies
+  exclude_patterns:
+    - "**/venv/**"
+    - "**/__pycache__/**"
+    - "**/node_modules/**"
+    - "**/.git/**"
+    - "**/build/**"
+    - "**/dist/**"
+
+# Rule Categories
+rules:
+  # Security violations - Always block
+  security:
+    enabled: true
+    severity: blocking
+    rules:
+      - id: sql-injection
+        description: "SQL queries constructed with string formatting"
+        pattern: "f-string or % formatting in SQL queries"
+        reason: "Allows arbitrary SQL injection attacks"
+
+      - id: unsafe-eval
+        description: "Use of eval() or exec() with untrusted input"
+        pattern: "eval() or exec() calls"
+        reason: "Arbitrary code execution vulnerability"
+
+      - id: weak-random
+        description: "Non-cryptographic random for security purposes"
+        pattern: "random module for tokens/secrets"
+        reason: "Predictable values in security contexts"
+
+      - id: hardcoded-secrets
+        description: "Hardcoded passwords, tokens, or API keys"
+        pattern: "Literal strings matching secret patterns"
+        reason: "Credentials exposed in version control"
+
+  # Correctness violations - Always block
+  correctness:
+    enabled: true
+    severity: blocking
+    rules:
+      - id: missing-validation
+        description: "Dictionary access without key validation"
+        pattern: "dict['key'] without checking key existence"
+        reason: "Runtime KeyError on unexpected input"
+
+      - id: bare-except
+        description: "Bare except: clause"
+        pattern: "except: without exception type"
+        reason: "Catches SystemExit, KeyboardInterrupt, masks bugs"
+
+      - id: mutable-default
+        description: "Mutable default argument"
+        pattern: "def func(arg=[]): or arg={}"
+        reason: "Default persists across calls, causes state bugs"
+
+      - id: resource-leak
+        description: "File operations without context manager"
+        pattern: "open() without with statement"
+        reason: "File handles not guaranteed to close"
+
+      - id: race-condition
+        description: "TOCTOU race in file operations"
+        pattern: "exists() check followed by open()"
+        reason: "File state can change between check and use"
+
+  # Maintainability issues - Advisory (can be overridden)
+  maintainability:
+    enabled: true
+    severity: advisory
+    rules:
+      - id: hardcoded-paths
+        description: "Hardcoded filesystem paths"
+        pattern: "String literals like /tmp/ or C:\\"
+        reason: "Not portable across environments"
+
+      - id: broad-exception
+        description: "Catching overly broad exception types"
+        pattern: "except Exception: without specific handling"
+        reason: "May hide unexpected errors"
+
+# Refusal Conditions
+# When CodeTuneStudio should explicitly refuse to make suggestions
+refusal:
+  enabled: true
+
+  # Refuse when insufficient context exists
+  conditions:
+    - id: unknown-schema
+      description: "Data structure schema is not documented"
+      indicators:
+        - "Generic dict/list processing without type hints"
+        - "No docstring describing expected structure"
+        - "Dynamic key access patterns"
+
+    - id: unclear-side-effects
+      description: "Function has side effects that aren't documented"
+      indicators:
+        - "Modifies mutable arguments"
+        - "Updates global or class state"
+        - "I/O operations without clear contract"
+
+    - id: missing-invariants
+      description: "Required invariants or constraints not specified"
+      indicators:
+        - "Validation logic without documented requirements"
+        - "State management without lifecycle documentation"
+        - "Complex business logic without specification"
+
+    - id: ambiguous-dependencies
+      description: "Dependencies between operations unclear"
+      indicators:
+        - "Order-sensitive operations without documentation"
+        - "Initialization requirements not specified"
+        - "Concurrency constraints unclear"
+
+  # How to communicate refusal
+  response:
+    tone: "calm and explanatory"
+    format: |
+      REFUSAL: Cannot suggest changes due to insufficient context
+
+      Missing information:
+      - {specific_context_gaps}
+
+      To enable analysis, please provide:
+      - {required_documentation}
+
+      Refusing to suggest changes protects against:
+      - Silent logic changes
+      - Breaking undocumented assumptions
+      - "Looks cleaner but behaves differently" bugs
+
+# Output Format
+output:
+  # Format for violation reports
+  violations:
+    format: "unified_diff"
+    include_explanation: true
+    include_risk_level: true
+    show_line_numbers: true
+
+  # Format for refusals
+  refusals:
+    format: "explanatory"
+    list_missing_context: true
+    suggest_documentation: true
+
+  # Summary statistics
+  summary:
+    show_file_count: true
+    show_violation_count: true
+    show_refusal_count: true
+    group_by_severity: true
+
+# Exit Codes
+exit_codes:
+  clean: 0                    # No violations, no refusals
+  violations_found: 1         # Blocking violations detected
+  refusals_issued: 1          # Insufficient context for analysis
+  analysis_error: 2           # Internal error in CodeTuneStudio
+
+# Behavior Settings
+behavior:
+  # Never automatically modify code
+  auto_fix: false
+
+  # Never guess or speculate
+  allow_speculation: false
+
+  # Always explain reasoning
+  require_explanation: true
+
+  # Prefer refusal over uncertain changes
+  prefer_refusal_when_uncertain: true
+
+  # Maximum confidence required for suggestions (0.0-1.0)
+  confidence_threshold: 0.85
+
+# Integration Settings
+integration:
+  # GitHub Actions integration
+  github:
+    create_review_comments: true
+    fail_on_violations: true
+    fail_on_refusals: true
+    artifact_name: "codetunestudio-report"
+
+  # Report file location
+  report:
+    path: "codetunestudio_report.txt"
+    format: "markdown"
