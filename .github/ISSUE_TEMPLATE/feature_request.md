@@ -21,4 +21,4 @@ Add any other context or screenshots about the feature request here.
 ---
 
 **📌 Issue Lifecycle Note:**
-Issues without activity for 60+ days will be automatically labeled as "stale" and may be closed after a 14-day grace period. To keep your feature request active, please engage in discussion and provide additional context when requested. See [CLEANUP_EXECUTION_GUIDE.md](../../CLEANUP_EXECUTION_GUIDE.md) for details.
+Issues without activity for 60+ days will be automatically labeled as "stale" and may be closed after a 14-day grace period. To keep your feature request active, please engage in discussion and provide additional context when requested. See [CLEANUP_EXECUTION_GUIDE.md](/CLEANUP_EXECUTION_GUIDE.md) for details.
