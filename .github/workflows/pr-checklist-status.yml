@@ -2,11 +2,12 @@ name: PR Checklist Status
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: [main]
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write  # Required for task-completed-checker-action to comment on PR
 
 # Ensure only one run per PR at a time; cancel older runs on the same branch
 concurrency:
