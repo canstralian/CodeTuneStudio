@@ -1,10 +1,15 @@
 # Comprehensive GitHub Copilot and Codex Guide for Trading Bot Swarm
 
 ## Purpose and Scope
-- Establish a single, authoritative playbook for configuring GitHub Copilot and Codex across the Trading Bot Swarm ecosystem.
-- Treat Copilot as a disciplined pair programmer with strict behavioral rules: it can propose changes, but humans own acceptance, review, and deployment decisions.
-- Apply these standards to application code, infra-as-code, data/ML pipelines, automation scripts, and operational runbooks. Documentation-only changes may skip test execution but must still follow review and linting rules.
-- Promote consistency, code quality, and secure automation to protect trading reliability and safety.
+- Establish a single, authoritative playbook for configuring GitHub Copilot and Codex
+  across the Trading Bot Swarm ecosystem.
+- Treat Copilot as a disciplined pair programmer with strict behavioral rules: it can
+  propose changes, but humans own acceptance, review, and deployment decisions.
+- Apply these standards to application code, infra-as-code, data/ML pipelines,
+  automation scripts, and operational runbooks. Documentation-only changes may skip
+  runtime test execution but must still follow review and linting rules.
+- Promote consistency, code quality, and secure automation to protect trading
+  reliability and safety across every service in the swarm.
 
 ## Configuration Overview
 - **Testing**
@@ -46,6 +51,7 @@
   - Surface required secrets/configuration and how to load them securely.
   - Enforce async-safe patterns and structured logging.
   - Provide minimal repro steps when diagnosing failures.
+  - Skip runtime tests for documentation-only edits; do not skip linting or review.
 - **Conceptual Custom Instructions (YAML)**
 ```yaml
 copilot:
@@ -75,8 +81,11 @@ codex:
 ```
 
 ## GitHub Workflow Example: Lint & Test Automation
-- **Triggers:** `pull_request` (opened, synchronize, reopened), `push` to protected branches, and manual `workflow_dispatch`. Ignore pure documentation paths for runtime steps.
-- **Quality Gate Job:**
+- **Triggers:** `pull_request` (opened, synchronize, reopened), `push` to protected
+  branches, and manual `workflow_dispatch`. Ignore documentation-only paths for
+  runtime steps.
+- **Quality Gate Job Steps:** Checkout, runtime setup, dependency install, lint,
+  type-check, unit tests, and coverage upload.
 ```yaml
 name: lint-and-test
 
@@ -201,4 +210,3 @@ jobs:
 
 ## Closing Note
 Standardize for excellence: by following these Copilot and Codex guardrails, contributors strengthen the reliability, performance, and safety of the Trading Bot Swarm ecosystem while keeping automation consistent and auditable.
-
