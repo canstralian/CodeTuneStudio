@@ -102,7 +102,7 @@ This issue has been labeled as potentially stale because:
 2. Provide reproduction steps if requested
 3. Add any additional context
 
-**Grace period:** 14 days from today (until YYYY-MM-DD)
+**Grace period:** 14 days from today (until YYYY-MM-DD) <!-- Replace YYYY-MM-DD with the actual date before posting -->
 
 If we don't hear back, we'll close this issue to reduce noise. You can always reopen it or create a fresh issue with updated details!
 
