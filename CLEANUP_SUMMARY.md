@@ -251,7 +251,7 @@ python scripts/cleanup_stale_prs.py --execute
 ## Success Criteria
 
 ### Week 1-2
-- [x] Cleanup protocol documented
+- [ ] Cleanup protocol documented
 - [ ] Announcement posted
 - [ ] Stale PRs labeled
 - [ ] Contributors notified
