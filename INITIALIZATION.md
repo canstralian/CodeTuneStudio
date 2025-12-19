@@ -157,7 +157,7 @@ CodeTuneStudio runs as a hybrid Streamlit/Flask application:
 
 **PostgreSQL** (Production):
 ```bash
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
+DATABASE_URL=postgresql://user:password@host:5432/dbname
 ```
 
 Features:
