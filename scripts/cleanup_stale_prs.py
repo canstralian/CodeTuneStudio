@@ -94,11 +94,23 @@ CLOSURE_MESSAGES = {
 
 
 def get_github_token() -> str:
-    """Get GitHub token from environment."""
+    """
+    Get GitHub token from environment.
+
+    The token must have permission to comment on and close pull requests for
+    this repository. For most setups, a personal access token with the
+    `repo` scope (or at least `public_repo` for public repositories only)
+    is sufficient. When running in GitHub Actions, the built-in GITHUB_TOKEN
+    is typically already configured with the required permissions.
+    """
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
-        print("Error: GITHUB_TOKEN environment variable not set")
-        print("Please set it with: export GITHUB_TOKEN=your_token_here")
+        print("Error: GITHUB_TOKEN environment variable not set.")
+        print(
+            "Please set it with: export GITHUB_TOKEN=your_token_here "
+            "(token must allow commenting on and closing pull requests, "
+            "e.g. a personal access token with the 'repo' scope)."
+        )
         sys.exit(1)
     return token
 
