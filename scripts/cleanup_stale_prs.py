@@ -129,7 +129,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
         True if successful, False otherwise
     """
     headers = {
-        "Authorization": f"token {token}",
+        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
     }
 
