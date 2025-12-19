@@ -283,7 +283,7 @@ docker build -t codetunestudio .
 
 # Run container
 docker run -p 7860:7860 \
-  -e DATABASE_URL=postgresql://user:pass@host/db \
+  -e DATABASE_URL=postgresql://user:password@host/db \
   codetunestudio
 ```
 
