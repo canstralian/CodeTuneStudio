@@ -43,24 +43,32 @@ pip install -r requirements.txt
 
 ### 3. Environment Configuration
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root. You can copy from `.env.example` as a starting point:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` with your actual values:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+DATABASE_URL=postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/YOUR_DATABASE
 # Or use SQLite (default):
 # DATABASE_URL=sqlite:///database.db
 
 # Optional: Enable SQL query logging
-SQL_DEBUG=1
+SQL_DEBUG=false
 
 # Hugging Face Integration (optional)
-SPACE_ID=your-space-id
+SPACE_ID=your_space_id
 
 # API Keys (for plugins)
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
+
+> **Note:** The values above are placeholders and must be replaced with your actual credentials. See `.env.example` for a complete list of configuration options.
 
 ### 4. Database Initialization
 
