@@ -38,3 +38,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+---
+
+**📌 Issue Lifecycle Note:**
+Issues without activity for 60+ days (or 14+ days after a clarification request) will be automatically labeled as "stale" and may be closed after a 14-day grace period. To keep your issue active, please respond promptly to maintainer questions. See [CLEANUP_EXECUTION_GUIDE.md](../../CLEANUP_EXECUTION_GUIDE.md) for details.

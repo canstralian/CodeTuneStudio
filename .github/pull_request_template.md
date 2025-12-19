@@ -35,3 +35,13 @@
 ## Additional Notes
 
 <!-- Add any additional information that reviewers should know -->
+
+---
+
+**📌 PR Lifecycle Note:**
+PRs without activity for 30+ days will be automatically labeled as "stale" and may be closed after a 14-day grace period. To keep your PR active:
+- Respond to review comments
+- Push updates to your branch
+- Request reviews when ready
+
+See [CLEANUP_EXECUTION_GUIDE.md](../CLEANUP_EXECUTION_GUIDE.md) for our repository maintenance protocol.
