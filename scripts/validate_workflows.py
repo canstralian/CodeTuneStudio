@@ -189,9 +189,13 @@ class WorkflowValidator:
         # Check permissions
         if "permissions" not in content:
             jobs = content.get("jobs", {})
+            # fmt: off
             has_job_permissions = any(
-                "permissions" in job for job in jobs.values() if isinstance(job, dict)
+                "permissions" in job
+                for job in jobs.values()
+                if isinstance(job, dict)
             )
+            # fmt: on
             if not has_job_permissions:
                 self.info.append(
                     f"{filename}: No permissions defined (may use default)"
