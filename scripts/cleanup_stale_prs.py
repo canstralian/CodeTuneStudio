@@ -7,7 +7,6 @@ Automates closing of stale and redundant pull requests.
 import os
 import sys
 import requests
-from datetime import datetime
 from typing import List, Dict
 
 # Configuration
