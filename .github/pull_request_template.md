@@ -44,4 +44,4 @@ PRs without activity for 30+ days will be automatically labeled as "stale" and m
 - Push updates to your branch
 - Request reviews when ready
 
-See [CLEANUP_EXECUTION_GUIDE.md](../CLEANUP_EXECUTION_GUIDE.md) for our repository maintenance protocol.
+See [CLEANUP_EXECUTION_GUIDE.md](/CLEANUP_EXECUTION_GUIDE.md) for our repository maintenance protocol.
