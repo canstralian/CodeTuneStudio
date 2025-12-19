@@ -1,7 +1,3 @@
-Below is an updated README.md that adds a Codex Cloud / agent-ready environment section without disrupting your existing structure, tone, or badges.
-The goal is to make the repo agent-operable while staying friendly to humans.
-
-I’ve inserted one new section and lightly harmonized wording where needed. Everything else is preserved.
 
 ⸻
 
