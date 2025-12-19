@@ -1,0 +1,108 @@
+name: Stale PR Management
+
+on:
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark stale PRs and issues
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # PR configuration
+          stale-pr-message: |
+            This pull request has been automatically marked as stale because it has not had
+            recent activity for 30 days. It will be closed in 14 days if no further activity
+            occurs.
+
+            To keep this PR open:
+            - Add a comment explaining why it should remain open
+            - Push new commits to update the PR
+            - Request a review
+
+            If you believe this was marked in error, please comment and we'll review it.
+
+          close-pr-message: |
+            This pull request has been automatically closed due to inactivity (45+ days with no updates).
+
+            If you still want to merge these changes:
+            1. Rebase your branch on the latest main branch
+            2. Resolve any conflicts
+            3. Open a new pull request
+            4. Reference this PR in your new PR description
+
+            Thank you for your contribution!
+
+          stale-pr-label: 'stale'
+          exempt-pr-labels: 'keep-open,in-progress,blocked,security'
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+
+          # Issue configuration
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had
+            recent activity for 60 days. It will be closed in 14 days if no further activity
+            occurs.
+
+            To keep this issue open:
+            - Add a comment with additional context
+            - Reference it in a pull request
+            - Add the 'keep-open' label
+
+            If you believe this was marked in error, please comment and we'll review it.
+
+          close-issue-message: |
+            This issue has been automatically closed due to inactivity (74+ days with no updates).
+
+            If this issue is still relevant:
+            1. Open a new issue with updated context
+            2. Reference this issue in your new issue
+            3. Provide current reproduction steps if applicable
+
+            Thank you!
+
+          stale-issue-label: 'stale'
+          exempt-issue-labels: 'keep-open,bug,security,enhancement'
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+
+          # General configuration
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          ascending: false  # Process oldest first
+
+  report:
+    runs-on: ubuntu-latest
+    needs: stale
+    if: always()
+    steps:
+      - name: Generate stale PR report
+        run: |
+          echo "# Stale PR Management Report" > stale_report.md
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> stale_report.md
+          echo "" >> stale_report.md
+          echo "The stale PR management workflow has completed." >> stale_report.md
+          echo "" >> stale_report.md
+          echo "## Actions Taken" >> stale_report.md
+          echo "- Checked all open PRs and issues" >> stale_report.md
+          echo "- Marked PRs inactive for 30+ days as stale" >> stale_report.md
+          echo "- Closed PRs inactive for 45+ days" >> stale_report.md
+          echo "- Marked issues inactive for 60+ days as stale" >> stale_report.md
+          echo "- Closed issues inactive for 74+ days" >> stale_report.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: stale-report
+          path: stale_report.md
+          retention-days: 30
