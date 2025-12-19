@@ -47,7 +47,7 @@ Create a `.env` file in the project root:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/codetunestudio
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 # Or use SQLite (default):
 # DATABASE_URL=sqlite:///database.db
 
@@ -58,8 +58,8 @@ SQL_DEBUG=1
 SPACE_ID=your-space-id
 
 # API Keys (for plugins)
-OPENAI_API_KEY=your-openai-key
-ANTHROPIC_API_KEY=your-anthropic-key
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
 ### 4. Database Initialization
