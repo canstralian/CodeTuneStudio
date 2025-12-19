@@ -47,7 +47,7 @@ PRs from September-October 2025 that have not been merged:
 - **PR #64** (copilot/secure-github-token-implementation): Secure token handling - Oct 10
 - **PR #67** (copilot/update-pr-checklist-status-workflow): Fix black formatter - Oct 10
 - **PR #68** (copilot/address-security-vulnerabilities): Security improvements - Oct 10
-- **PR #69** (dependabot-pip-flask-ecosystem...): Dependabot update - Oct 10
+- **PR #69** (dependabot/pip/flask-ecosystem...): Dependabot update - Oct 10
 - **PR #73** (dependabot-pip-argilla-2.8.0): Dependabot update - Oct 13
 - **PR #75** (dependabot-github_actions-stefanzweifel...): Dependabot update - Oct 13
 - **PR #76** (dependabot-pip-transformers-4.57.1): Dependabot update - Oct 20
