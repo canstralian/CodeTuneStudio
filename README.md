@@ -1,7 +1,7 @@
 
 ⸻
 
-🎵💻 CodeTuneStudio
+# 🎵💻 CodeTuneStudio
 
 
 ⸻
@@ -12,7 +12,7 @@ CodeTuneStudio is an all-in-one platform for intelligent code analysis, performa
 
 ⸻
 
-✨ Features
+## ✨ Features
 	•	⚡ Code Analysis — Advanced static analysis for multiple programming languages
 	•	🚀 Performance Optimization — Smart, actionable efficiency recommendations
 	•	🧑‍💻 Best Practices — Automated guidance for clean, standard-compliant code
@@ -20,12 +20,12 @@ CodeTuneStudio is an all-in-one platform for intelligent code analysis, performa
 
 ⸻
 
-🛠️ Prerequisites
+## 🛠️ Prerequisites
 	•	🐍 Python 3.10 or higher
 
 ⸻
 
-📥 Installation
+## 📥 Installation
 
 Via pip (Recommended)
 
@@ -40,7 +40,7 @@ pip install -e .
 
 ⸻
 
-🌐 Usage
+## 🌐 Usage
 
 Quick Start
 
@@ -61,7 +61,7 @@ codetune-studio --help
 
 ⸻
 
-🔐 Configuration via Environment Variables
+## 🔐 Configuration via Environment Variables
 
 Create a .env file (see .env.example):
 
@@ -76,7 +76,7 @@ PORT=7860
 
 ⸻
 
-🤖 Codex Cloud / Agent Environment Setup (Recommended)
+## 🤖 Codex Cloud / Agent Environment Setup (Recommended)
 
 CodeTuneStudio is designed to run cleanly in automated agent environments such as OpenAI Codex Cloud.
 
@@ -124,7 +124,7 @@ This enables dependency installation while preserving determinism and security.
 
 ⸻
 
-📁 Project Structure
+## 📁 Project Structure
 
 CodeTuneStudio/
 ├── core/                   # Core application modules
@@ -145,7 +145,7 @@ CodeTuneStudio/
 
 ⸻
 
-🔌 Plugin System
+## 🔌 Plugin System
 	•	Built-in AI plugins (OpenAI, Anthropic)
 	•	Hot-discovered custom plugins
 	•	Clean extension boundaries
@@ -154,7 +154,7 @@ See docs/PLUGIN_GUIDE.md for details.
 
 ⸻
 
-🧪 Development & Code Quality
+## 🧪 Development & Code Quality
 
 pip install -e ".[dev]"
 pytest tests/
@@ -172,7 +172,7 @@ We use:
 
 ⸻
 
-📚 Documentation
+## 📚 Documentation
 	•	Architecture: docs/ARCHITECTURE.md
 	•	Plugin Guide: docs/PLUGIN_GUIDE.md
 	•	Refactoring Tasks: docs/REFACTORING_TASKS.md
@@ -180,13 +180,13 @@ We use:
 
 ⸻
 
-📜 License
+## 📜 License
 
 MIT License — see LICENSE.
 
 ⸻
 
-📊 Project Status
+## 📊 Project Status
 	•	Version: 0.2.0
 	•	Status: Beta (Production-Ready)
 	•	Python: 3.10–3.12
