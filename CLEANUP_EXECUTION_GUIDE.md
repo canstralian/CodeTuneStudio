@@ -76,7 +76,7 @@ This pull request has been labeled as potentially stale because:
 2. Push new commits to update the PR
 3. Request a review if it's ready
 
-**Grace period:** 14 days from today (until YYYY-MM-DD)
+**Grace period:** 14 days from today (until YYYY-MM-DD — replace with the actual date when posting, e.g., 2025-12-31)
 
 If we don't hear back, we'll close this PR to keep our queue manageable. You can always reopen it or create a fresh PR later!
 
