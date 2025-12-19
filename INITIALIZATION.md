@@ -47,7 +47,7 @@ Create a `.env` file in the project root:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+DATABASE_URL=postgresql://YOUR_USER:YOUR_PASSWORD@YOUR_HOST:5432/YOUR_DATABASE
 # Or use SQLite (default):
 # DATABASE_URL=sqlite:///database.db
 
@@ -55,11 +55,11 @@ DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 SQL_DEBUG=1
 
 # Hugging Face Integration (optional)
-SPACE_ID=your-space-id
+SPACE_ID=YOUR_SPACE_ID_HERE
 
 # API Keys (for plugins)
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY_HERE
+ANTHROPIC_API_KEY=YOUR_ANTHROPIC_API_KEY_HERE
 ```
 
 ### 4. Database Initialization
@@ -283,7 +283,7 @@ docker build -t codetunestudio .
 
 # Run container
 docker run -p 7860:7860 \
-  -e DATABASE_URL=postgresql://user:pass@host/db \
+  -e DATABASE_URL=postgresql://user:password@host/db \
   codetunestudio
 ```
 
