@@ -86,9 +86,6 @@ jobs:
     needs: stale
     if: always()
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Generate stale PR report
         run: |
           echo "# Stale PR Management Report" > stale_report.md
