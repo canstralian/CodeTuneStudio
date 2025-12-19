@@ -12,11 +12,11 @@ CodeTuneStudio currently has **83 open pull requests** and **2 open issues**. Th
 
 ### Pull Requests
 - **Total Open:** 83 PRs
-- **Age Distribution:**
-  - 3+ months old (Sept 2025): ~5 PRs
-  - 2-3 months old (Oct 2025): ~25 PRs
-  - 1-2 months old (Nov 2025): ~45 PRs
-  - <1 month old (Dec 2025): ~8 PRs
+- **Age Distribution** (relative to analysis date 2025-12-19):
+  - 3+ months old: ~5 PRs
+  - 2-3 months old: ~25 PRs
+  - 1-2 months old: ~45 PRs
+  - <1 month old: ~8 PRs
 
 - **Health Metrics:**
   - PRs with merge conflicts: ~30-40%
