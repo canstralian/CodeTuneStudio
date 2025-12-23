@@ -94,7 +94,9 @@ class WorkflowValidator:
 
         # Check if this is a metadata file (not a workflow)
         if self._is_metadata_file(workflow_path.name, content):
-            print(f"  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n")
+            print(
+                f"  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n"
+            )
             return
 
         # Validate structure
@@ -113,11 +115,11 @@ class WorkflowValidator:
         # Check for HF Space metadata indicators
         if "sdk" in content or "emoji" in content or "colorFrom" in content:
             return True
-        
+
         # Files that contain 'title' but no 'jobs' are likely metadata
         if "title" in content and "jobs" not in content and "on" not in content:
             return True
-            
+
         return False
 
     def _validate_structure(self, filename: str, content: Dict[str, Any]):
@@ -188,9 +190,7 @@ class WorkflowValidator:
         if "permissions" not in content:
             jobs = content.get("jobs", {})
             has_job_permissions = any(
-                "permissions" in job
-                for job in jobs.values()
-                if isinstance(job, dict)
+                "permissions" in job for job in jobs.values() if isinstance(job, dict)
             )
             if not has_job_permissions:
                 self.info.append(
@@ -201,7 +201,9 @@ class WorkflowValidator:
         """Validate best practices"""
         # Check Python versions
         raw_str = str(content)
-        python_versions = re.findall(r"python-version['\"]?:\s*['\"]?(\d+\.\d+)", raw_str)
+        python_versions = re.findall(
+            r"python-version['\"]?:\s*['\"]?(\d+\.\d+)", raw_str
+        )
 
         supported_versions = ["3.10", "3.11", "3.12"]
         for version in python_versions:
