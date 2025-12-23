@@ -110,16 +110,16 @@ class AnthropicCodeSuggesterTool(AgentTool):
                     {
                         "role": "user",
                         "content": (
-                            f"Analyze this code and suggest improvements. "
-                            f"Return your response as a JSON object with "
-                            f"the following structure:\n"
-                            f"{{\n"
-                            f'    "code_structure": [list of recommendations],\n'
-                            f'    "optimization_opportunities": '
-                            f"[list of recommendations],\n"
-                            f'    "best_practices": [list of recommendations],\n'
-                            f'    "error_handling": [list of recommendations]\n'
-                            f"}}\n\n"
+                            "Analyze this code and suggest improvements. "
+                            "Return your response as a JSON object with "
+                            "the following structure:\n"
+                            "{\n"
+                            '    "code_structure": [list of recommendations],\n'
+                            '    "optimization_opportunities": '
+                            "[list of recommendations],\n"
+                            '    "best_practices": [list of recommendations],\n'
+                            '    "error_handling": [list of recommendations]\n'
+                            "}\n\n"
                             f"Code to analyze:\n{inputs['code']}"
                         ),
                     },
