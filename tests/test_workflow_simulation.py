@@ -5,11 +5,11 @@ These tests simulate workflow execution logic to validate
 that workflow configurations would work as expected.
 """
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 import subprocess
 import sys
+import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestStyleCheckSimulation(unittest.TestCase):
@@ -28,6 +28,7 @@ class TestStyleCheckSimulation(unittest.TestCase):
             # Use shell=True for proper regex handling in exclude pattern
             result = subprocess.run(
                 'black --check --diff --line-length=88 --exclude "app\\.py|index\\.html" .',
+                check=False,
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
@@ -51,6 +52,7 @@ class TestStyleCheckSimulation(unittest.TestCase):
         try:
             result = subprocess.run(
                 ["ruff", "check", ".", "--ignore", "E501"],
+                check=False,
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
@@ -80,6 +82,7 @@ class TestCIWorkflowSimulation(unittest.TestCase):
         try:
             result = subprocess.run(
                 ["python", "-m", "pytest", "tests/", "-v", "--tb=short"],
+                check=False,
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
@@ -134,7 +137,7 @@ class TestDependencyValidationSimulation(unittest.TestCase):
         if not requirements_file.exists():
             self.skipTest("requirements.txt not found")
 
-        with open(requirements_file, "r") as f:
+        with open(requirements_file) as f:
             lines = f.readlines()
 
         # Should have some requirements
@@ -289,6 +292,7 @@ class TestHuggingFaceDeploySimulation(unittest.TestCase):
         try:
             result = subprocess.run(
                 ["python", "-m", "pytest", "--version"],
+                check=False,
                 capture_output=True,
                 text=True,
                 timeout=5,
@@ -325,7 +329,11 @@ class TestWorkflowEnvironment(unittest.TestCase):
         """Verify git is available for workflows"""
         try:
             result = subprocess.run(
-                ["git", "--version"], capture_output=True, text=True, timeout=5
+                ["git", "--version"],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
 
             self.assertEqual(result.returncode, 0)

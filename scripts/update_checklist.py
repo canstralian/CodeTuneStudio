@@ -17,7 +17,7 @@ prs = response.json()
 
 # Open checklist file
 try:
-    with open(CHECKLIST_PATH, "r") as f:
+    with open(CHECKLIST_PATH) as f:
         lines = f.readlines()
 except FileNotFoundError:
     print(f"Error: Checklist file '{CHECKLIST_PATH}' not found.")
@@ -35,5 +35,5 @@ for i, line in enumerate(lines):
 try:
     with open(CHECKLIST_PATH, "w") as f:
         f.writelines(lines)
-except (IOError, OSError) as e:
+except OSError as e:
     print(f"Error writing to {CHECKLIST_PATH}: {e}")

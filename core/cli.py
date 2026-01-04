@@ -16,7 +16,7 @@ from core import __version__
 logger = logging.getLogger(__name__)
 
 
-def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """
     Parse command-line arguments for CodeTune Studio.
 
@@ -122,7 +122,7 @@ def configure_logging(log_level: str) -> None:
     logger.info(f"Logging configured at {log_level} level")
 
 
-def main(args: Optional[list[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     """
     Main CLI entrypoint for CodeTune Studio.
 
