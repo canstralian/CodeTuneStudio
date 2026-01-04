@@ -24,7 +24,7 @@ class TestCorePackage(unittest.TestCase):
 
     def test_cli_module_imports(self):
         """Test that CLI module can be imported"""
-        from core.cli import parse_args, configure_logging, main
+        from core.cli import configure_logging, main, parse_args
 
         self.assertTrue(callable(parse_args))
         self.assertTrue(callable(configure_logging))
@@ -32,7 +32,7 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_module_imports(self):
         """Test that logging module can be imported"""
-        from core.logging import setup_logging, get_logger, StructuredFormatter
+        from core.logging import StructuredFormatter, get_logger, setup_logging
 
         self.assertTrue(callable(setup_logging))
         self.assertTrue(callable(get_logger))
@@ -73,8 +73,8 @@ class TestCorePackage(unittest.TestCase):
 
     def test_cli_version_flag(self):
         """Test that version flag works"""
-        from core.cli import parse_args
         from core import __version__
+        from core.cli import parse_args
 
         with self.assertRaises(SystemExit) as cm:
             parse_args(["--version"])
@@ -83,8 +83,9 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_setup(self):
         """Test logging configuration"""
-        from core.logging import setup_logging
         import logging
+
+        from core.logging import setup_logging
 
         # Setup with INFO level
         setup_logging("INFO")
@@ -95,8 +96,9 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_formatter(self):
         """Test structured formatter"""
-        from core.logging import StructuredFormatter
         import logging
+
+        from core.logging import StructuredFormatter
 
         formatter = StructuredFormatter(
             use_color=False, fmt="%(levelname)s - %(message)s"

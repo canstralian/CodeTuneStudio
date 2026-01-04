@@ -7,8 +7,9 @@ use correct syntax, and reference valid files and paths.
 
 import os
 import unittest
-import yaml
 from pathlib import Path
+
+import yaml
 
 
 class TestWorkflowStructure(unittest.TestCase):
@@ -36,16 +37,14 @@ class TestWorkflowStructure(unittest.TestCase):
 
         for workflow_file in workflow_files:
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     try:
                         content = yaml.safe_load(f)
                         self.assertIsNotNone(
                             content, f"{workflow_file.name} is empty or invalid"
                         )
                     except yaml.YAMLError as e:
-                        self.fail(
-                            f"Invalid YAML in {workflow_file.name}: {e}"
-                        )
+                        self.fail(f"Invalid YAML in {workflow_file.name}: {e}")
 
     def test_workflows_have_required_fields(self):
         """Test that workflows have required fields (name, on, jobs)"""
@@ -64,7 +63,7 @@ class TestWorkflowStructure(unittest.TestCase):
                 continue
 
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                     if content is None:
@@ -118,7 +117,7 @@ class TestAutoUpdateChecklistWorkflow(unittest.TestCase):
 
     def test_workflow_references_correct_file(self):
         """Test that workflow references the correct checklist file"""
-        with open(self.workflow_file, "r") as f:
+        with open(self.workflow_file) as f:
             content = f.read()
 
         # The workflow should reference the correct checklist file
@@ -148,7 +147,7 @@ class TestCIWorkflow(unittest.TestCase):
 
     def test_workflow_has_all_required_jobs(self):
         """Test that workflow defines all required jobs"""
-        with open(self.workflow_file, "r") as f:
+        with open(self.workflow_file) as f:
             content = yaml.safe_load(f)
 
         required_jobs = ["lint", "type-check", "test", "build"]
@@ -182,7 +181,7 @@ class TestPythonStyleChecksWorkflow(unittest.TestCase):
 
     def test_workflow_checks_for_precommit_config(self):
         """Test that workflow verifies pre-commit config"""
-        with open(self.workflow_file, "r") as f:
+        with open(self.workflow_file) as f:
             content = f.read()
 
         self.assertIn(
@@ -250,7 +249,7 @@ class TestHuggingFaceWorkflows(unittest.TestCase):
     def test_metadata_file_is_valid_yaml(self):
         """Test that HF metadata file is valid YAML"""
         if self.metadata_file.exists():
-            with open(self.metadata_file, "r") as f:
+            with open(self.metadata_file) as f:
                 try:
                     content = yaml.safe_load(f)
                     # Note: This is metadata, not a workflow
@@ -280,7 +279,7 @@ class TestDependencyGraphWorkflow(unittest.TestCase):
 
     def test_workflow_validates_dependencies(self):
         """Test that workflow includes dependency validation"""
-        with open(self.workflow_file, "r") as f:
+        with open(self.workflow_file) as f:
             content = f.read()
 
         validation_keywords = [
@@ -313,7 +312,7 @@ class TestPRChecklistWorkflow(unittest.TestCase):
 
     def test_workflow_has_lint_job(self):
         """Test that workflow has lint job"""
-        with open(self.workflow_file, "r") as f:
+        with open(self.workflow_file) as f:
             content = yaml.safe_load(f)
 
         jobs = content.get("jobs", {})

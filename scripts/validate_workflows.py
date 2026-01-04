@@ -12,11 +12,12 @@ Usage:
 """
 
 import argparse
+import re
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List, Tuple
+
 import yaml
-import re
 
 
 class WorkflowValidator:
@@ -25,9 +26,9 @@ class WorkflowValidator:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.workflows_dir = repo_root / ".github" / "workflows"
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
-        self.info: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.info: list[str] = []
 
     def validate_all(self, workflow_name: str = None) -> bool:
         """
@@ -63,7 +64,7 @@ class WorkflowValidator:
         self._print_results()
         return len(self.errors) == 0
 
-    def _get_workflow_files(self) -> List[Path]:
+    def _get_workflow_files(self) -> list[Path]:
         """Get all workflow files"""
         workflows = []
         for pattern in ["*.yml", "*.yaml"]:
@@ -77,7 +78,7 @@ class WorkflowValidator:
 
         # Check YAML syntax
         try:
-            with open(workflow_path, "r") as f:
+            with open(workflow_path) as f:
                 raw_content = f.read()
                 f.seek(0)
                 content = yaml.safe_load(f)
@@ -94,7 +95,9 @@ class WorkflowValidator:
 
         # Check if this is a metadata file (not a workflow)
         if self._is_metadata_file(workflow_path.name, content):
-            print(f"  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n")
+            print(
+                "  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n"
+            )
             return
 
         # Validate structure
@@ -106,21 +109,21 @@ class WorkflowValidator:
         # Validate best practices
         self._validate_best_practices(workflow_path.name, content)
 
-        print(f"  ✓ Validation complete\n")
+        print("  ✓ Validation complete\n")
 
-    def _is_metadata_file(self, filename: str, content: Dict[str, Any]) -> bool:
+    def _is_metadata_file(self, filename: str, content: dict[str, Any]) -> bool:
         """Check if file is metadata rather than a workflow"""
         # Check for HF Space metadata indicators
         if "sdk" in content or "emoji" in content or "colorFrom" in content:
             return True
-        
+
         # Files that contain 'title' but no 'jobs' are likely metadata
         if "title" in content and "jobs" not in content and "on" not in content:
             return True
-            
+
         return False
 
-    def _validate_structure(self, filename: str, content: Dict[str, Any]):
+    def _validate_structure(self, filename: str, content: dict[str, Any]):
         """Validate workflow structure"""
         # Check required fields
         if "name" not in content:
@@ -157,7 +160,7 @@ class WorkflowValidator:
                 self.errors.append(f"{filename}: Job '{job_name}' missing 'steps'")
 
     def _validate_security(
-        self, filename: str, raw_content: str, content: Dict[str, Any]
+        self, filename: str, raw_content: str, content: dict[str, Any]
     ):
         """Validate security best practices"""
         # Check for hardcoded secrets
@@ -188,20 +191,20 @@ class WorkflowValidator:
         if "permissions" not in content:
             jobs = content.get("jobs", {})
             has_job_permissions = any(
-                "permissions" in job
-                for job in jobs.values()
-                if isinstance(job, dict)
+                "permissions" in job for job in jobs.values() if isinstance(job, dict)
             )
             if not has_job_permissions:
                 self.info.append(
                     f"{filename}: No permissions defined (may use default)"
                 )
 
-    def _validate_best_practices(self, filename: str, content: Dict[str, Any]):
+    def _validate_best_practices(self, filename: str, content: dict[str, Any]):
         """Validate best practices"""
         # Check Python versions
         raw_str = str(content)
-        python_versions = re.findall(r"python-version['\"]?:\s*['\"]?(\d+\.\d+)", raw_str)
+        python_versions = re.findall(
+            r"python-version['\"]?:\s*['\"]?(\d+\.\d+)", raw_str
+        )
 
         supported_versions = ["3.10", "3.11", "3.12"]
         for version in python_versions:
