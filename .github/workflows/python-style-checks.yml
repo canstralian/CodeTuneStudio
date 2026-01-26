@@ -40,6 +40,8 @@ jobs:
             flake8==7.3.0 \
             pre-commit==4.5.0 \
             ruff==0.14.6
+          # Install tomli for Python <3.11 (tomllib is built-in for 3.11+)
+          python -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" || pip install tomli
 
       # Check code formatting with Black
       - name: Check code formatting with Black
