@@ -1,10 +1,10 @@
 # Core frameworks
 streamlit>=1.37.0
-flask==3.0.0
+flask==3.1.2
 
 # Flask extensions
-flask-sqlalchemy==3.0.5
-flask-migrate==4.0.4
+flask-sqlalchemy==3.1.1
+flask-migrate==4.1.0
 sqlalchemy==2.0.22
 psycopg2-binary==2.9.11
 
