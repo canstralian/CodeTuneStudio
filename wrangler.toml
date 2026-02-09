@@ -1,0 +1,193 @@
+# Cloudflare Workers Configuration for CodeTuneStudio
+# Documentation: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+# Worker identification
+name = "codetune-studio"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+
+# Get your account_id from: Cloudflare Dashboard → Workers & Pages → Overview
+# Replace with your actual account ID
+account_id = ""
+
+# Development settings
+workers_dev = true
+
+# Build configuration
+[build]
+command = "npm run build"
+# cwd = "build"  # Uncomment if build outputs to specific directory
+# watch_dirs = ["src"]  # Directories to watch for changes in dev mode
+
+# ============================================================================
+# Environment Configuration
+# ============================================================================
+
+# Production Environment
+[env.production]
+name = "codetune-studio-production"
+route = { pattern = "api.promptcrafting.net/*", zone_name = "promptcrafting.net" }
+
+# Production-specific variables (non-sensitive)
+[env.production.vars]
+ENVIRONMENT = "production"
+LOG_LEVEL = "INFO"
+HOST = "0.0.0.0"
+PORT = "8787"
+SERVER_HEADLESS = "true"
+ENABLE_TELEMETRY = "false"
+
+# Staging Environment
+[env.staging]
+name = "codetune-studio-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+LOG_LEVEL = "DEBUG"
+HOST = "0.0.0.0"
+PORT = "8787"
+SERVER_HEADLESS = "true"
+SQL_DEBUG = "true"
+
+# Development Environment
+[env.development]
+name = "codetune-studio-dev"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+LOG_LEVEL = "DEBUG"
+HOST = "localhost"
+PORT = "7860"
+SQL_DEBUG = "true"
+
+# ============================================================================
+# Service Bindings & Resources
+# ============================================================================
+
+# KV Namespaces (for session storage, caching)
+# Uncomment and configure after creating KV namespaces
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# [[env.production.kv_namespaces]]
+# binding = "CACHE"
+# id = "your-production-kv-namespace-id"
+
+# D1 Databases (Cloudflare's SQL database)
+# Recommended for production use instead of external PostgreSQL
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "codetune-studio"
+# database_id = "your-database-id"
+# preview_database_id = "your-preview-database-id"
+
+# [[env.production.d1_databases]]
+# binding = "DB"
+# database_name = "codetune-studio-production"
+# database_id = "your-production-database-id"
+
+# R2 Buckets (for file storage - models, datasets, logs)
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "codetune-studio-storage"
+# preview_bucket_name = "codetune-studio-storage-preview"
+
+# Durable Objects (for stateful operations, sessions)
+# [[durable_objects.bindings]]
+# name = "SESSION_MANAGER"
+# class_name = "SessionManager"
+# script_name = "codetune-studio"
+
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["SessionManager"]
+
+# Queue bindings (for async job processing)
+# [[queues.producers]]
+# binding = "TRAINING_QUEUE"
+# queue = "training-jobs"
+
+# [[queues.consumers]]
+# queue = "training-jobs"
+# max_batch_size = 10
+# max_batch_timeout = 30
+
+# Analytics Engine (for custom metrics)
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+
+# Service bindings (connect to other Workers)
+# [[services]]
+# binding = "AUTH_SERVICE"
+# service = "codetune-auth"
+# environment = "production"
+
+# ============================================================================
+# Performance & Limits
+# ============================================================================
+
+[limits]
+# CPU time limit per request (milliseconds)
+# Free tier: 10ms, Paid: 50ms, Unbound: 30s
+cpu_ms = 50
+
+# ============================================================================
+# Observability
+# ============================================================================
+
+# Logpush configuration (requires Cloudflare Logpush setup)
+# [observability]
+# enabled = true
+# head_sampling_rate = 1.0  # Sample rate for logs (1.0 = 100%)
+
+# ============================================================================
+# Additional Settings
+# ============================================================================
+
+# Compatibility flags for specific Worker features
+# [compatibility_flags]
+# nodejs_compat = true  # Enable Node.js compatibility
+
+# Custom routes (alternative to custom domains)
+# Note: Using custom domains via Dashboard is recommended over routes
+# routes = [
+#   { pattern = "api.promptcrafting.net/*", zone_name = "promptcrafting.net" }
+# ]
+
+# Triggers (configured via Dashboard → Workers → Triggers)
+# Custom domains provide better management and automatic SSL
+
+# Miniflare configuration for local development
+# [miniflare]
+# upstream = "http://localhost:8787"
+# kv_persist = true
+# cache_persist = true
+# d1_persist = true
+
+# ============================================================================
+# Notes
+# ============================================================================
+# 
+# 1. Secrets Management:
+#    Use `wrangler secret put <SECRET_NAME>` to set sensitive values
+#    Required secrets: DATABASE_URL, OPENAI_API_KEY, ANTHROPIC_API_KEY, 
+#                      HF_TOKEN, SECRET_KEY
+#
+# 2. Custom Domains:
+#    Configure via Cloudflare Dashboard → Workers → Triggers → Custom Domains
+#    Add: api.promptcrafting.net
+#
+# 3. Local Development:
+#    Create .dev.vars file with environment variables for local testing
+#    Run: wrangler dev
+#
+# 4. Deployment:
+#    Production: wrangler deploy --env production
+#    Staging: wrangler deploy --env staging
+#
+# 5. Logs:
+#    View real-time logs: wrangler tail --env production
+#
+# For detailed instructions, see: docs/CLOUDFLARE_WORKERS.md

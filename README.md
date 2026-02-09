@@ -124,6 +124,53 @@ This enables dependency installation while preserving determinism and security.
 
 ⸻
 
+## ☁️ Cloudflare Workers Deployment
+
+Deploy CodeTuneStudio to Cloudflare Workers for global edge computing with custom domain support.
+
+Quick Start
+
+# Install Wrangler CLI
+npm install -g wrangler
+
+# Authenticate with Cloudflare
+wrangler login
+
+# Deploy to Cloudflare Workers
+wrangler deploy --env production
+
+Custom Domain Setup
+
+1. Add custom domain in Cloudflare Dashboard → Workers → Triggers
+2. Configure DNS (CNAME record automatically created)
+3. SSL/TLS automatically provisioned
+
+Example: `api.promptcrafting.net`
+
+Configuration
+
+Environment variables and secrets via `wrangler`:
+
+# Set secrets (encrypted)
+wrangler secret put DATABASE_URL
+wrangler secret put OPENAI_API_KEY
+wrangler secret put ANTHROPIC_API_KEY
+
+# Edit wrangler.toml for non-sensitive configuration
+
+Documentation
+
+See detailed deployment guide: [docs/CLOUDFLARE_WORKERS.md](docs/CLOUDFLARE_WORKERS.md)
+
+Features:
+- Custom domains with automatic SSL
+- Environment variables and secrets management
+- Real-time logs and analytics
+- Global edge deployment
+- CI/CD with GitHub Actions
+
+⸻
+
 ## 📁 Project Structure
 
 CodeTuneStudio/

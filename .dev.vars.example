@@ -1,0 +1,41 @@
+# Local Development Environment Variables for Cloudflare Workers
+# This file is used by `wrangler dev` for local testing
+# Copy this file to .dev.vars and fill in your actual values
+# 
+# WARNING: Never commit .dev.vars to version control!
+# Add .dev.vars to .gitignore
+
+# =============================================================================
+# Database Configuration
+# =============================================================================
+DATABASE_URL=postgresql://user:password@localhost:5432/codetune_dev
+# Or use SQLite for local development:
+# DATABASE_URL=sqlite:///database.db
+
+# =============================================================================
+# API Keys (Use test keys for development)
+# =============================================================================
+OPENAI_API_KEY=sk-test-your-openai-key-here
+ANTHROPIC_API_KEY=sk-ant-test-your-anthropic-key-here
+HF_TOKEN=hf_test_your_huggingface_token_here
+
+# =============================================================================
+# Application Configuration
+# =============================================================================
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
+HOST=localhost
+PORT=7860
+SQL_DEBUG=true
+
+# =============================================================================
+# Security
+# =============================================================================
+SECRET_KEY=dev-secret-key-change-in-production
+REQUIRE_API_KEY=false
+
+# =============================================================================
+# Feature Flags
+# =============================================================================
+ENABLE_EXPERIMENTAL_FEATURES=true
+ENABLE_TELEMETRY=false

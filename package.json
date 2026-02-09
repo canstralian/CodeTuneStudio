@@ -1,0 +1,39 @@
+{
+  "name": "codetune-studio-worker",
+  "version": "0.2.0",
+  "description": "Cloudflare Worker for CodeTuneStudio API",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:production": "wrangler deploy --env production",
+    "deploy:staging": "wrangler deploy --env staging",
+    "tail": "wrangler tail",
+    "tail:production": "wrangler tail --env production",
+    "tail:staging": "wrangler tail --env staging",
+    "login": "wrangler login",
+    "logout": "wrangler logout",
+    "test": "echo 'No tests configured yet'",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "codetune",
+    "api",
+    "code-analysis"
+  ],
+  "author": "canstralian",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canstralian/CodeTuneStudio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/canstralian/CodeTuneStudio/issues"
+  },
+  "homepage": "https://github.com/canstralian/CodeTuneStudio#readme"
+}
