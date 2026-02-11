@@ -127,6 +127,11 @@ This enables dependency installation while preserving determinism and security.
 ## 📁 Project Structure
 
 CodeTuneStudio/
+├── automation/             # GitHub automation tools
+│   ├── create_branch.py
+│   ├── create_issue.py
+│   ├── manage_project.py
+│   └── utils/
 ├── core/                   # Core application modules
 │   ├── cli.py
 │   ├── server.py
@@ -142,6 +147,30 @@ CodeTuneStudio/
 ├── CHANGELOG.md
 └── README.md
 
+
+⸻
+
+## 🤖 GitHub Automation Tools
+
+CodeTuneStudio includes powerful automation scripts for GitHub operations:
+
+- **Branch Management**: Automated branch creation, switching, and deletion
+- **Issue Creation**: Template-based issue creation with labels and metadata
+- **Project Management**: Project board creation and management
+
+Quick examples:
+```bash
+# Create a feature branch
+python -m automation.create_branch feature/new-api
+
+# Create a bug issue with template
+python -m automation.create_issue --template bug --title "Fix login" --labels bug,urgent
+
+# Create a project board
+python -m automation.manage_project --create "Sprint 1" --description "Tasks for Sprint 1"
+```
+
+See [automation/README.md](automation/README.md) for complete documentation.
 
 ⸻
 
