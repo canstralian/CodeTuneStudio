@@ -98,10 +98,16 @@ class BranchCreator:
         """
         try:
             if check_remote:
-                self.run_git_command("ls-remote", "--heads", "origin", branch_name)
+                result = self.run_git_command(
+                    "ls-remote",
+                    "--heads",
+                    "origin",
+                    branch_name,
+                )
+                return bool(result.stdout.strip())
             else:
                 self.run_git_command("rev-parse", "--verify", branch_name)
-            return True
+                return True
         except subprocess.CalledProcessError:
             return False
     

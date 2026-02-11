@@ -8,7 +8,9 @@ CodeTuneStudio repository.
 Usage:
     python -m automation.manage_project --create "Sprint 1"
     python -m automation.manage_project --list
-    python -m automation.manage_project --add-issue 123 --project-id 456
+
+Note: Advanced features like adding issues to projects require additional
+      implementation. Use GitHub CLI (gh project) for comprehensive management.
 """
 
 import argparse
@@ -96,14 +98,20 @@ class ProjectManager:
             org_level: List organization-level projects
             
         Returns:
-            List of project dictionaries
+            List of project dictionaries (currently always empty - not implemented)
+            
+        Note:
+            This is a stub implementation. Full project listing requires GraphQL API.
+            For comprehensive project listing, use:
+            - GitHub CLI: gh project list
+            - GitHub GraphQL API: query with projects/projectsV2 fields
+            - GitHub web interface
         """
         try:
-            # Note: This is a simplified version. Full implementation would
-            # need to handle pagination and different project types.
             print("Listing projects...")
-            print("Note: Full project listing requires GraphQL API.")
-            print("Use GitHub CLI or web interface for comprehensive project management.")
+            print("Note: Full project listing is not yet implemented.")
+            print("This feature requires GraphQL API for complete functionality.")
+            print("For now, use GitHub CLI (gh project list) or web interface for project management.")
             return []
             
         except Exception as e:

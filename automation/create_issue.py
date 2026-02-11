@@ -155,7 +155,9 @@ class IssueCreator:
             return None
         
         # Generate body from template
-        body = TEMPLATES[template].format(description=description)
+        # Escape braces in user input to prevent formatting errors
+        safe_description = description.replace("{", "{{").replace("}", "}}")
+        body = TEMPLATES[template].format(description=safe_description)
         
         return self.create_issue(
             title=title,
@@ -385,8 +387,16 @@ Examples:
         parser.error("One of --body, --template, or --from-file is required")
     
     # Parse labels and assignees
-    labels = args.labels.split(",") if args.labels else None
-    assignees = args.assignees.split(",") if args.assignees else None
+    labels = (
+        [label.strip() for label in args.labels.split(",") if label.strip()]
+        if args.labels
+        else None
+    )
+    assignees = (
+        [assignee.strip() for assignee in args.assignees.split(",") if assignee.strip()]
+        if args.assignees
+        else None
+    )
     
     try:
         token = None if args.dry_run else get_github_token()

@@ -24,20 +24,23 @@ class GitHubAPIClient:
     def __init__(
         self,
         token: Optional[str] = None,
-        owner: str = "canstralian",
-        repo: str = "CodeTuneStudio"
+        owner: Optional[str] = None,
+        repo: Optional[str] = None
     ):
         """
         Initialize GitHub API client.
         
         Args:
             token: GitHub personal access token. If None, reads from GITHUB_TOKEN env var.
-            owner: Repository owner (username or organization)
-            repo: Repository name
+            owner: Repository owner (username or organization). Defaults to config or env variable.
+            repo: Repository name. Defaults to config or env variable.
             
         Raises:
             ValueError: If no token is provided or found in environment
         """
+        # Import here to avoid circular imports
+        from automation.config import REPO_OWNER, REPO_NAME
+        
         self.token = token or os.environ.get("GITHUB_TOKEN")
         if not self.token:
             raise ValueError(
@@ -45,8 +48,8 @@ class GitHubAPIClient:
                 "or pass token parameter."
             )
         
-        self.owner = owner
-        self.repo = repo
+        self.owner = owner or REPO_OWNER
+        self.repo = repo or REPO_NAME
         self.base_url = "https://api.github.com"
         self.headers = {
             "Authorization": f"Bearer {self.token}",
@@ -60,6 +63,7 @@ class GitHubAPIClient:
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
         max_retries: int = 3
     ) -> requests.Response:
         """
@@ -70,6 +74,7 @@ class GitHubAPIClient:
             endpoint: API endpoint (without base URL)
             data: JSON data for request body
             params: Query parameters
+            headers: Optional custom headers (will be merged with default headers)
             max_retries: Maximum number of retry attempts
             
         Returns:
@@ -79,24 +84,40 @@ class GitHubAPIClient:
             requests.RequestException: If request fails after retries
         """
         url = f"{self.base_url}{endpoint}"
+        request_headers = self.headers.copy()
+        if headers:
+            request_headers.update(headers)
         
         for attempt in range(max_retries):
             try:
                 response = requests.request(
                     method=method,
                     url=url,
-                    headers=self.headers,
+                    headers=request_headers,
                     json=data,
                     params=params,
                     timeout=30
                 )
                 
-                # Handle rate limiting
+                # Handle rate limiting (429 and 403 with rate limit headers)
                 if response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", 60))
                     print(f"Rate limited. Waiting {retry_after} seconds...")
                     time.sleep(retry_after)
                     continue
+                
+                # Check for rate limiting via 403 with X-RateLimit-Remaining: 0
+                if response.status_code == 403:
+                    remaining = response.headers.get("X-RateLimit-Remaining")
+                    if remaining is not None and int(remaining) == 0:
+                        reset_time = int(response.headers.get("X-RateLimit-Reset", 0))
+                        if reset_time:
+                            wait_time = max(reset_time - int(time.time()), 1)
+                        else:
+                            wait_time = int(response.headers.get("Retry-After", 60))
+                        print(f"Rate limit exceeded. Waiting {wait_time} seconds until reset...")
+                        time.sleep(wait_time)
+                        continue
                 
                 return response
                 
@@ -261,8 +282,9 @@ class GitHubAPIClient:
         Note:
             This uses the projects preview API which may change.
         """
-        headers = self.headers.copy()
-        headers["Accept"] = "application/vnd.github.inertia-preview+json"
+        custom_headers = {
+            "Accept": "application/vnd.github.inertia-preview+json"
+        }
         
         if org_level:
             endpoint = f"/orgs/{self.owner}/projects"
@@ -274,11 +296,11 @@ class GitHubAPIClient:
             "body": body
         }
         
-        response = requests.post(
-            f"{self.base_url}{endpoint}",
-            headers=headers,
-            json=data,
-            timeout=30
+        response = self._make_request(
+            "POST",
+            endpoint,
+            data=data,
+            headers=custom_headers
         )
         
         if response.status_code == 201:

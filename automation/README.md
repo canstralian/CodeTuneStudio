@@ -164,11 +164,15 @@ python -m automation.manage_project \
   --create "Test Project" \
   --dry-run
 
-# List existing projects
+# List existing projects (Note: Currently not fully implemented)
+# For comprehensive project listing, use GitHub CLI (gh project list) or web interface
 python -m automation.manage_project --list
 ```
 
-**Note:** For advanced project management features (adding cards, moving items, automation), use the GitHub CLI (`gh project`) or GraphQL API directly. This tool provides basic project creation functionality.
+**Note:** 
+- The `--list` command currently shows a notice about limitations and returns an empty list. Full project listing requires GraphQL API implementation.
+- For advanced project management features (adding cards, moving items, automation), use the GitHub CLI (`gh project`) or GraphQL API directly. 
+- This tool provides basic project creation functionality.
 
 ## Configuration
 

@@ -4,7 +4,7 @@ Unit tests for GitHub automation tools.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import os
 import sys
 
@@ -156,6 +156,7 @@ class TestBranchCreator(unittest.TestCase):
         
         mock_run.assert_called_once()
         self.assertIn("git", mock_run.call_args[0][0])
+        self.assertEqual(result.stdout, "test output")
     
     @patch("automation.create_branch.subprocess.run")
     def test_get_current_branch(self, mock_run):
