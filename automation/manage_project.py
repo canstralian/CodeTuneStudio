@@ -30,7 +30,10 @@ class ProjectManager:
         Args:
             token: GitHub personal access token
         """
-        self.client = GitHubAPIClient(token=token)
+        if token:
+            self.client = GitHubAPIClient(token=token)
+        else:
+            self.client = None
     
     def create_project(
         self,
@@ -62,6 +65,9 @@ class ProjectManager:
             return None
         
         try:
+            if not self.client:
+                raise ValueError("GitHub API client not initialized. Token required.")
+            
             project = self.client.create_project(
                 name=name,
                 body=description,
