@@ -134,7 +134,9 @@ class MLFineTuningApp:
                 },
             }
         )
-        logger.info("Database configured with URL: %s", _redact_url_password(database_url))
+        logger.info(
+            "Database configured with URL: %s", _redact_url_password(database_url)
+        )
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0

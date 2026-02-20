@@ -73,8 +73,17 @@ jobs:
 
     steps:
       - name: Validate completed tasks
-        # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
-        # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
-        uses: kentaro-m/task-completed-checker-action@v0.1.2
+        uses: actions/github-script@v7
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            const body = pr.body || '';
+            const unchecked = (body.match(/- \[ \]/g) || []).length;
+            if (unchecked > 0) {
+              core.setFailed(`Found ${unchecked} unchecked task(s) in the PR description.`);
+            }
