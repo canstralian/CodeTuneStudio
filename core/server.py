@@ -8,13 +8,16 @@ providing a clean separation between server logic and CLI entrypoint.
 import logging
 import os
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 # Third-party imports
 import streamlit as st
 from flask import Flask
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
 # Local imports
@@ -35,6 +38,32 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d",
 )
 logger = logging.getLogger(__name__)
+
+_TRUTHY = {"1", "true", "t", "yes", "y", "on"}
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    """Parse a boolean-ish environment variable safely.
+
+    Treats common truthy strings as True; everything else (including "0",
+    "false", empty string) as False.
+    """
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in _TRUTHY
+
+
+def _redact_url_password(url: str) -> str:
+    """Redact the password portion of a database URL, if present."""
+    parts = urlsplit(url)
+    if not parts.username or not parts.password:
+        return url
+    netloc = parts.hostname or ""
+    if parts.port is not None:
+        netloc = f"{netloc}:{parts.port}"
+    netloc = f"{parts.username}:***@{netloc}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
 
 
 class MLFineTuningApp:
@@ -101,11 +130,11 @@ class MLFineTuningApp:
                     "pool_timeout": 30,
                     "pool_recycle": 1800,
                     "pool_pre_ping": True,
-                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
+                    "echo": _env_flag("SQL_DEBUG", default=False),
                 },
             }
         )
-        logger.info(f"Database configured with URL: {database_url}")
+        logger.info("Database configured with URL: %s", _redact_url_password(database_url))
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0
@@ -143,7 +172,7 @@ class MLFineTuningApp:
                 time.sleep(delay)
 
     @contextmanager
-    def session_scope(self):
+    def session_scope(self) -> Iterator[Session]:
         """Provide a transactional scope with improved error handling and logging"""
         session = db.session()
         try:
@@ -163,7 +192,7 @@ class MLFineTuningApp:
         css_path = "styles/custom.css"
         if os.path.exists(css_path):
             try:
-                with open(css_path) as f:
+                with open(css_path, encoding="utf-8") as f:
                     return f.read()
             except Exception as e:
                 logger.warning(f"Failed to load custom CSS: {e}")

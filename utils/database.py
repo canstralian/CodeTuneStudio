@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import os
 from datetime import datetime
 
+from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-migrate = None
+migrate: Migrate | None = None
 
 
-def init_db(app):
+def init_db(app: Flask) -> Flask:
     global migrate
     # Use get() with fallback to prevent KeyError if DATABASE_URL not set
     if "SQLALCHEMY_DATABASE_URI" not in app.config:
