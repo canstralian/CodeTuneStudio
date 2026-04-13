@@ -180,7 +180,7 @@ jobs:
           echo "${NOTES:-"Release $VERSION"}" > release_notes.txt
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "Release ${{ github.ref_name }}"
           body_path: release_notes.txt
