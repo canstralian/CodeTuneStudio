@@ -8,4 +8,4 @@ import sys
 import os
 
 # Insert the project root at the front of sys.path
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
