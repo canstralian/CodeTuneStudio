@@ -1,16 +1,17 @@
 # See https://pre-commit.com for more information
+minimum_pre_commit_version: "3.5.0"
+default_stages: [pre-commit]
+fail_fast: true
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.2
     hooks:
-      # Lint (with auto-fix)
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
-        # Ensures formatting happens after fixes
-        additional_dependencies: []
-
-      # Formatter
+        types_or: [python, pyi]
       - id: ruff-format
+        types_or: [python, pyi]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
