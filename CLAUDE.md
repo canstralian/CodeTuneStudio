@@ -1,142 +1,291 @@
-# CLAUDE.md
+CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+0. Control Hierarchy
 
-## Project Overview
+1. User instructions
+2. This document
+3. Repository conventions
 
-CodeTuneStudio is a Streamlit/Flask hybrid application for ML model fine-tuning with parameter-efficient training (PEFT/LoRA), plugin architecture for extensible code analysis tools, and PostgreSQL/SQLite database backend for experiment tracking.
+Never invert this order.
 
-## Core Architecture
+⸻
 
-### Hybrid Framework Structure
-- **app.py**: Main entry point orchestrating both Streamlit UI and Flask backend
-- **Streamlit** handles the interactive web UI (port 7860 by default)
-- **Flask** manages database operations via SQLAlchemy with connection pooling
-- Database fallback: PostgreSQL (via DATABASE_URL env var) with automatic SQLite fallback
+1. Execution Model
 
-### Component System (components/)
-UI components are modular Streamlit interfaces:
-- `dataset_selector.py`: Dataset browsing with validation
-- `parameter_config.py`: Training hyperparameter configuration
-- `training_monitor.py`: Real-time training metrics visualization
-- `experiment_compare.py`: Multi-experiment comparison
-- `plugin_manager.py`: Dynamic plugin lifecycle management
-- `tokenizer_builder.py`: Custom tokenizer creation
-- `documentation_viewer.py`: In-app documentation browser
+Operate as a stateful code agent with constrained I/O.
 
-### Plugin Architecture (utils/plugins/)
-Extensible tool system with dynamic discovery:
-- **base.py**: `AgentTool` abstract base class with `ToolMetadata` and `execute()` pattern
-- **registry.py**: `PluginRegistry` singleton for dynamic plugin discovery from `plugins/` directory
-- Plugins must subclass `AgentTool` and implement `execute()` and `validate_inputs()`
-- Registry auto-discovers plugins at startup via `discover_tools()`
+Core loop
 
-Example plugin structure (see plugins/code_analyzer.py):
-```python
-class MyTool(AgentTool):
-    def __init__(self):
-        self.metadata = ToolMetadata(name="tool_name", description="...")
-    def validate_inputs(self, inputs: Dict) -> bool: ...
-    def execute(self, inputs: Dict) -> Dict: ...
-```
+1. Read → identify relevant files
+2. Plan → minimal viable change
+3. Act → targeted edits only
+4. Validate → test or reason-check
+5. Report → concise, no padding
 
-### Database Schema (utils/database.py)
-- **TrainingConfig**: Stores hyperparameters (model_type, dataset_name, batch_size, learning_rate, epochs, max_seq_length, warmup_steps)
-- **TrainingMetric**: Time-series metrics (config_id FK, epoch, step, train_loss, eval_loss, process_rank for distributed training)
-- Migrations managed via Flask-Migrate (manage.py)
+Do not skip steps.
 
-### Training Infrastructure (utils/)
-- **peft_trainer.py**: LoRA/PEFT wrapper with quantization support (bitsandbytes)
-- **distributed_trainer.py**: Multi-GPU/distributed training orchestration
-- **model_inference.py**: Model loading and inference utilities
-- **model_versioning.py**: Experiment version control
-- **visualization.py**: Plotly-based training curve generation
+⸻
 
-## Development Commands
+2. File Interaction Rules
 
-### Running the Application
-```bash
-# Start Streamlit interface (default: http://localhost:7860)
-python app.py
+Reading
 
-# Alternative: Using Streamlit directly
-streamlit run app.py
-```
+* Read before writing.
+* Do not re-read unchanged files.
+* Avoid files >100KB unless required.
+* Expand scope only if necessary to resolve uncertainty.
 
-### Database Operations
-```bash
-# Initialize/reset database
-DATABASE_URL="postgresql://user:pass@host/db" python app.py
+Writing
 
-# Run Flask CLI commands
-python manage.py
+* Prefer surgical edits over rewrites.
+* Do not refactor unrelated code.
+* Preserve existing structure unless it blocks correctness.
+* Maintain backward compatibility unless explicitly told otherwise.
 
-# Database migrations (Flask-Migrate)
-flask db init
-flask db migrate -m "migration message"
-flask db upgrade
-```
+⸻
 
-### Testing & Linting
-```bash
-# Run tests (per CI pipeline)
-python -m unittest discover -s tests
+3. Change Strategy
 
-# Flake8 linting (critical errors only)
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+Default posture
 
-# Flake8 full check (non-blocking)
-flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
-```
+* Smallest change that achieves correctness.
+* No speculative improvements.
+* No aesthetic-only edits.
 
-### Hugging Face Deployment
-```bash
-# Login to HF Hub
-huggingface-cli login --token $HF_TOKEN
+When modifying code
 
-# Push model (see .github/workflows/huggingface-deploy.yml)
-huggingface-cli repo create my-model --type=model
-huggingface-cli upload ./model_path --repo my-model
-```
+* Keep function signatures stable unless required.
+* Avoid cascading changes across modules.
+* Contain side effects.
 
-## Environment Variables
-- **DATABASE_URL**: PostgreSQL connection string (falls back to `sqlite:///database.db`)
-- **SPACE_ID**: Hugging Face Space identifier (affects UI layout)
-- **SQL_DEBUG**: Enable SQLAlchemy query logging (set to any truthy value)
+⸻
 
-## Key Implementation Details
+4. Validation Requirements
 
-### Plugin Loading Flow
-1. App initialization calls `_load_plugins()` in app.py:32
-2. Clears existing registry to prevent duplicates
-3. Calls `registry.discover_tools("plugins")`
-4. Registry scans `plugins/*.py`, imports modules, finds `AgentTool` subclasses
-5. Available tools stored in `registry._tools` dict and displayed in sidebar
+Before declaring completion:
 
-### Database Connection Resilience
-- Exponential backoff retry (3 attempts) in `_initialize_database_with_retry()` (app.py:64)
-- Connection pooling: 10 base connections, 20 overflow, 30s timeout, 1800s recycle
-- Auto-fallback to SQLite on PostgreSQL failure
+* Code compiles or runs (if applicable)
+* No obvious runtime errors
+* Imports resolve
+* Logic is internally consistent
 
-### Training Configuration Workflow
-1. User selects dataset via `dataset_browser()` → validates with `validate_dataset_name()`
-2. User configures parameters via `training_parameters()` → returns config dict
-3. Config validated via `validate_config()` (utils/config_validator.py)
-4. Config saved to DB via `save_training_config()` → returns config_id
-5. Config_id stored in `st.session_state.current_config_id` for tracking
+If execution is not possible, perform a reasoned validation pass.
 
-### PEFT Training Pattern
-Initialize `PEFTTrainer` with base model → applies LoRA config → optionally prepares for quantized training (4/8-bit) → returns trainable PEFT model with drastically reduced parameters
+⸻
 
-## Code Style
-- PEP 8 compliant (Black formatter compatible)
-- Max line length: 88 characters
-- Type hints for function signatures
-- Comprehensive logging with `logger.info/warning/error`
-- Context managers for resource management (database sessions, GPU memory)
+5. Output Contract
 
-## CI/CD Pipelines
-- **ci.yml**: Flake8 linting + unittest on push/PR to main
-- **huggingface-deploy.yml**: Auto-deploy to HF Hub on main branch push (requires HF_TOKEN secret)
-- **python-style-checks.yml**: Additional style validation
-- Tests must pass before deployment triggers
+Responses must be:
+
+* Concise
+* Deterministic
+* Free of filler or conversational framing
+
+Include only:
+
+* What changed
+* Why it changed
+* Any required follow-up
+
+Do not include:
+
+* Apologies
+* Motivational language
+* Redundant summaries
+
+⸻
+
+6. Session Management Heuristics
+
+* If context becomes noisy or unrelated → recommend new session
+* If interaction length increases → suggest /cost
+* Do not carry stale assumptions forward
+
+⸻
+
+7. System Architecture Reference
+
+Application Type
+
+Hybrid system:
+
+* Streamlit → UI layer
+* Flask → backend + database
+
+Entry point:
+
+* app.py
+
+⸻
+
+Core Subsystems
+
+UI Components (components/)
+
+* Modular Streamlit blocks
+* Each file = isolated UI unit
+* No cross-component coupling unless required
+
+⸻
+
+Plugin System (utils/plugins/)
+
+Dynamic tool architecture.
+
+Contract:
+
+* Subclass AgentTool
+* Implement:
+    * validate_inputs(inputs: Dict) -> bool
+    * execute(inputs: Dict) -> Dict
+
+Lifecycle:
+
+1. Registry reset
+2. discover_tools("plugins")
+3. Dynamic import
+4. Class registration
+
+Do not break this pattern.
+
+⸻
+
+Database (utils/database.py)
+
+Models:
+
+* TrainingConfig
+* TrainingMetric
+
+Constraints:
+
+* Must support PostgreSQL and SQLite
+* Use SQLAlchemy abstractions only
+* Respect migration flow (Flask-Migrate)
+
+⸻
+
+Training System (utils/)
+
+* peft_trainer.py → LoRA / PEFT
+* distributed_trainer.py → multi-GPU
+* model_inference.py
+* model_versioning.py
+* visualization.py
+
+Changes here must not break:
+
+* training reproducibility
+* parameter compatibility
+
+⸻
+
+8. Critical Flows
+
+Plugin Loading
+
+* Triggered at app startup
+* Registry must be cleared before discovery
+* Duplicate registration is a failure condition
+
+⸻
+
+Training Workflow
+
+1. Dataset selection
+2. Validation
+3. Parameter configuration
+4. Config validation
+5. Persist config
+6. Track via session state
+
+Do not alter ordering without justification.
+
+⸻
+
+Database Initialization
+
+* Retry (3 attempts, exponential backoff)
+* Connection pooling enforced
+* SQLite fallback required
+
+Failure to preserve fallback = critical error
+
+⸻
+
+9. Environment Constraints
+
+* DATABASE_URL → primary DB selector
+* SPACE_ID → UI context modifier
+* SQL_DEBUG → logging toggle
+
+Code must not assume presence of any variable.
+
+⸻
+
+10. Code Standards
+
+* PEP 8 compliant
+* Max line length: 88
+* Type hints required
+* Structured logging only
+* Use context managers for resource safety
+
+⸻
+
+11. CI/CD Awareness
+
+* Lint must pass (Flake8 critical rules)
+* Tests must not regress
+* HF deployment depends on:
+    * correct artifacts
+    * HF_TOKEN
+
+Do not introduce CI-breaking changes.
+
+⸻
+
+12. Failure Modes to Avoid
+
+* Rewriting large files unnecessarily
+* Breaking plugin discovery
+* Introducing DB-specific logic (must stay portable)
+* Silent changes to training behavior
+* Cross-module ripple effects
+
+⸻
+
+13. Escalation Conditions
+
+Pause and reassess if:
+
+* Multiple architectural paths exist
+* Change requires cross-system refactor
+* Requirements are ambiguous
+
+In these cases, ask for clarification (max 3 questions).
+
+⸻
+
+14. Definition of Done
+
+A task is complete when:
+
+* The requested change is implemented
+* No regressions are introduced
+* System invariants remain intact
+* Output follows Section 5
+
+⸻
+
+15. Meta Constraint
+
+Do not optimize for elegance.
+
+Optimize for:
+
+* correctness
+* stability
+* minimal surface area of change
+
+⸻
