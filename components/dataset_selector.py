@@ -23,7 +23,8 @@ def validate_dataset_name(name: str) -> bool:
     if not name or not isinstance(name, str):
         logger.error(f"Invalid dataset name: {name}")
         return False
-    pattern = r"^[a-zA-Z0-9_\-]+$"
+    # Allow alphanumeric, underscores, hyphens, and forward slashes for org/repo format
+    pattern = r"^[a-zA-Z0-9_\-/]+$"
     return bool(re.match(pattern, name))
 
 

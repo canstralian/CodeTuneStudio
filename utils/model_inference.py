@@ -165,7 +165,7 @@ class ModelInference:
                 msg = "Model not initialized. Call initialize_model first."
                 raise ValueError(msg)
 
-            state_dict = torch.load(weights_path, map_location="cpu")
+            state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
             self.model.load_state_dict(state_dict)
             logger.info("Model weights loaded successfully")
         except Exception as e:
