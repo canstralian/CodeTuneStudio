@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json, subprocess, sys, pathlib; data=json.load(sys.stdin); tool=data.get('tool_name',''); inp=data.get('tool_input',{}); paths=[]; \
+for key in ('file_path','path'): \
+    v=inp.get(key); \
+    paths.extend(v if isinstance(v,list) else ([v] if isinstance(v,str) else [])); \
+edits=inp.get('edits',[]); \
+for e in edits: \
+    p=e.get('file_path') or e.get('path'); \
+    paths.extend([p] if isinstance(p,str) else []); \
+files=[str(pathlib.Path(p)) for p in dict.fromkeys(paths) if isinstance(p,str) and p.endswith('.py') and pathlib.Path(p).exists()]; \
+subprocess.run(['ruff','format',*files], check=False) if files else None; \
+subprocess.run(['ruff','check','--fix',*files], check=False) if files else None\""
+          }
+        ]
+      }
+    ]
+  }
+}
