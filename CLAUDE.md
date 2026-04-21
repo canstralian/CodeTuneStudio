@@ -1,8 +1,9 @@
 # CLAUDE.md
 
 # Environment
-- Runtime is CPU-only. Never introduce unconditional CUDA usage. Guard any local GPU path with `CODEX_ENV`.
-- Do not install or upgrade packages at runtime. If dependencies must change, update `codex/setup.sh` or the repo manifests instead.
+- Runtime is CPU-only. Never introduce unconditional CUDA usage.
+- If local GPU support is needed, guard it explicitly with `CODEX_ENV`.
+- Do not install or upgrade packages at runtime. Update `codex/setup.sh` or repo manifests instead.
 - External network access is restricted. Follow `codex/templates/INTERNET_ACCESS_POLICY.md`.
 
 # Commands Claude would not reliably guess
@@ -14,7 +15,8 @@
 - Plugin tools must preserve the `AgentTool` contract and discovery flow in `utils/plugins/base.py` and `utils/plugins/registry.py`.
 - Database changes must remain compatible with both PostgreSQL and SQLite fallback.
 - Prefer targeted tests over full-suite runs unless the change is broad.
+- Do not introduce unconditional `model.to("cuda")`.
 
 # Imports
-- Architecture reference: @docs/architecture.md
-- Optional personal overrides: @~/.claude/personal-overrides.md
+- @docs/architecture.md
+- @~/.claude/personal-overrides.md
