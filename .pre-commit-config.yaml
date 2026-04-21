@@ -1,14 +1,15 @@
 # See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.8.2
     hooks:
-      # Run the linter.
+      # Lint (with auto-fix)
       - id: ruff
-        args: [ --fix ]
-      # Run the formatter.
+        args: [--fix]
+        # Ensures formatting happens after fixes
+        additional_dependencies: []
+
+      # Formatter
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -17,4 +18,6 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        args: [--allow-multiple-documents]
       - id: check-added-large-files
+        args: ["--maxkb=500"]
