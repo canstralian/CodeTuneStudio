@@ -34,7 +34,7 @@ jobs:
             If you believe this discussion should remain open, please reopen it and provide additional context.
       
       - name: Close stale issues
-        uses: actions/stale@v9
+        uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           # Mark issues stale after 60 days
