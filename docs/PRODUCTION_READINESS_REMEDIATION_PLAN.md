@@ -4,7 +4,7 @@ This plan translates the repository audit findings into a staged, execution-read
 
 ## Baseline
 
-- **Current maturity**: MVP / staging-ready
+- **Current maturity**: staging-ready
 - **Target maturity**: enterprise production-ready
 - **Primary constraints**: CPU-only runtime, Streamlit + Flask monolith, plugin contract stability
 
