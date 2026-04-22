@@ -99,7 +99,7 @@ Release candidates should satisfy all criteria below:
 ## Recommended first pull requests
 
 1. CI security job (`pip-audit`, secrets scan, SAST)
-2. `pytest.ini` with coverage floor + CI enforcement
+2. pyproject.toml with coverage floor + CI enforcement
 3. Dependency reconciliation and lockfile introduction
 4. Auth middleware skeleton + protected training/plugin endpoints
 5. Observability bootstrap (structured logs + metrics endpoint)
