@@ -20,7 +20,7 @@ This plan translates the repository audit findings into a staged, execution-read
 - Add static security scan (Bandit or Semgrep) with failing threshold for high-severity findings.
 
 ### 0.3 Test policy enforcement
-- Add `pytest.ini` with initial coverage floor (70%).
+- Add coverage floor (70%) in pyproject.toml.
 - Fail CI on coverage regression.
 - Define baseline markers (`unit`, `integration`, `e2e`, `security`).
 
