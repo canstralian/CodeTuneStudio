@@ -140,7 +140,7 @@ This report provides a comprehensive audit of all GitHub workflows in the CodeTu
 - SDK: Gradio 6.0.0
 - Python: 3.10
 - App File: app.py
-- License: MIT
+- License: Apache-2.0
 
 **Models Referenced:**
 - TheBloke/WizardCoder-Python-34B-V1.0-GGUF

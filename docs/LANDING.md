@@ -228,7 +228,7 @@ CodeTuneStudio is an active open-source project. We're especially looking for co
 - **Version**: 0.2.0
 - **Status**: Beta (Experimental)
 - **Python**: 3.10, 3.11, 3.12
-- **License**: MIT
+- **License**: Apache-2.0
 - **Maintainers**: [@canstralian](https://github.com/canstralian)
 
 ---
