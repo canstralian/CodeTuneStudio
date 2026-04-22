@@ -24,7 +24,6 @@ def check_database() -> bool | None:
         Exception: Any exception encountered during the connection attempt is caught,
         printed, and results in a False return value.
     """
-    """Utility to check database connection"""
     print("Checking database connection...")
 
     app = Flask(__name__)
