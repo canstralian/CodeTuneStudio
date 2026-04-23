@@ -5,7 +5,7 @@ when pytest is invoked from any working directory.
 """
 
 import sys
-import os
+from pathlib import Path
 
 # Insert the project root at the front of sys.path
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
