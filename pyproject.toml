@@ -40,7 +40,7 @@ dependencies = [
     "streamlit>=1.42.0",
     "torch>=2.6.0",
     "transformers>=4.48.2",
-    "twilio>=9.4.4",
+    "twilio>=9.10.5",
 ]
 
 [project.scripts]
