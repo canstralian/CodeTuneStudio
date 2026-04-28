@@ -14,7 +14,7 @@ transformers==4.53.0
 datasets==4.5.0
 evaluate==0.4.6
 accelerate==1.13.0
-numpy>=1.19.3,<2
+numpy>=2.2.6,<3
 
 # Visualization
 plotly==6.6.0
