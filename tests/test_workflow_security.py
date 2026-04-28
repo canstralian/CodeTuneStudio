@@ -5,10 +5,11 @@ These tests verify that workflows follow security best practices
 and don't expose sensitive information or use insecure patterns.
 """
 
-import unittest
-import yaml
-from pathlib import Path
 import re
+import unittest
+from pathlib import Path
+
+import yaml
 
 
 class TestWorkflowSecurity(unittest.TestCase):
@@ -95,7 +96,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         # Check all jobs - handle both 'jobs' key and YAML boolean 'on' issue
         # YAML parsers may convert 'on:' to boolean True
         jobs = content.get("jobs", {})
-        
+
         # Check if the content has True key (YAML boolean parsing issue)
         if True in content and isinstance(content[True], dict):
             trigger_section = content[True]
@@ -130,13 +131,10 @@ class TestWorkflowSecurity(unittest.TestCase):
                 # Workflows should define permissions (least privilege)
                 # Some workflows may not need this if they don't access GitHub APIs
                 if "jobs" in content:
-                    has_permissions = (
-                        "permissions" in content
-                        or any(
-                            "permissions" in job
-                            for job in content["jobs"].values()
-                            if isinstance(job, dict)
-                        )
+                    has_permissions = "permissions" in content or any(
+                        "permissions" in job
+                        for job in content["jobs"].values()
+                        if isinstance(job, dict)
                     )
                     # This is a warning, not a hard failure
                     # Some workflows don't need special permissions
