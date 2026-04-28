@@ -6,8 +6,9 @@ Automates closing of stale and redundant pull requests.
 
 import os
 import sys
+from typing import Dict, List
+
 import requests
-from typing import List, Dict
 
 # Configuration
 REPO_OWNER = "canstralian"
@@ -19,8 +20,26 @@ STALE_PRS = {
     "security_autofix": [28, 35, 53],
     "september_prs": [5, 21, 25, 26],
     "october_prs": [
-        28, 33, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 50, 53, 55, 59,
-        64, 67, 68
+        28,
+        33,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        45,
+        46,
+        50,
+        53,
+        55,
+        59,
+        64,
+        67,
+        68,
     ],
     "duplicate_docs": [99, 103, 105, 118, 119, 121, 149, 151, 152, 153],
     "duplicate_ci": [96, 97, 111, 144],
@@ -132,7 +151,9 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     }
 
     pr_url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}"
-    comment_url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/issues/{pr_number}/comments"
+    comment_url = (
+        f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/issues/{pr_number}/comments"
+    )
 
     if dry_run:
         print(f"[DRY RUN] Would close PR #{pr_number}")
@@ -142,9 +163,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Add comment
     try:
         comment_response = requests.post(
-            comment_url,
-            headers=headers,
-            json={"body": comment}
+            comment_url, headers=headers, json={"body": comment}
         )
         if comment_response.status_code != 201:
             print(f"Error adding comment to PR #{pr_number}: {comment_response.text}")
@@ -156,9 +175,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Close PR
     try:
         close_response = requests.patch(
-            pr_url,
-            headers=headers,
-            json={"state": "closed"}
+            pr_url, headers=headers, json={"state": "closed"}
         )
         if close_response.status_code != 200:
             print(f"Error closing PR #{pr_number}: {close_response.text}")
@@ -172,18 +189,15 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
 
 
 def close_prs_by_category(
-    category: str,
-    pr_numbers: List[int],
-    token: str,
-    dry_run: bool = True
+    category: str, pr_numbers: List[int], token: str, dry_run: bool = True
 ) -> Dict[str, int]:
     """Close all PRs in a category."""
     message = CLOSURE_MESSAGES.get(category, CLOSURE_MESSAGES["september_prs"])
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"Processing category: {category}")
     print(f"PRs to close: {pr_numbers}")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     results = {"success": 0, "failed": 0}
 
@@ -207,18 +221,18 @@ def main():
         "--dry-run",
         action="store_true",
         default=True,
-        help="Print actions without executing (default: True)"
+        help="Print actions without executing (default: True)",
     )
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Actually execute the PR closures (overrides --dry-run)"
+        help="Actually execute the PR closures (overrides --dry-run)",
     )
     parser.add_argument(
         "--category",
         type=str,
         choices=list(STALE_PRS.keys()) + ["all"],
-        help="Only process specific category (default: all)"
+        help="Only process specific category (default: all)",
     )
 
     args = parser.parse_args()
@@ -227,14 +241,14 @@ def main():
     dry_run = not args.execute
 
     if dry_run:
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("DRY RUN MODE - No actual changes will be made")
         print("Use --execute flag to actually close PRs")
-        print("="*80 + "\n")
+        print("=" * 80 + "\n")
     else:
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("EXECUTE MODE - PRs will actually be closed!")
-        print("="*80 + "\n")
+        print("=" * 80 + "\n")
         response = input("Are you sure you want to proceed? (yes/no): ")
         if response.lower() != "yes":
             print("Aborted.")
@@ -245,7 +259,8 @@ def main():
 
     # Process categories
     categories_to_process = (
-        [args.category] if args.category and args.category != "all"
+        [args.category]
+        if args.category and args.category != "all"
         else list(STALE_PRS.keys())
     )
 
@@ -255,19 +270,14 @@ def main():
         if category not in STALE_PRS:
             continue
 
-        results = close_prs_by_category(
-            category,
-            STALE_PRS[category],
-            token,
-            dry_run
-        )
+        results = close_prs_by_category(category, STALE_PRS[category], token, dry_run)
         total_results["success"] += results["success"]
         total_results["failed"] += results["failed"]
 
     # Print summary
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("SUMMARY")
-    print("="*80)
+    print("=" * 80)
     print(f"Total PRs processed: {total_results['success'] + total_results['failed']}")
     print(f"Successfully closed: {total_results['success']}")
     print(f"Failed: {total_results['failed']}")
@@ -275,7 +285,7 @@ def main():
     if dry_run:
         print("\nThis was a dry run. Use --execute to actually close the PRs.")
 
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":
