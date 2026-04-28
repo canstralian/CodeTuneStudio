@@ -46,7 +46,7 @@ jobs:
       - name: Install Black and Ruff
         run: |
           python -m pip install --upgrade pip
-          # Pin to current releases (Nov 2025)
+          # Pin to current releases (Nov 2025)
           pip install black==25.11.0 ruff==0.14.6
 
       # Check formatting using Black (fail if changes would be needed)
@@ -68,13 +68,13 @@ jobs:
     name: Checklist Validation
     runs-on: ubuntu-latest
 
-    # Skip validation on draft PRs
-    if: github.event.pull_request.draft == false
+    # Dependabot PRs run with restricted tokens and can fail third-party PR comment actions.
+    # Skip checklist validation for Dependabot; style/test checks still run.
+    if: github.event.pull_request.draft == false && github.actor != 'dependabot[bot]'
 
     steps:
       - name: Validate completed tasks
-        # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
-        # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
+        # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked.
         uses: kentaro-m/task-completed-checker-action@v0.1.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
