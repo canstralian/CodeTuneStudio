@@ -7,8 +7,9 @@ use correct syntax, and reference valid files and paths.
 
 import os
 import unittest
-import yaml
 from pathlib import Path
+
+import yaml
 
 
 class TestWorkflowStructure(unittest.TestCase):
@@ -43,9 +44,7 @@ class TestWorkflowStructure(unittest.TestCase):
                             content, f"{workflow_file.name} is empty or invalid"
                         )
                     except yaml.YAMLError as e:
-                        self.fail(
-                            f"Invalid YAML in {workflow_file.name}: {e}"
-                        )
+                        self.fail(f"Invalid YAML in {workflow_file.name}: {e}")
 
     def test_workflows_have_required_fields(self):
         """Test that workflows have required fields (name, on, jobs)"""
