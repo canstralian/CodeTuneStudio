@@ -1,0 +1,111 @@
+name: "Security OS — Static Analysis & Vulnerability Scanning"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    # Full security sweep every Monday at 03:00 UTC
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Semgrep — fast, rule-based SAST (blocks PR merges on failure)
+  # ──────────────────────────────────────────────────────────────────────────
+  semgrep:
+    name: "Semgrep · Security Audit"
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    if: >
+      github.actor != 'dependabot[bot]'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep security scan
+        run: |
+          semgrep ci \
+            --config p/security-audit \
+            --config p/secrets \
+            --sarif \
+            --output semgrep-results.sarif \
+            --error
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-results.sarif
+          category: semgrep
+
+      - name: Upload SARIF as build artifact (fallback)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-sarif-${{ github.run_id }}
+          path: semgrep-results.sarif
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # CodeQL — deep GitHub-native static analysis
+  # ──────────────────────────────────────────────────────────────────────────
+  codeql:
+    name: "CodeQL · Deep Static Analysis"
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # CodeTuneStudio has Python and JavaScript
+        language: ["python", "javascript"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Auto-build
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Secret scanning hardening
+  # ──────────────────────────────────────────────────────────────────────────
+  secret-scan:
+    name: "Secret Scan · Credential Leak Detection"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks secret scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
