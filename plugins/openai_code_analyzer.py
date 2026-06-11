@@ -9,6 +9,12 @@ try:
 except ImportError:  # pragma: no cover - optional dependency fallback
     class OpenAI:  # type: ignore[no-redef]
         def __init__(self, api_key: str) -> None:
+            """
+            Initialize a minimal fallback OpenAI client.
+            
+            Parameters:
+                api_key (str): API key used for authentication; stored for compatibility with the real client.
+            """
             self.api_key = api_key
             self.chat = None
 
@@ -79,14 +85,19 @@ class OpenAICodeAnalyzerTool(AgentTool):
 
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Analyze code using OpenAI
-
-        Args:
-            inputs: Dictionary containing:
-                - code: String containing code to analyze
-
+        Analyze provided source code with the OpenAI chat completion API and return a structured analysis.
+        
+        Parameters:
+            inputs (dict[str, Any]): Mapping that must include a "code" key with the source code string to analyze.
+        
         Returns:
-            Dictionary containing analysis results
+            dict[str, Any]: On success, contains:
+                - "analysis": JSON-serializable analysis produced by the model (may be a dict or string),
+                - "model": the model identifier used ("gpt-4o"),
+                - "status": "success".
+            On error, contains:
+                - "error": error message string,
+                - "status": "error".
         """
         if not self.validate_inputs(inputs):
             return {

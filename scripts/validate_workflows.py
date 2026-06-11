@@ -24,6 +24,17 @@ class WorkflowValidator:
     """Validates GitHub workflow files"""
 
     def __init__(self, repo_root: Path) -> None:
+        """
+        Create a WorkflowValidator bound to a repository root path and initialize result collectors.
+        
+        Parameters:
+            repo_root (Path): Root directory of the repository; the workflows directory is resolved to
+                "<repo_root>/.github/workflows".
+        
+        Description:
+            Sets self.repo_root, computes self.workflows_dir, and initializes three lists used to
+            accumulate validation messages: self.errors, self.warnings, and self.info.
+        """
         self.repo_root = repo_root
         self.workflows_dir = repo_root / ".github" / "workflows"
         self.errors: list[str] = []
@@ -32,13 +43,13 @@ class WorkflowValidator:
 
     def validate_all(self, workflow_name: str | None = None) -> bool:
         """
-        Validate all workflows or a specific workflow.
-
-        Args:
-            workflow_name: Optional specific workflow to validate
-
+        Validate either a single workflow file or all workflows in the repository workflows directory.
+        
+        Parameters:
+            workflow_name (str | None): Optional filename of a single workflow to validate; if omitted, all files in `.github/workflows` are validated.
+        
         Returns:
-            True if validation passes, False otherwise
+            bool: `True` if no validation errors were recorded, `False` otherwise.
         """
         print("🔍 GitHub Workflow Validator")
         print("=" * 60)
@@ -65,7 +76,14 @@ class WorkflowValidator:
         return len(self.errors) == 0
 
     def _get_workflow_files(self) -> list[Path]:
-        """Get all workflow files"""
+        """
+        Collect all GitHub Actions workflow files in the workflows directory and its subdirectories.
+        
+        Searches for files with extensions `*.yml` and `*.yaml`, deduplicates matches, and returns them in a sorted list.
+        
+        Returns:
+            list[Path]: Sorted list of unique Path objects pointing to workflow files under the workflows directory.
+        """
         workflows = []
         for pattern in ["*.yml", "*.yaml"]:
             workflows.extend(self.workflows_dir.glob(pattern))
@@ -73,7 +91,19 @@ class WorkflowValidator:
         return sorted(set(workflows))
 
     def _validate_workflow(self, workflow_path: Path) -> None:
-        """Validate a single workflow file"""
+        """
+        Validate a single GitHub Actions workflow file and record any findings.
+        
+        Parses the file at `workflow_path`, records YAML syntax or file-read errors to
+        `self.errors`, records an empty-file condition to `self.warnings`, and skips
+        non-workflow metadata files. For valid workflow content, runs structural,
+        security, and best-practice validations which append messages to
+        `self.errors`, `self.warnings`, or `self.info` as appropriate. Progress and
+        result lines are printed to stdout for the file being validated.
+        
+        Parameters:
+            workflow_path (Path): Path to the workflow file to validate.
+        """
         print(f"📄 Validating: {workflow_path.relative_to(self.repo_root)}")
 
         # Check YAML syntax
@@ -110,7 +140,12 @@ class WorkflowValidator:
         print("  ✓ Validation complete\n")
 
     def _is_metadata_file(self, filename: str, content: dict[str, Any]) -> bool:  # noqa: ARG002
-        """Check if file is metadata rather than a workflow"""
+        """
+        Determine whether the parsed YAML represents repository metadata rather than a GitHub Actions workflow.
+        
+        Returns:
+            bool: `True` if the content appears to be metadata (contains keys such as `sdk`, `emoji`, or `colorFrom`, or has a `title` key without `jobs` and without `on`), `False` otherwise.
+        """
         # Check for HF Space metadata indicators
         if "sdk" in content or "emoji" in content or "colorFrom" in content:
             return True
@@ -119,7 +154,21 @@ class WorkflowValidator:
         return "title" in content and "jobs" not in content and "on" not in content
 
     def _validate_structure(self, filename: str, content: dict[str, Any]) -> None:
-        """Validate workflow structure"""
+        """
+        Validate the structural correctness of a GitHub Actions workflow file.
+        
+        Performs checks for required top-level keys and job-level fields and records findings on the instance result lists:
+        - Warns when the workflow `name` is missing.
+        - Errors when a trigger (`on`) is not present, when `jobs` is missing, not a mapping, or empty.
+        - For each job mapping, errors when `runs-on` or `steps` are missing.
+        
+        Parameters:
+            filename (str): Relative workflow filename used when reporting issues.
+            content (dict[str, Any]): Parsed YAML content of the workflow.
+        
+        Side effects:
+            Appends human-readable messages to self.errors and self.warnings.
+        """
         # Check required fields
         if "name" not in content:
             self.warnings.append(f"{filename}: Missing 'name' field")
@@ -157,7 +206,19 @@ class WorkflowValidator:
     def _validate_security(
         self, filename: str, raw_content: str, content: dict[str, Any]
     ) -> None:
-        """Validate security best practices"""
+        """
+        Validate security-related issues in a workflow's content.
+        
+        Performs three checks and records findings by appending messages to the instance result lists:
+        - Detects potential hardcoded secrets in the raw file text and appends an error for each match.
+        - Warns if the workflow declares a `pull_request_target` trigger.
+        - Records an informational message if neither the workflow nor any job defines `permissions`.
+        
+        Parameters:
+            filename (str): Workflow filename used in reported messages (typically relative to the repo root).
+            raw_content (str): Raw YAML file content used for pattern scanning.
+            content (dict[str, Any]): Parsed YAML content used for structural checks.
+        """
         # Check for hardcoded secrets
         secret_patterns = [
             (r"ghp_[a-zA-Z0-9]{36}", "GitHub personal access token"),
@@ -199,7 +260,15 @@ class WorkflowValidator:
                 )
 
     def _validate_best_practices(self, filename: str, content: dict[str, Any]) -> None:
-        """Validate best practices"""
+        """
+        Validate repository workflow best practices.
+        
+        Checks workflow Python version declarations against a supported version list and records a warning for any declared version not in that list; also detects steps that reference actions without a pinned ref (no '@' and not a local path) and records a warning for each unpinned action.
+        
+        Parameters:
+            filename (str): Workflow file name or relative path used in reported messages.
+            content (dict[str, Any]): Parsed YAML content of the workflow.
+        """
         # Check Python versions
         raw_str = str(content)
         python_versions = re.findall(
@@ -231,7 +300,11 @@ class WorkflowValidator:
                     )
 
     def _print_results(self) -> None:
-        """Print validation results"""
+        """
+        Print a formatted summary of collected validation messages to standard output.
+        
+        Displays errors, warnings, and informational messages from the validator instance in separate, labeled sections with counts. If there are no errors or warnings, prints a success message. This method has no return value and writes output directly to stdout.
+        """
         print("\n" + "=" * 60)
         print("📊 Validation Results")
         print("=" * 60)
@@ -258,7 +331,14 @@ class WorkflowValidator:
 
 
 def main() -> int:
-    """Main entry point"""
+    """
+    Validate GitHub Actions workflow files in the repository and return an exit code.
+    
+    Attempts to locate the repository's .github/workflows directory, runs validations using WorkflowValidator (optionally for a single workflow when --workflow is provided), and returns an OS-style exit code.
+    
+    Returns:
+        int: 0 if no validation errors were found, 1 if the workflows directory is missing or validation failed.
+    """
     parser = argparse.ArgumentParser(
         description="Validate GitHub workflow files",
         formatter_class=argparse.RawDescriptionHelpFormatter,

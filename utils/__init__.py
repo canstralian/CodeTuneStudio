@@ -17,6 +17,18 @@ __all__ = [
 
 
 def __getattr__(name: str) -> object:
+    """
+    Lazily resolve and return selected database-backed attributes when accessed on the module.
+    
+    Parameters:
+        name (str): Attribute name requested from the module; supported values are "TrainingConfig", "TrainingMetric", "db", and "init_db".
+    
+    Returns:
+        object: The requested attribute object corresponding to name.
+    
+    Raises:
+        AttributeError: If name is not one of the supported attributes.
+    """
     if name in {"TrainingConfig", "TrainingMetric", "db", "init_db"}:
         from utils.database import (  # noqa: PLC0415
             TrainingConfig,

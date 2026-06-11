@@ -44,7 +44,17 @@ def detect_language(code: str, filename: str | None = None) -> Language:
 
 
 def parse_python(code: str) -> ParseResult:
-    """Parse Python code into an AST representation."""
+    """
+    Parse Python source code and produce a ParseResult summarizing the parsed AST or syntax errors.
+    
+    On successful parse, `ast_data` will contain a summary with `"type": "Module"` and a `"body_count"` integer. If a SyntaxError occurs, the result has `success=False`, `ast_data={}`, and `errors` containing a ParseError with `message`, `line`, `column`, and `source` extracted from the SyntaxError.
+    
+    Parameters:
+    	code (str): Python source code to parse.
+    
+    Returns:
+    	ParseResult: A ParseResult for Language.PYTHON containing either `ast_data` (on success) or `errors` and `success=False` (on syntax error).
+    """
     try:
         tree = ast.parse(code)
         ast_data = {"type": "Module", "body_count": len(tree.body)}
@@ -65,7 +75,14 @@ def parse_python(code: str) -> ParseResult:
 
 
 def parse_javascript(code: str) -> ParseResult:
-    """Parse JavaScript code using pyjsparser when available."""
+    """
+    Parse JavaScript source into a ParseResult using the installed pyjsparser.
+    
+    On success the returned ParseResult contains the parser's AST-like dictionary in `ast_data`. If pyjsparser is not available or parsing fails, the returned ParseResult has `ast_data` empty, `errors` containing one or more ParseError entries describing the problem, and `success` set to False.
+        
+    Returns:
+        ParseResult: Parsed AST in `ast_data` on success; on failure `errors` contains ParseError(s) and `success` is False.
+    """
     if not js_parser:
         return ParseResult(
             language=Language.JAVASCRIPT,
@@ -87,7 +104,18 @@ def parse_javascript(code: str) -> ParseResult:
 
 
 def parse_code(code: str, filename: str | None = None) -> ParseResult:
-    """Primary API for the Code Parsing Pipeline."""
+    """
+    Detect the source language and parse the provided code, returning a ParseResult describing the outcome.
+    
+    If a language parser is available for the detected language, parsing is performed and its result is returned. If no parser is implemented for the detected language, the returned ParseResult indicates failure and includes an explanatory ParseError.
+    
+    Parameters:
+        code (str): Source code to parse.
+        filename (str | None): Optional filename used to help detect the language (affects heuristics); may be None.
+    
+    Returns:
+        ParseResult: Object containing the detected language, any AST or summary data, a list of ParseError objects when parsing failed, and a boolean `success` flag.
+    """
     lang = detect_language(code, filename)
 
     if lang == Language.PYTHON:
@@ -105,7 +133,21 @@ def parse_code(code: str, filename: str | None = None) -> ParseResult:
 
 
 def parse_code_to_json(code: str, filename: str | None = None) -> str:
-    """Serialize a parse result for CLI-style callers."""
+    """
+    Serialize the parser output into a CLI-friendly JSON string.
+    
+    Returns a JSON string with the following keys:
+    - "language": the language name
+    - "ast_data": parser AST or summary data
+    - "errors": a list of error objects (each represented as a dict with the ParseError fields)
+    - "success": boolean parse success flag
+    
+    Parameters:
+        filename (str | None): Optional filename used to assist language detection; may be None.
+    
+    Returns:
+        str: The serialized JSON representation described above.
+    """
     result = parse_code(code, filename)
     return json.dumps(
         {
