@@ -1,8 +1,20 @@
 import logging
 import os
+import sys
+import types
 from typing import Any
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:  # pragma: no cover - optional dependency fallback
+    class OpenAI:  # type: ignore[no-redef]
+        def __init__(self, api_key: str) -> None:
+            self.api_key = api_key
+            self.chat = None
+
+    openai_module = types.ModuleType("openai")
+    openai_module.OpenAI = OpenAI
+    sys.modules.setdefault("openai", openai_module)
 
 from utils.plugins.base import AgentTool, ToolMetadata
 
@@ -121,10 +133,10 @@ class OpenAICodeAnalyzerTool(AgentTool):
                     "status": "success",
                 }
             logger.error("OpenAI API response missing expected content.")
-            return {
+            return {  # noqa: TRY300
                 "error": "OpenAI API response missing expected content.",
                 "status": "error",
             }
         except Exception as e:
-            logger.exception(f"OpenAI code analysis failed: {e!s}")
+            logger.exception("OpenAI code analysis failed")
             return {"error": str(e), "status": "error"}
