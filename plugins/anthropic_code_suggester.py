@@ -19,6 +19,11 @@ class AnthropicCodeSuggesterTool(AgentTool):
     """Tool for suggesting code improvements using Anthropic's Claude."""
 
     def __init__(self) -> None:
+        """
+        Initialize the AnthropicCodeSuggesterTool, populate tool metadata, and configure the Anthropic client when available.
+        
+        Reads the `ANTHROPIC_API_KEY` environment variable and, if present and the `anthropic` package was successfully imported, creates and assigns an Anthropic client to `self.client`. If the API key is missing or the package is unavailable, `self.client` is set to `None` and a warning is logged. Also initializes `self.metadata` with tool name, description, version, author, and tags.
+        """
         super().__init__()
         self.metadata = ToolMetadata(
             name="anthropic_code_suggester",
@@ -43,18 +48,32 @@ class AnthropicCodeSuggesterTool(AgentTool):
             self.client = Anthropic(api_key=api_key)
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
-        """Validate required inputs."""
+        """
+        Check that inputs include a 'code' field containing the source code as a string.
+        
+        Parameters:
+            inputs (dict[str, Any]): Input mapping; must contain a 'code' key with the source code.
+        
+        Returns:
+            bool: True if 'code' exists in inputs and is a `str`, False otherwise.
+        """
         return isinstance(inputs.get("code"), str)
 
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Generate code suggestions using Anthropic.
-
-        Args:
-            inputs: Dictionary containing a ``code`` string to analyze.
-
+        Generate code-improvement suggestions for the provided source code using Anthropic's Claude model.
+        
+        Parameters:
+            inputs (dict[str, Any]): Expect a `code` key with a string value containing the source code to analyze.
+        
         Returns:
-            Dictionary containing suggested improvements or a standardized error.
+            dict[str, Any]: On success, contains:
+                - `suggestions` (str): Model-produced suggestions (expected JSON-formatted text).
+                - `model` (str): The model identifier used.
+                - `status` (str): `"success"`.
+            On failure, contains:
+                - `error` (str): Human-readable error message.
+                - `status` (str): `"error"`.
         """
         if not self.validate_inputs(inputs):
             return {

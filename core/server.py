@@ -111,7 +111,18 @@ class MLFineTuningApp:
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0
     ) -> None:
-        """Initialize database with exponential backoff retry strategy"""
+        """
+        Attempt to initialize the application's database, retrying with exponential backoff and falling back to a local SQLite database on repeated failures.
+        
+        Parameters:
+            max_retries (int): Maximum number of initialization attempts before using the fallback database.
+            base_delay (float): Initial delay in seconds used to compute exponential backoff between attempts.
+        
+        Behavior:
+            - Tries to initialize the database up to `max_retries` times, waiting `base_delay * 2**attempt` seconds between retries.
+            - If all attempts fail, switches the app configuration to use a local SQLite fallback (`sqlite:///fallback.db`) and attempts initialization once more.
+            - Logs success, warnings, and critical errors; raises the final exception if fallback initialization also fails.
+        """
         for attempt in range(max_retries):
             try:
                 with self.flask_app.app_context():
@@ -232,7 +243,9 @@ class MLFineTuningApp:
             self._render_navigation()
 
     def _render_navigation(self) -> None:
-        """Render navigation links with improved styling"""
+        """
+        Render a "Resources" navigation section in the Streamlit sidebar containing links to documentation, API reference, example projects, and issue reporting.
+        """
         st.markdown("""
             ### 📚 Resources
             - [Documentation](https://github.com/canstralian/CodeTuneStudio/wiki)
@@ -242,7 +255,17 @@ class MLFineTuningApp:
         """)
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
-        """Save training configuration with improved validation and error handling"""
+        """
+        Save a validated training configuration to the application's database and return its persistent ID.
+        
+        Parameters:
+            config (dict[str, Any]): Mapping containing training parameters. Must include keys:
+                `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
+            dataset (str): Name of the dataset associated with this configuration.
+        
+        Returns:
+            int | None: The database ID of the persisted TrainingConfig on success, `None` if validation fails or saving encounters an error.
+        """
         if not isinstance(config, dict):
             logger.error(f"Invalid configuration type: {type(config)}")
             return None

@@ -28,6 +28,15 @@ def test_python_parsing_failure():
 def test_javascript_parser_error_is_sanitized(monkeypatch):
     class BrokenParser:
         def parse(self, code):
+            """
+            Simulate a broken parser that always fails with a raw error message containing the input code.
+            
+            Parameters:
+                code (str): Source code to parse.
+            
+            Raises:
+                RuntimeError: Always raised with the message "raw parser detail for {code}" where `{code}` is the provided input.
+            """
             raise RuntimeError(f"raw parser detail for {code}")
 
     monkeypatch.setattr("core.parser.engine.js_parser", BrokenParser())

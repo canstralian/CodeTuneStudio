@@ -72,7 +72,18 @@ class TestWorkflowSecurity(unittest.TestCase):
                 self._check_secrets_usage(content, workflow_file.name)
 
     def _check_secrets_usage(self, content, filename):
-        """Helper to check secrets usage in workflow"""
+        """
+        Validate that sensitive environment variables in a parsed GitHub Actions workflow are set using GitHub secret expressions.
+        
+        Inspects job-level and step-level `env` sections for the following sensitive names: GITHUB_TOKEN, HF_TOKEN, PYPI_API_TOKEN, API_KEY. If any of these keys are present and their value does not contain the GitHub expression marker `${{`, the test is failed.
+        
+        Parameters:
+            content (dict): Parsed YAML content of the workflow file.
+            filename (str): Name of the workflow file (used in failure messages).
+        
+        Raises:
+            AssertionError: Fails the test via `self.fail()` when a sensitive variable is not configured to use a GitHub secret expression.
+        """
         sensitive_vars = [
             "GITHUB_TOKEN",
             "HF_TOKEN",
