@@ -2,8 +2,6 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from plugins.openai_code_analyzer import OpenAICodeAnalyzerTool
 
 
@@ -22,10 +20,10 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
     @patch.dict(os.environ, {}, clear=True)
     def test_init_missing_api_key(self) -> None:
         """
-        Test that an EnvironmentError is raised if the OPENAI_API_KEY is not set.
+        Test that a missing OPENAI_API_KEY disables the client without raising.
         """
-        with pytest.raises(EnvironmentError):
-            OpenAICodeAnalyzerTool()
+        tool = OpenAICodeAnalyzerTool()
+        assert tool.client is None
 
     def test_validate_inputs(self) -> None:
         """
@@ -36,7 +34,7 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
         assert not self.tool.validate_inputs({"code": 123})
         assert not self.tool.validate_inputs({"not_code": "print('hello')"})
 
-    @patch("openai.OpenAI")
+    @patch("plugins.openai_code_analyzer.OpenAI")
     def test_execute_success(self, mock_openai) -> None:
         """
         Test the execute method with a successful API call.
@@ -61,22 +59,13 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
         """
         Test the execute method with invalid inputs.
         """
-        # This test is based on the current implementation where execute
-        # calls validate_inputs. If the logic changes, this test might
-        # need adjustment. The current implementation proceeds to the
-        # API call even if validate_inputs is false, which seems like
-        # a bug. Let's test the actual behavior.
-
-        # To properly test this, we'd expect a return like:
-        # {'error': 'Invalid input: missing code field', 'status': 'error'}
-        # However, based on the provided code, it will proceed to the API call.
-        # Let's mock the API call to see what happens.
         with patch.object(self.tool, "client") as mock_client:
-            self.tool.execute({"wrong_input": "some_code"})
-            # The code proceeds to call the API, so we assert that it was called.
-            mock_client.chat.completions.create.assert_called_once()
+            result = self.tool.execute({"wrong_input": "some_code"})
+            assert result["status"] == "error"
+            assert "Invalid input" in result["error"]
+            mock_client.chat.completions.create.assert_not_called()
 
-    @patch("openai.OpenAI")
+    @patch("plugins.openai_code_analyzer.OpenAI")
     def test_execute_api_exception(self, mock_openai) -> None:
         """
         Test the execute method when the OpenAI API call raises an exception.
@@ -87,9 +76,11 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
         with patch.object(self.tool, "client", mock_client):
             result = self.tool.execute({"code": "print('hello')"})
             assert result["status"] == "error"
-            assert result["error"] == "API Error"
+            assert (
+                result["error"] == "OpenAI code analysis failed. See logs for details."
+            )
 
-    @patch("openai.OpenAI")
+    @patch("plugins.openai_code_analyzer.OpenAI")
     def test_execute_malformed_response(self, mock_openai) -> None:
         """
         Test the execute method with a malformed response from the OpenAI API.

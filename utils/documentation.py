@@ -107,8 +107,14 @@ class DocumentationGenerator:
 
             return docs
 
-        except Exception as e:
-            logger.exception(f"Failed to parse file {file_path}: {e!s}")
+        except (OSError, UnicodeDecodeError):
+            logger.exception("Failed to read documentation source: %s", file_path)
+            return []
+        except SyntaxError:
+            logger.warning("Skipping file with invalid Python syntax: %s", file_path)
+            return []
+        except Exception:
+            logger.exception("Failed to parse documentation source: %s", file_path)
             return []
 
     def _get_function_signature(self, node: ast.FunctionDef) -> str:

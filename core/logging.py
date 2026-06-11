@@ -56,6 +56,32 @@ class StructuredFormatter(logging.Formatter):
         return super().format(record)
 
 
+def redact_url(value: str) -> str:
+    """Redact credentials from a URL before writing it to logs."""
+    from urllib.parse import urlsplit, urlunsplit
+
+    if not value:
+        return value
+
+    parts = urlsplit(value)
+    if not parts.netloc:
+        return value
+
+    host = parts.hostname or ""
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+
+    redacted_netloc = host
+    if parts.port:
+        redacted_netloc = f"{redacted_netloc}:{parts.port}"
+    if parts.username is not None:
+        redacted_netloc = f"{parts.username}:***@{redacted_netloc}"
+
+    return urlunsplit(
+        (parts.scheme, redacted_netloc, parts.path, parts.query, parts.fragment)
+    )
+
+
 def setup_logging(
     log_level: Optional[str] = None,
     log_file: Optional[str] = None,

@@ -1,7 +1,5 @@
 import unittest
 
-import pytest
-
 from plugins.code_analyzer import CodeAnalyzerTool
 
 
@@ -33,6 +31,8 @@ class TestCodeAnalyzerTool(unittest.TestCase):
 
     def test_execute_valid_code(self) -> None:
         code = """
+import os
+import sys
 
 def foo():
     pass
@@ -70,14 +70,16 @@ def baz():
 
     def test_execute_invalid_inputs(self) -> None:
         inputs = {"code": 123}
-        with pytest.raises(ValueError):
-            self.tool.execute(inputs)
+        result = self.tool.execute(inputs)
+        assert result["status"] == "error"
+        assert "Invalid input" in result["error"]
 
     def test_execute_syntax_error(self) -> None:
         code = "def foo("  # Incomplete function
         inputs = {"code": code}
-        with pytest.raises(RuntimeError):
-            self.tool.execute(inputs)
+        result = self.tool.execute(inputs)
+        assert result["status"] == "error"
+        assert result["error"] == "Invalid Python syntax."
 
 
 if __name__ == "__main__":
