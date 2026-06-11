@@ -8,9 +8,7 @@ from .types import Language, ParseError, ParseResult
 
 logger = logging.getLogger(__name__)
 
-js_parser = None
-if importlib.util.find_spec("pyjsparser") is not None:
-    js_parser = importlib.import_module("pyjsparser").PyJsParser()
+_has_pyjsparser = importlib.util.find_spec("pyjsparser") is not None
 
 
 def detect_language(code: str, filename: str | None = None) -> Language:
