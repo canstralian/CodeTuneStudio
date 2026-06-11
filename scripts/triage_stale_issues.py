@@ -43,11 +43,11 @@ def list_open_issues(token: str | None, owner: str, repo: str) -> list[dict[str,
         query = urllib.parse.urlencode({"state": "open", "per_page": 100, "page": page, "sort": "updated", "direction": "asc"})
         url = f"{GITHUB_API}/repos/{owner}/{repo}/issues?{query}"
         batch_raw = api_request(url, token)
-        batch = [i for i in batch_raw if "pull_request" not in i]
-        if not batch:
+        if not batch_raw:
             break
+        batch = [i for i in batch_raw if "pull_request" not in i]
         issues.extend(batch)
-        if len(batch) < 100:
+        if len(batch_raw) < 100:
             break
         page += 1
     return issues
