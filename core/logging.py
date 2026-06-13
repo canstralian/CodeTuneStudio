@@ -58,15 +58,15 @@ class StructuredFormatter(logging.Formatter):
 
 def redact_url(value: str) -> str:
     """
-    Redact any username in a URL's network location by replacing it with '***'.
+    Redact any credentials in a URL's network location.
     
-    If `value` is falsy or contains no network location, returns it unchanged. The scheme, host (IPv6 bracket formatting preserved), port, path, query, and fragment are retained; when a username is present it is replaced with `***`.
+    If `value` is falsy or contains no network location, returns it unchanged. The scheme, host (IPv6 bracket formatting preserved), port, path, query, and fragment are retained; when credentials are present they are replaced with a fixed placeholder.
     
     Parameters:
         value (str): The URL string to redact.
     
     Returns:
-        str: The URL with the username replaced by `***`, or the original value if no redaction was performed.
+        str: The URL with credentials replaced by `***`, or the original value if no redaction was performed.
     """
     from urllib.parse import urlsplit, urlunsplit
 
@@ -85,7 +85,7 @@ def redact_url(value: str) -> str:
     if parts.port:
         redacted_netloc = f"{redacted_netloc}:{parts.port}"
     if parts.username is not None:
-        redacted_netloc = f"{parts.username}:***@{redacted_netloc}"
+        redacted_netloc = f"***:***@{redacted_netloc}"
 
     return urlunsplit(
         (parts.scheme, redacted_netloc, parts.path, parts.query, parts.fragment)
