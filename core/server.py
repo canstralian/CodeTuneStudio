@@ -246,13 +246,15 @@ class MLFineTuningApp:
         """
         Render a "Resources" navigation section in the Streamlit sidebar containing links to documentation, API reference, example projects, and issue reporting.
         """
-        st.markdown("""
+        st.markdown(
+            """
             ### 📚 Resources
             - [Documentation](https://github.com/canstralian/CodeTuneStudio/wiki)
             - [API Reference](https://github.com/canstralian/CodeTuneStudio/blob/main/API.md)
             - [Examples](https://github.com/canstralian/CodeTuneStudio/tree/main/examples)
             - [Report Issues](https://github.com/canstralian/CodeTuneStudio/issues)
-        """)
+        """
+        )
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """
