@@ -5,6 +5,8 @@ plugin discovery and lightweight tests do not require optional web/database
 runtime dependencies before they are needed.
 """
 
+from typing import Any
+
 __all__ = [
     "validate_config",
     "init_db",
@@ -14,20 +16,20 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """
     Lazily load and return select public utility symbols on first attribute access.
-    
+
     This module attribute hook exposes a small set of utilities without performing
     eager imports of optional runtime dependencies. Supported attribute names are
     "validate_config", "init_db", "TrainingConfig", "TrainingMetric", and "db".
-    
+
     Parameters:
         name (str): The attribute name being accessed.
-    
+
     Returns:
         object: The requested module-level object corresponding to `name`.
-    
+
     Raises:
         AttributeError: If `name` is not one of the supported attribute names.
     """
@@ -44,4 +46,5 @@ def __getattr__(name: str):
             "TrainingMetric": TrainingMetric,
             "db": db,
         }[name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)

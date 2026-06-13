@@ -29,12 +29,12 @@ class DocumentationGenerator:
     def parse_file(self, file_path: Path) -> list[DocItem]:
         """
         Extract documentation items from a Python source file.
-        
+
         Parses the file and collects doc items for the module plus any functions, async functions, and classes found; for classes, methods are collected as function-type DocItem entries. The returned list will be empty if the file cannot be read or parsed.
-        
+
         Parameters:
             file_path (Path): Path to the Python file to parse.
-        
+
         Returns:
             list[DocItem]: DocItem objects representing the module, functions, and classes (including method entries).
         """
@@ -122,10 +122,10 @@ class DocumentationGenerator:
     def _get_function_signature(self, node: ast.FunctionDef) -> str:
         """
         Build a simplified function signature string including only positional-or-keyword parameters.
-        
+
         Parameters:
             node (ast.FunctionDef): AST node representing the function.
-        
+
         Returns:
             str: Signature in the form "function_name(arg1, arg2, ...)" where only parameters from `node.args.args` are included.
         """

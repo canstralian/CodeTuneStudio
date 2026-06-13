@@ -20,7 +20,7 @@ class TestCorePackage(unittest.TestCase):
 
         self.assertIsInstance(__version__, str)
         self.assertRegex(__version__, r"^\d+\.\d+\.\d+$")
-        self.assertEqual(__version__, "0.2.0")
+        self.assertEqual(__version__, "0.2.1")
 
     def test_cli_module_imports(self):
         """Test that CLI module can be imported"""

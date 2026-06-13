@@ -71,7 +71,7 @@ def baz():
     def test_execute_invalid_inputs(self) -> None:
         """
         Verifies that executing the analyzer with a non-string `code` input returns an error result.
-        
+
         Calls `self.tool.execute` with `{"code": 123}` and asserts the returned result has `status == "error"` and the `error` message contains "Invalid input".
         """
         inputs = {"code": 123}
@@ -82,7 +82,7 @@ def baz():
     def test_execute_syntax_error(self) -> None:
         """
         Verifies that executing code with a Python syntax error returns an error status and the expected error message.
-        
+
         Asserts that the tool returns result["status"] == "error" and result["error"] == "Invalid Python syntax." for an incomplete function definition.
         """
         code = "def foo("  # Incomplete function

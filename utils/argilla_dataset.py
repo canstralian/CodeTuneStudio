@@ -33,17 +33,17 @@ class ArgillaDatasetManager:
     def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
         """
         Initialize and attach an Argilla 2.x client instance to self.client.
-        
+
         Uses the provided `api_url` and `api_key` when given; otherwise falls back to the
         ARGILLA_API_URL and ARGILLA_API_KEY environment variables (ARGILLA_API_URL
         defaults to "http://localhost:6900" if not set). Logs initialization success,
         and on failure logs the error without exposing the `api_key` value and re-raises
         the exception.
-        
+
         Parameters:
             api_url (str | None): Optional base URL for the Argilla server.
             api_key (str | None): Optional API key for authentication (sensitive; never logged).
-        
+
         Raises:
             Exception: Propagates any exception raised during client initialization.
         """
@@ -77,18 +77,18 @@ class ArgillaDatasetManager:
     ) -> Dataset:
         """
         Load and convert an Argilla dataset into a Hugging Face Dataset for training.
-        
+
         Parameters:
             dataset_name (str): Name of the dataset in Argilla to load.
             query (str | None): Optional query parameter accepted for compatibility but not used by this implementation.
             filter_by (dict[str, Any] | None): Optional filters accepted for compatibility but not used by this implementation.
-        
+
         Returns:
             Dataset: A Hugging Face Dataset containing three columns: `text`, `label`, and `metadata`.
-        
+
         Raises:
             ValueError: If a dataset with `dataset_name` is not found in the Argilla client.
-        
+
         Note:
             This method loads all dataset records into memory; for very large datasets consider using pagination or streaming.
         """
@@ -102,7 +102,8 @@ class ArgillaDatasetManager:
                     break
 
             if not argilla_dataset:
-                raise ValueError(f"Dataset '{dataset_name}' not found")
+                msg = f"Dataset '{dataset_name}' not found"
+                raise ValueError(msg)
 
             # Fetch all records from the dataset
             records = list(argilla_dataset.records)

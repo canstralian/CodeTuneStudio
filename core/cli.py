@@ -126,10 +126,10 @@ def configure_logging(log_level: str) -> None:
 def main(args: Optional[list[str]] = None) -> int:
     """
     Main CLI entrypoint for CodeTune Studio.
-    
+
     Parameters:
         args (Optional[list[str]]): Command-line arguments to parse; if None, uses sys.argv[1:].
-    
+
     Returns:
         int: Exit code, 0 on success, non-zero on failure.
     """

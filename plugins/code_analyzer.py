@@ -1,7 +1,10 @@
 import ast
+import logging
 from typing import Any
 
 from utils.plugins.base import AgentTool, ToolMetadata
+
+logger = logging.getLogger(__name__)
 
 
 class CodeAnalyzerTool(AgentTool):
@@ -10,7 +13,7 @@ class CodeAnalyzerTool(AgentTool):
     def __init__(self) -> None:
         """
         Initialize the CodeAnalyzerTool and configure its tool metadata.
-        
+
         Sets self.metadata to a ToolMetadata instance with name "code_analyzer", description "Analyzes Python code structure and complexity", version "0.1.0", author "CodeTuneStudio", and tags ["code-analysis", "python"].
         """
         super().__init__()
@@ -25,10 +28,10 @@ class CodeAnalyzerTool(AgentTool):
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
         Check that the inputs include a "code" field containing Python source as a string.
-        
+
         Parameters:
             inputs (dict[str, Any]): Mapping expected to contain a "code" key with Python source code.
-        
+
         Returns:
             bool: True if `inputs["code"]` exists and is a `str`, False otherwise.
         """
@@ -37,10 +40,10 @@ class CodeAnalyzerTool(AgentTool):
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
         Analyze a Python source string and return structural metrics or a standardized error payload.
-        
+
         Parameters:
             inputs (dict[str, Any]): Input dictionary that must include a "code" key whose value is a Python source string.
-        
+
         Returns:
             dict[str, Any]: On success, a dictionary with keys:
                 - "num_functions" (int): Number of top-level and nested function definitions.
@@ -61,8 +64,10 @@ class CodeAnalyzerTool(AgentTool):
         try:
             tree = ast.parse(inputs["code"])
         except SyntaxError:
+            logger.info("code_analyzer: invalid Python syntax in submitted code")
             return {"error": "Invalid Python syntax.", "status": "error"}
         except Exception:
+            logger.exception("code_analyzer: unexpected failure parsing Python code")
             return {"error": "Unable to parse Python code.", "status": "error"}
 
         try:
@@ -90,4 +95,5 @@ class CodeAnalyzerTool(AgentTool):
                 "status": "success",
             }
         except Exception:
+            logger.exception("code_analyzer: unexpected failure analyzing Python code")
             return {"error": "Unable to analyze Python code.", "status": "error"}

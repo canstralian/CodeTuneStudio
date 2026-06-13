@@ -113,11 +113,11 @@ class MLFineTuningApp:
     ) -> None:
         """
         Attempt to initialize the application's database, retrying with exponential backoff and falling back to a local SQLite database on repeated failures.
-        
+
         Parameters:
             max_retries (int): Maximum number of initialization attempts before using the fallback database.
             base_delay (float): Initial delay in seconds used to compute exponential backoff between attempts.
-        
+
         Behavior:
             - Tries to initialize the database up to `max_retries` times, waiting `base_delay * 2**attempt` seconds between retries.
             - If all attempts fail, switches the app configuration to use a local SQLite fallback (`sqlite:///fallback.db`) and attempts initialization once more.
@@ -257,12 +257,12 @@ class MLFineTuningApp:
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """
         Save a validated training configuration to the application's database and return its persistent ID.
-        
+
         Parameters:
             config (dict[str, Any]): Mapping containing training parameters. Must include keys:
                 `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
             dataset (str): Name of the dataset associated with this configuration.
-        
+
         Returns:
             int | None: The database ID of the persisted TrainingConfig on success, `None` if validation fails or saving encounters an error.
         """

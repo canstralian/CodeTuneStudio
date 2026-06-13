@@ -21,7 +21,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
     def __init__(self) -> None:
         """
         Initialize the AnthropicCodeSuggesterTool, populate tool metadata, and configure the Anthropic client when available.
-        
+
         Reads the `ANTHROPIC_API_KEY` environment variable and, if present and the `anthropic` package was successfully imported, creates and assigns an Anthropic client to `self.client`. If the API key is missing or the package is unavailable, `self.client` is set to `None` and a warning is logged. Also initializes `self.metadata` with tool name, description, version, author, and tags.
         """
         super().__init__()
@@ -50,10 +50,10 @@ class AnthropicCodeSuggesterTool(AgentTool):
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
         Check that inputs include a 'code' field containing the source code as a string.
-        
+
         Parameters:
             inputs (dict[str, Any]): Input mapping; must contain a 'code' key with the source code.
-        
+
         Returns:
             bool: True if 'code' exists in inputs and is a `str`, False otherwise.
         """
@@ -62,10 +62,10 @@ class AnthropicCodeSuggesterTool(AgentTool):
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
         Generate code-improvement suggestions for the provided source code using Anthropic's Claude model.
-        
+
         Parameters:
             inputs (dict[str, Any]): Expect a `code` key with a string value containing the source code to analyze.
-        
+
         Returns:
             dict[str, Any]: On success, contains:
                 - `suggestions` (str): Model-produced suggestions (expected JSON-formatted text).

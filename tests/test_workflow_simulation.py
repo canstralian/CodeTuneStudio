@@ -46,7 +46,7 @@ class TestStyleCheckSimulation(unittest.TestCase):
     def test_ruff_check_execution(self):
         """
         Run a Ruff lint check across the repository and assert the process completed.
-        
+
         Executes the command `ruff check . --ignore E501` in the repository root. Skips the test if Ruff is not installed and fails the test if the command times out.
         """
         # This simulates the workflow step:
@@ -79,7 +79,7 @@ class TestCIWorkflowSimulation(unittest.TestCase):
     def test_pytest_execution(self):
         """
         Run pytest against the repository's tests directory to validate test discovery and execution.
-        
+
         This executes pytest in the repository root and:
         - Skips the test if pytest is not installed.
         - Skips the test when pytest reports no tests collected (exit code 5).
@@ -120,7 +120,7 @@ class TestDependencyValidationSimulation(unittest.TestCase):
     def test_project_structure_validation(self):
         """
         Check that the repository contains at least one common Python dependency file.
-        
+
         Checks for 'requirements.txt', 'pyproject.toml', and 'setup.py' at the repository root and asserts that at least one of these files exists; fails the test with "No Python dependency files found" if none are present.
         """
         # This simulates the workflow validation step
@@ -177,7 +177,7 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
     def test_version_extraction(self):
         """
         Verify that the package version can be imported from core.__version__ and follows X.Y.Z semantic versioning.
-        
+
         Attempts to import core.__version__ from the repository root and, on success, asserts that the value matches the regular expression '^\d+\.\d+\.\d+$'. If the import fails, the test is skipped with the import error message.
         """
         # This simulates:
@@ -202,7 +202,7 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
     def test_changelog_exists(self):
         """
         Ensure a CHANGELOG.md file exists at the repository root and is not empty.
-        
+
         If the file is present, its contents must have length greater than zero.
         """
         changelog = self.repo_root / "CHANGELOG.md"
@@ -219,7 +219,7 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
     def test_build_simulation(self):
         """
         Verify that pyproject.toml exists and contains basic project metadata required for building.
-        
+
         Skips the test if pyproject.toml is not present. Asserts that the file contains the substring "[project]" and the key "name".
         """
         # Check that pyproject.toml has required build configuration
@@ -261,7 +261,7 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
     def test_script_has_required_imports(self):
         """
         Verify the checklist update script imports required modules and references the GitHub token.
-        
+
         If the script file is missing the test is skipped. Asserts the file contains "import requests" and "GITHUB_TOKEN".
         """
         if not self.script_path.exists():
@@ -279,7 +279,7 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
     def test_github_api_call_simulation(self, mock_get):
         """
         Verify handling of a GitHub pulls API response by asserting the returned JSON is a list and, if non-empty, the first item contains the keys "number" and "state".
-        
+
         Parameters:
             mock_get (unittest.mock.Mock): Patched `requests.get` mock used to supply the simulated API response.
         """
@@ -316,7 +316,7 @@ class TestHuggingFaceDeploySimulation(unittest.TestCase):
     def test_requirements_for_hf_hub(self):
         """
         Verify that huggingface_hub can be imported and exposes a non-empty __version__.
-        
+
         If the package is not installed, the test is skipped.
         """
         try:

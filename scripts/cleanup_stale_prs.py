@@ -162,7 +162,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Add comment
     try:
         comment_response = requests.post(
-            comment_url, headers=headers, json={"body": comment}
+            comment_url, headers=headers, json={"body": comment}, timeout=30
         )
         if comment_response.status_code != 201:
             print(f"Error adding comment to PR #{pr_number}: {comment_response.text}")
@@ -174,7 +174,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Close PR
     try:
         close_response = requests.patch(
-            pr_url, headers=headers, json={"state": "closed"}
+            pr_url, headers=headers, json={"state": "closed"}, timeout=30
         )
         if close_response.status_code != 200:
             print(f"Error closing PR #{pr_number}: {close_response.text}")
@@ -192,14 +192,14 @@ def close_prs_by_category(
 ) -> Dict[str, int]:
     """
     Close the pull requests listed for a given category.
-    
+
     Selects the category's closure message and attempts to comment on and close each PR in `pr_numbers`. Prints a category header before processing.
-    
+
     Parameters:
         category (str): Category name whose closure message will be used.
         pr_numbers (List[int]): PR numbers to process.
         dry_run (bool): If True, no network requests are made and actions are only printed.
-    
+
     Returns:
         Dict[str, int]: Counts of processed PRs as {"success": <count>, "failed": <count>}.
     """
@@ -224,7 +224,7 @@ def close_prs_by_category(
 def main():
     """
     Run the CLI to close stale and redundant GitHub pull requests for the configured repository.
-    
+
     Parses command-line flags (including --execute to perform changes and --category to limit which groups to process), prompts for confirmation when executing, retrieves the GitHub token, processes the selected categories by closing and commenting on each PR, and prints a summary of successes and failures. Exits early if the user aborts confirmation when executing.
     """
     import argparse
