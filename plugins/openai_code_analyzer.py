@@ -1,8 +1,8 @@
+import importlib
+import importlib.util
 import logging
 import os
 from typing import Any
-
-from openai import OpenAI
 
 from utils.plugins.base import AgentTool, ToolMetadata
 
@@ -10,33 +10,26 @@ from utils.plugins.base import AgentTool, ToolMetadata
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+OpenAI = None
+if importlib.util.find_spec("openai") is not None:
+    OpenAI = importlib.import_module("openai").OpenAI
+
 
 class OpenAICodeAnalyzerTool(AgentTool):
     """
     A tool for analyzing code using OpenAI's GPT models.
 
     This class extends AgentTool to provide code analysis capabilities
-    powered by OpenAI's GPT models. It leverages the latest available
-    model (e.g., GPT-4o) to evaluate code for quality, improvements,
-    performance, and security considerations.
-
-    Attributes:
-        metadata (ToolMetadata): Metadata describing the tool, including
-            name, description, version, author, and tags.
-        client (OpenAI): An instance of the OpenAI client initialized
-            with the API key from environment variables.
-
-    Methods:
-        __init__(): Initializes the tool, sets up metadata, and creates
-            the OpenAI client.
-        validate_inputs(inputs: Dict[str, Any]) -> bool:
-            Validates the input dictionary to ensure it contains a
-            'code' key with a string value.
-        execute(inputs: Dict[str, Any]) -> Dict[str, Any]:
-            Executes the code analysis using OpenAI's API.
+    powered by OpenAI's GPT models. It evaluates code for quality,
+    improvements, performance, and security considerations.
     """
 
     def __init__(self) -> None:
+        """
+        Initialize the OpenAICodeAnalyzerTool, set its metadata, and configure the OpenAI client.
+        
+        If the `OPENAI_API_KEY` environment variable is present and the OpenAI package was imported successfully, `self.client` is set to an OpenAI client instance. If the API key is missing or the OpenAI package is not available, a warning is logged and `self.client` is set to `None`.
+        """
         super().__init__()
         self.metadata = ToolMetadata(
             name="openai_code_analyzer",
@@ -47,38 +40,60 @@ class OpenAICodeAnalyzerTool(AgentTool):
             author="CodeTuneStudio",
             tags=["code-analysis", "ai", "openai"],
         )
-        # Initialize OpenAI client
-        # Ensure the API key is set
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
-            msg = (
-                "The environment variable 'OPENAI_API_KEY' is not set. "
-                "Please set it to your OpenAI API key."
+            logger.warning(
+                "OPENAI_API_KEY not set. OpenAI code analysis will not be available."
             )
-            raise OSError(msg)
-        # Initialize OpenAI client
-        self.client = OpenAI(api_key=api_key)
+            self.client = None
+        elif OpenAI is None:
+            logger.warning(
+                "OpenAI package is not installed. OpenAI code analysis is disabled."
+            )
+            self.client = None
+        else:
+            self.client = OpenAI(api_key=api_key)
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
-        """Validate required inputs"""
-        if "code" not in inputs:
-            return False
-        return isinstance(inputs["code"], str)
+        """
+        Check that the inputs include a 'code' entry and that its value is a string.
+        
+        Parameters:
+            inputs (dict[str, Any]): Input mapping expected to contain a 'code' key with source code.
+        
+        Returns:
+            bool: `True` if `inputs` contains a `'code'` key whose value is a `str`, `False` otherwise.
+        """
+        return isinstance(inputs.get("code"), str)
 
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Analyze code using OpenAI
-
-        Args:
-            inputs: Dictionary containing:
-                - code: String containing code to analyze
-
+        Perform static analysis of the provided source code using the configured OpenAI client and return the structured analysis.
+        
+        Parameters:
+            inputs (dict[str, Any]): Input dictionary that must include a 'code' key with the source code string to analyze.
+        
         Returns:
-            Dictionary containing analysis results
+            dict[str, Any]: On success, a dictionary with keys:
+                - "analysis": JSON-like analysis produced by the model,
+                - "model": the model name ("gpt-4o"),
+                - "status": "success".
+            On failure, a standardized error dictionary with keys:
+                - "error": human-readable error message,
+                - "status": "error".
         """
         if not self.validate_inputs(inputs):
             return {
                 "error": "Invalid input. 'code' field is missing or not a string.",
+                "status": "error",
+            }
+
+        if not self.client:
+            return {
+                "error": (
+                    "OPENAI_API_KEY not configured or OpenAI package unavailable. "
+                    "Please configure the API key and dependency to use this tool."
+                ),
                 "status": "error",
             }
 
@@ -106,7 +121,6 @@ class OpenAICodeAnalyzerTool(AgentTool):
                 response_format={"type": "json_object"},
             )
 
-            # Validate response structure before accessing
             if (
                 response.choices
                 and isinstance(response.choices, list)
@@ -125,6 +139,9 @@ class OpenAICodeAnalyzerTool(AgentTool):
                 "error": "OpenAI API response missing expected content.",
                 "status": "error",
             }
-        except Exception as e:
-            logger.exception(f"OpenAI code analysis failed: {e!s}")
-            return {"error": str(e), "status": "error"}
+        except Exception:
+            logger.exception("OpenAI code analysis failed")
+            return {
+                "error": "OpenAI code analysis failed. See logs for details.",
+                "status": "error",
+            }

@@ -72,7 +72,18 @@ class TestWorkflowSecurity(unittest.TestCase):
                 self._check_secrets_usage(content, workflow_file.name)
 
     def _check_secrets_usage(self, content, filename):
-        """Helper to check secrets usage in workflow"""
+        """
+        Validate that sensitive environment variables in a parsed GitHub Actions workflow are set using GitHub secret expressions.
+        
+        Inspects job-level and step-level `env` sections for the following sensitive names: GITHUB_TOKEN, HF_TOKEN, PYPI_API_TOKEN, API_KEY. If any of these keys are present and their value does not contain the GitHub expression marker `${{`, the test is failed.
+        
+        Parameters:
+            content (dict): Parsed YAML content of the workflow file.
+            filename (str): Name of the workflow file (used in failure messages).
+        
+        Raises:
+            AssertionError: Fails the test via `self.fail()` when a sensitive variable is not configured to use a GitHub secret expression.
+        """
         sensitive_vars = [
             "GITHUB_TOKEN",
             "HF_TOKEN",
@@ -95,7 +106,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         # Check all jobs - handle both 'jobs' key and YAML boolean 'on' issue
         # YAML parsers may convert 'on:' to boolean True
         jobs = content.get("jobs", {})
-        
+
         # Check if the content has True key (YAML boolean parsing issue)
         if True in content and isinstance(content[True], dict):
             trigger_section = content[True]
@@ -130,13 +141,10 @@ class TestWorkflowSecurity(unittest.TestCase):
                 # Workflows should define permissions (least privilege)
                 # Some workflows may not need this if they don't access GitHub APIs
                 if "jobs" in content:
-                    has_permissions = (
-                        "permissions" in content
-                        or any(
-                            "permissions" in job
-                            for job in content["jobs"].values()
-                            if isinstance(job, dict)
-                        )
+                    has_permissions = "permissions" in content or any(
+                        "permissions" in job
+                        for job in content["jobs"].values()
+                        if isinstance(job, dict)
                     )
                     # This is a warning, not a hard failure
                     # Some workflows don't need special permissions

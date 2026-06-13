@@ -25,7 +25,11 @@ class TestWorkflowStructure(unittest.TestCase):
         self.assertTrue(self.workflows_dir.is_dir())
 
     def test_all_workflow_files_have_valid_yaml(self):
-        """Test that all workflow files have valid YAML syntax"""
+        """
+        Verify that every workflow file under the workflows directory contains valid, non-empty YAML.
+        
+        This test collects all `*.yml` and `*.yaml` files (including subdirectories), fails if no workflow files are found, and parses each file as YAML; it fails for empty/invalid documents or when a YAML parsing error occurs, reporting the file name and parser error.
+        """
         workflow_files = list(self.workflows_dir.glob("*.yml")) + list(
             self.workflows_dir.glob("*.yaml")
         )
@@ -43,9 +47,7 @@ class TestWorkflowStructure(unittest.TestCase):
                             content, f"{workflow_file.name} is empty or invalid"
                         )
                     except yaml.YAMLError as e:
-                        self.fail(
-                            f"Invalid YAML in {workflow_file.name}: {e}"
-                        )
+                        self.fail(f"Invalid YAML in {workflow_file.name}: {e}")
 
     def test_workflows_have_required_fields(self):
         """Test that workflows have required fields (name, on, jobs)"""

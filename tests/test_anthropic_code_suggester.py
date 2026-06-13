@@ -2,7 +2,6 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-import pytest
 from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
@@ -75,8 +74,9 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
     def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with pytest.raises(ValueError):
-                tool.execute({})
+            result = tool.execute({})
+            assert result["status"] == "error"
+            assert "Invalid input" in result["error"]
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_api_error(self, mock_anthropic_class) -> None:
@@ -89,7 +89,10 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             result = tool.execute({"code": "def foo(): pass"})
 
             assert result["status"] == "error"
-            assert "API error" in result["error"]
+            assert (
+                result["error"]
+                == "Anthropic code suggestion failed. See logs for details."
+            )
 
 
 if __name__ == "__main__":

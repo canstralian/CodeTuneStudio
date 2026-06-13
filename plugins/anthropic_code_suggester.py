@@ -1,1 +1,134 @@
-aW1wb3J0IGxvZ2dpbmcKaW1wb3J0IG9zCmZyb20gdHlwaW5nIGltcG9ydCBBbnkKCmZyb20gYW50aHJvcGljIGltcG9ydCBBbnRocm9waWMKCmZyb20gdXRpbHMucGx1Z2lucy5iYXNlIGltcG9ydCBBZ2VudFRvb2wsIFRvb2xNZXRhZGF0YQoKIyBDb25maWd1cmUgbG9nZ2luZwpsb2dnaW5nLmJhc2ljQ29uZmlnKGxldmVsPWxvZ2dpbmcuSU5GTykKbG9nZ2VyID0gbG9nZ2luZy5nZXRMb2dnZXIoX19uYW1lX18pCgoKY2xhc3MgQW50aHJvcGljQ29kZVN1Z2dlc3RlclRvb2woQWdlbnRUb29sKToKICAgIKIiiIFRvb2wgZm9yIHN1Z2dlc3RpbmcgY29kZSBpbXByb3ZlbWVudHMgdXNpbmcgQW50aHJvcGljJ3MgQ2xhdWRlCgogICAgQSB0b29sIGZvciBnZW5lcmF0aW5nIGNvZGUgaW1wcm92ZW1lbnQgc3VnZ2VzdGlvbnMgdXNpbmcgQW50aHJvcGljJ3MKICAgIENsYXVkZSBBSSBtb2RlbC4gVGhpcyBjbGFzcyBleHRlbmRzIEFnZW50VG9vbCB0byBwcm92aWRlIEFJLXBvd2VyZWQKICAgIGNvZGUgYW5hbHlzaXMgYW5kIHN1Z2dlc3Rpb25zLiBJdCBsZXZlcmFnZXMgQW50aHJvcGljJ3MgQ2xhdWRlIG1vZGVsCiAgICB0byBldmFsdWF0ZSBwcm92aWRlZCBjb2RlIHNuaXBwZXRzIGFuZCBvZmZlciByZWNvbW1lbmRhdGlvbnMgb24KICAgIHN0cnVjdHVyZSwgb3B0aW1pemF0aW9uLCBiZXN0IHByYWN0aWNlcywgYW5kIGVycm9yIGhhbmRsaW5nLgoKICAgIEF0dHJpYnV0ZXM6CiAgICAgICAgbWV0YWRhdGEgKFRvb2xNZXRhZGF0YSk6IE1ldGFkYXRhIGRlc2NyaWJpbmcgdGhlIHRvb2wsIGluY2x1ZGluZwogICAgICAgICAgICBuYW1lLCBkZXNjcmlwdGlvbiwgdmVyc2lvbiwgYXV0aG9yLCBhbmQgdGFncy4KICAgICAgICBjbGllbnQgKEFudGhyb3BpYyk6IFRoZSBBbnRocm9waWMgY2xpZW50IGluc3RhbmNlIHVzZWQgZm9yIEFQSQogICAgICAgICAgICBpbnRlcmFjdGlvbnMuCgogICAgTWV0aG9kczoKICAgICAgICB2YWxpZGF0ZV9pbnB1dHMoaW5wdXRzOiBEaWN0W3N0ciwgQW55XSkgLT4gYm9vbDoKICAgICAgICAgICAgVmFsaWRhdGVzIHRoZSBpbnB1dCBkaWN0aW9uYXJ5IHRvIGVuc3VyZSBpdCBjb250YWlucyBhIHZhbGlkCiAgICAgICAgICAgICdjb2RlJyBrZXkgd2l0aCBhIHN0cmluZyB2YWx1ZS4KICAgICAgICBleGVjdXRlKGlucHV0czogRGljdFtzdHIsIEFueV0pIC0+IERpY3Rbc3RyLCBBbnldOgogICAgICAgICAgICBFeGVjdXRlcyB0aGUgY29kZSBzdWdnZXN0aW9uIHByb2Nlc3MgYnkgc2VuZGluZyB0aGUgY29kZSB0bwogICAgICAgICAgICBDbGF1ZGUgZm9yIGFuYWx5c2lzIGFuZCByZXR1cm5pbmcgdGhlIHN1Z2dlc3Rpb25zIGluIGEKICAgICAgICAgICAgc3RydWN0dXJlZCByZXNwb25zZS4KICAgIE5vdGU6CiAgICAgICAgUmVxdWlyZXMgYW4gQU5USFJPUElDX0FQSV9LRVkgZW52aXJvbm1lbnQgdmFyaWFibGUgdG8gYmUgc2V0IGZvciBhdXRoZW50aWNhdGlvbi4KICAgICAgICBUaGUgdG9vbCB1c2VzIHRoZSAnY2xhdWRlLTMtNS1zb25uZXQtMjAyNDEwMjInIG1vZGVsIGZvciBnZW5lcmF0aW5nIHN1Z2dlc3Rpb25zLgogICAgRXhhbXBsZToKICAgICAgICA+Pj4gdG9vbCA9IEFudGhyb3BpY0NvZGVTdWdnZXN0ZXJUb29sKCkKICAgICAgICA+Pj4gcmVzdWx0ID0gdG9vbC5leGVjdXRlKHsiY29kZSI6ICJkZWYgaGVsbG8oKTogcHJpbnQoJ0hlbGxvJykifSkKICAgICAgICA+Pj4gcHJpbnQocmVzdWx0WyJzdWdnZXN0aW9ucyJdKQogICAgIiIiCgogICAgZGVmIF9faW5pdF9fKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgc3VwZXIoKS5fX2luaXRfXygpCiAgICAgICAgc2VsZi5tZXRhZGF0YSA9IFRvb2xNZXRhZGF0YSgKICAgICAgICAgICAgbmFtZT0iYW50aHJvcGljX2NvZGVfc3VnZ2VzdGVyIiwKICAgICAgICAgICAgZGVzY3JpcHRpb249IlN1Z2dlc3RzIGNvZGUgaW1wcm92ZW1lbnRzIHVzaW5nIEFudGhyb3BpYydzIENsYXVkZSBtb2RlbCIsCiAgICAgICAgICAgIHZlcnNpb249IjAuMS4wIiwKICAgICAgICAgICAgYXV0aG9yPSJDb2RlVHVuZVN0dWRpbyIsCiAgICAgICAgICAgIHRhZ3M9WyJjb2RlLXN1Z2dlc3Rpb25zIiwgImFpIiwgImFudGhyb3BpYyJdLAogICAgICAgICkKICAgICAgICAjIEluaXRpYWxpemUgQW50aHJvcGljIGNsaWVudCB3aXRoIHZhbGlkYXRpb24KICAgICAgICBhcGlfa2V5ID0gb3MuZW52aXJvbi5nZXQoIkFOVEhST1BJQ19BUElfS0VZIikKICAgICAgICBpZiBub3QgaXBpX2tleToKICAgICAgICAgICAgbG9nZ2VyLndhcm5pbmcoCiAgICAgICAgICAgICAgICAiQU5USFJPUElDX0FQSV9LRVkgbm90IHNldC4gQW50aHJvcGljIGNvZGUgc3VnZ2VzdGlvbnMgIgogICAgICAgICAgICAgICAgIndpbGwgbm90IGJlIGF2YWlsYWJsZS4iCiAgICAgICAgICAgICkKICAgICAgICAgICAgc2VsZi5jbGllbnQgPSBOb25lCiAgICAgICAgZWxzZToKICAgICAgICAgICAgc2VsZi5jbGllbnQgPSBBbnRocm9waWMoYXBpX2tleT1hcGlfa2V5KQoKICAgIGRlZiB2YWxpZGF0ZV9pbnB1dHMoc2VsZiwgaW5wdXRzOiBkaWN0W3N0ciwgQW55XSkgLT4gYm9vbDoKICAgICAgICAiIiIKICAgICAgICBWYWxpZGF0ZSByZXF1aXJlZCBpbnB1dHMuIFJldHVybnMgVHJ1ZSBpZiB2YWxpZCwgb3RoZXJ3aXNlIHJhaXNlcwogICAgICAgIFZhbHVlRXJyb3Igd2l0aCBkZXRhaWxlZCBlcnJvciBpbmZvcm1hdGlvbi4KICAgICAgICAiIiIKICAgICAgICBpZiAiY29kZSIgbm90IGluIGlucHV0czoKICAgICAgICAgICAgcmFpc2UgVmFsdWVFcnJvcihJbnB1dCB2YWxpZGF0aW9uIGZhaWxlZDogTWlzc2luZyBrZXkgJ2NvZGUnIikKICAgICAgICAgaWYgbm90IGlzaW5zdGFuY2UoaW5wdXRzWyJjb2RlIl0sIHN0cik6CiAgICAgICAgICAgIHJhaXNlIFZhbHVlRXJyb3IoIklucHV0IHZhbGlkYXRpb24gZmFpbGVkOiAnY29kZScgbXVzdCBiZSBhIHN0cmluZyIpCiAgICAgICAgcmV0dXJuIFRydWUKCiAgICBkZWYgZXhlY3V0ZShzZWxmLCBpbnB1dHM6IGRpY3Rbc3RyLCBBbnldKSAtPiBkaWN0W3N0ciwgQW55XToKICAgICAgICAiIiIKICAgICAgICBHZW5lcmF0ZSBjb2RlIHN1Z2dlc3Rpb25zIHVzaW5nIEFudGhyb3BpYwoKICAgICAgICBBcmdzOgogICAgICAgICAgICBpbnB1dHM6IERpY3Rpb25hcnkgY29udGFpbmluZzoKICAgICAgICAgICAgICAgIC0gY29kZTogU3RyaW5nIGNvbnRhaW5pbmcgY29kZSB0byBhbmFseXplCgogICAgICAgIFJldHVybnM6CiAgICAgICAgICAgIERpY3Rpb25hcnkgY29udGFpbmluZyBzdWdnZXN0ZWQgaW1wcm92ZW1lbnRzCiAgICAgICAgIiIiCiAgICAgICAgdHJ5OgogICAgICAgICAgICBzZWxmLnZhbGlkYXRlX2lucHV0cyhpbnB1dHMpCiAgICAgICAgZXhjZXB0IFZhbHVlRXJyb3IgYXMgZToKICAgIC2cmV0dXJuIHsiZXJyb3IiOiBzdHIoZSksICJzdGF0dXMiOiAiZXJyb3IifQoKICAgICAgICBpZiBub3Qgc2VsZi5jbGllbnQ6CiAgICAgICAgICAgIHJldHVybiB7CiAgICAgICAgICAgICAgICAiZXJyb3IiOiAoCiAgICAgICAgICAgICAgICAgICAgIkFOVEhST1BJQ19BUElfS0VZIG5vdCBjb25maWd1cmVkLiBQbGVhc2Ugc2V0IHRoZSAiCiAgICAgICAgICAgICAgICAgICAgIkFQSSBrZXkgdG8gdXNlIHRoaXMgdG9vbC4iCiAgICAgICAgICAgICAgICApLAogICAgICAgICAgICAgICAgInN0YXR1cyI6ICJlcnJvciIsCiAgICAgICAgICAgIH0KCiAgICAgICAgdHJ5OgogICAgICAgICAgICAjIFRoZSBuZXdlc3QgQW50aHJvcGljIG1vZGVsIGlzICJjbGF1ZGUtMy01LXNvbm5ldC0yMDI0MTAyMiIKICAgICAgICAgICAgIyBSZWxlYXNlZCBPY3RvYmVyIDIyLCAyMDI0CiAgICAgICAgICAgIG1lc3NhZ2UgPSBzZWxmLmNsaWVudC5tZXNzYWdlcy5jcmVhdGUoCiAgICAgICAgICAgICAgICBtb2RlbD0iY2xhdWRlLTMtNS1zb25uZXQtMjAyNDEwMjIiLAogICAgICAgICAgICAgICAgbWF4X3Rva2Vucz00MDk2LAogICAgICAgICAgICAgICAgbWVzc2FnZXM9WwogICAgICAgICAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICAgICAgICAgInJvbGUiOiAidXNlciIsCiAgICAgICAgICAgICAgICAgICAgICAgICJjb250ZW50IjogKAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIkFuYWx5emUgdGhpcyBjb2RlIGFuZCBzdWdnZXN0IGltcHJvdmVtZW50cyAiCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAiaW4gSlNPTiBmb3JtYXQuXG4iCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAiSW5jbHVkZSBzcGVjaWZpYyByZWNvbW1lbmRhdGlvbnMgZm9yOlxuIgogICAgICAgICAgICAgICAgICAgICAgICAgICAgIjEuIENvZGUgc3RydWN0dXJlXG4iCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAiMi4gT3B0aW1pemF0aW9uIG9wcG9ydHVuaXRpZXNcbiIKICAgICAgICAgICAgICAgICAgICAgICAgICAgICIzLiBCZXN0IHByYWN0aWNlc1xuIgogICAgICAgICAgICAgICAgICAgICAgICAgICAgIjQuIEVycm9yIGhhbmRsaW5nXG5cbiIKICAgICAgICAgIC2ICAgICAgIkNvZGUgdG8gYW5hbHl6ZTpcbiIKICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZ7aW5wdXRzWydjb2RlJ119IgogICAgICAgICAgICAgICAgICAgICAgICAgICAgKSwKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBdLAogICAgICAgICAgICApCgogICAgICAgICAgICAjIFZhbGlkYXRlIHJlc3BvbnNlIHN0cnVjdHVyZSBiZWZvcmUgYWNjZXNzaW5nCiAgICAgICAgICAgIGlmIG5vdCBtZXNzYWdlLmNvbnRlbnQgb3IgbGVuKG1lc3NhZ2UuY29udGVudCkgPT0gMDoKICAgICAgICAgICAgICAgIGxvZ2dlci5lcnJvcigiQW50aHJvcGljIEFQSSByZXR1cm5lZCBlbXB0eSBjb250ZW50IikKICAgICAgICAgICAgICAgIHJldHVybiB7ImVycm9yIjogIkFQSSByZXR1cm5lZCBlbXB0eSByZXNwb25zZSIsICJzdGF0dXMiOiAiZXJyb3IifQoKICAgICAgICAgICAgaWYgbm90IGhhc2F0dHIobWVzc2FnZS5jb250ZW50WzBdLCAidGV4dCIpOgogICAgICAgICAgICAgICAgbG9nZ2VyLmVycm9yKCJBbnRocm9waWMgQVBJIHJlc3BvbnNlIG1pc3NpbmcgdGV4dCBhdHRyaWJ1dGUiKQogICAgICAgICAgICAgICAgcmV0dXJuIHsiZXJyb3IiOiAiIkludmFsaWQgQVBJIHJlc3BvbnNlIGZvcm1hdCIsICJzdGF0dXMiOiAiZXJyb3IifQoKICAgICAgICAgICAgcmV0dXJuIHsKICAgICAgICAgICAgICAgICJzdWdnZXN0aW9ucyI6IG1lc3NhZ2UuY29udGVudFswXS50ZXh0LAogICAgICAgICAgICAgICAgIm1vZGVsIjogImNsYXVkZS0zLTUtc29ubmV0LTIwMjQxMDIyIiwKICAgICAgICAgICAgICAgICJzdGF0dXMiOiAic3VjY2VzcyIsCiAgICAgICAgICAgIH0KICAgICAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgICAgIGxvZ2dlci5leGNlcHRpb24oZiJBbnRocm9waWMgY29kZSBzdWdnZXN0aW9uIGZhaWxlZDoge2Uhc30iKQogICAgICAgICAgICByZXR1cm4geyJlcnJvciI6IHN0cihlKSwgInN0YXR1cyI6ICJlcnJvciJ9Cg==
+import importlib
+import importlib.util
+import logging
+import os
+from typing import Any
+
+from utils.plugins.base import AgentTool, ToolMetadata
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+Anthropic = None
+if importlib.util.find_spec("anthropic") is not None:
+    Anthropic = importlib.import_module("anthropic").Anthropic
+
+
+class AnthropicCodeSuggesterTool(AgentTool):
+    """Tool for suggesting code improvements using Anthropic's Claude."""
+
+    def __init__(self) -> None:
+        """
+        Initialize the AnthropicCodeSuggesterTool, populate tool metadata, and configure the Anthropic client when available.
+        
+        Reads the `ANTHROPIC_API_KEY` environment variable and, if present and the `anthropic` package was successfully imported, creates and assigns an Anthropic client to `self.client`. If the API key is missing or the package is unavailable, `self.client` is set to `None` and a warning is logged. Also initializes `self.metadata` with tool name, description, version, author, and tags.
+        """
+        super().__init__()
+        self.metadata = ToolMetadata(
+            name="anthropic_code_suggester",
+            description="Suggests code improvements using Anthropic's Claude model",
+            version="0.1.0",
+            author="CodeTuneStudio",
+            tags=["code-suggestions", "ai", "anthropic"],
+        )
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            logger.warning(
+                "ANTHROPIC_API_KEY not set. Anthropic code suggestions "
+                "will not be available."
+            )
+            self.client = None
+        elif Anthropic is None:
+            logger.warning(
+                "Anthropic package is not installed. Anthropic code suggestions are disabled."
+            )
+            self.client = None
+        else:
+            self.client = Anthropic(api_key=api_key)
+
+    def validate_inputs(self, inputs: dict[str, Any]) -> bool:
+        """
+        Check that inputs include a 'code' field containing the source code as a string.
+        
+        Parameters:
+            inputs (dict[str, Any]): Input mapping; must contain a 'code' key with the source code.
+        
+        Returns:
+            bool: True if 'code' exists in inputs and is a `str`, False otherwise.
+        """
+        return isinstance(inputs.get("code"), str)
+
+    def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
+        """
+        Generate code-improvement suggestions for the provided source code using Anthropic's Claude model.
+        
+        Parameters:
+            inputs (dict[str, Any]): Expect a `code` key with a string value containing the source code to analyze.
+        
+        Returns:
+            dict[str, Any]: On success, contains:
+                - `suggestions` (str): Model-produced suggestions (expected JSON-formatted text).
+                - `model` (str): The model identifier used.
+                - `status` (str): `"success"`.
+            On failure, contains:
+                - `error` (str): Human-readable error message.
+                - `status` (str): `"error"`.
+        """
+        if not self.validate_inputs(inputs):
+            return {
+                "error": "Invalid input. 'code' field is missing or not a string.",
+                "status": "error",
+            }
+
+        if not self.client:
+            return {
+                "error": (
+                    "ANTHROPIC_API_KEY not configured or Anthropic package unavailable. "
+                    "Please configure the API key and dependency to use this tool."
+                ),
+                "status": "error",
+            }
+
+        try:
+            message = self.client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            "Analyze this code and suggest improvements "
+                            "in JSON format.\n"
+                            "Include specific recommendations for:\n"
+                            "1. Code structure\n"
+                            "2. Optimization opportunities\n"
+                            "3. Best practices\n"
+                            "4. Error handling\n\n"
+                            "Code to analyze:\n"
+                            f"{inputs['code']}"
+                        ),
+                    }
+                ],
+            )
+
+            if not message.content or len(message.content) == 0:
+                logger.error("Anthropic API returned empty content")
+                return {"error": "API returned empty response", "status": "error"}
+
+            if not hasattr(message.content[0], "text"):
+                logger.error("Anthropic API response missing text attribute")
+                return {"error": "Invalid API response format", "status": "error"}
+
+            return {
+                "suggestions": message.content[0].text,
+                "model": "claude-3-5-sonnet-20241022",
+                "status": "success",
+            }
+
+        except Exception:
+            logger.exception("Anthropic code suggestion failed")
+            return {
+                "error": "Anthropic code suggestion failed. See logs for details.",
+                "status": "error",
+            }

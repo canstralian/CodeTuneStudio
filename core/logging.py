@@ -40,13 +40,13 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record with optional color support.
-
-        Args:
-            record: The log record to format.
-
+        Format a LogRecord into a string, applying ANSI color to the record's level name when color is enabled.
+        
+        Parameters:
+            record (logging.LogRecord): The log record to format.
+        
         Returns:
-            Formatted log string.
+            str: The formatted log message.
         """
         if self.use_color:
             levelname = record.levelname
@@ -56,19 +56,54 @@ class StructuredFormatter(logging.Formatter):
         return super().format(record)
 
 
+def redact_url(value: str) -> str:
+    """
+    Redact username credentials in a URL's network location for safe logging.
+    
+    Replaces any username present in the URL's netloc with '***' while preserving scheme, host, optional port, path, query, and fragment. Returns the input unchanged if it is falsy or has no network location.
+    
+    Returns:
+        redacted (str): The URL with the username replaced by '***', or the original value if no redaction was performed.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    if not value:
+        return value
+
+    parts = urlsplit(value)
+    if not parts.netloc:
+        return value
+
+    host = parts.hostname or ""
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+
+    redacted_netloc = host
+    if parts.port:
+        redacted_netloc = f"{redacted_netloc}:{parts.port}"
+    if parts.username is not None:
+        redacted_netloc = f"{parts.username}:***@{redacted_netloc}"
+
+    return urlunsplit(
+        (parts.scheme, redacted_netloc, parts.path, parts.query, parts.fragment)
+    )
+
+
 def setup_logging(
     log_level: Optional[str] = None,
     log_file: Optional[str] = None,
     enable_color: bool = True,
 ) -> None:
     """
-    Configure application-wide logging.
-
-    Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-                  If None, reads from LOG_LEVEL environment variable or defaults to INFO.
-        log_file: Optional path to log file. If provided, logs are also written to file.
-        enable_color: Whether to use colored output in console (default: True).
+    Configure the root logger with a console handler (optional ANSI color) and an optional rotating file handler.
+    
+    Parameters:
+        log_level (Optional[str]): Logging level name (e.g., "DEBUG", "INFO"). If None, reads the LOG_LEVEL environment variable or defaults to "INFO".
+        log_file (Optional[str]): Path to a log file. If provided, a rotating file handler is added (10 MB max per file, 5 backups).
+        enable_color (bool): Enable ANSI-colored console output when stdout is a TTY.
+    
+    Raises:
+        ValueError: If `log_level` does not correspond to a valid logging level name.
     """
     # Determine log level
     if log_level is None:
