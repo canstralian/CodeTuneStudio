@@ -28,15 +28,15 @@ class DocumentationGenerator:
 
     def parse_file(self, file_path: Path) -> list[DocItem]:
         """
-        Extract documentation items from a Python source file.
+        Extracts documented entities from a Python source file.
         
-        Parses the file and collects doc items for the module plus any functions, async functions, and classes found; for classes, methods are collected as function-type DocItem entries. The returned list will be empty if the file cannot be read or parsed.
+        Collects the module docstring plus any functions, async functions, and classes found; for each class, its methods are included as function-type DocItem entries.
         
         Parameters:
             file_path (Path): Path to the Python file to parse.
         
         Returns:
-            list[DocItem]: DocItem objects representing the module, functions, and classes (including method entries).
+            list[DocItem]: DocItem objects representing the module, functions, and classes (including method entries). Returns an empty list if the file cannot be read or parsed.
         """
         try:
             with open(file_path, encoding="utf-8") as f:

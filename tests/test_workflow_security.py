@@ -73,13 +73,13 @@ class TestWorkflowSecurity(unittest.TestCase):
 
     def _check_secrets_usage(self, content, filename):
         """
-        Validate that sensitive environment variables in a parsed GitHub Actions workflow are set using GitHub secret expressions.
+        Ensure sensitive environment variables in a parsed workflow use GitHub secret expressions.
         
-        Inspects job-level and step-level `env` sections for the following sensitive names: GITHUB_TOKEN, HF_TOKEN, PYPI_API_TOKEN, API_KEY. If any of these keys are present and their value does not contain the GitHub expression marker `${{`, the test is failed.
+        Scans job-level and step-level `env` mappings for the names: GITHUB_TOKEN, HF_TOKEN, PYPI_API_TOKEN, and API_KEY. If any of these variables is present and its value does not contain the GitHub expression marker `${{`, the test fails.
         
         Parameters:
             content (dict): Parsed YAML content of the workflow file.
-            filename (str): Name of the workflow file (used in failure messages).
+            filename (str): Workflow filename used in failure messages.
         
         Raises:
             AssertionError: Fails the test via `self.fail()` when a sensitive variable is not configured to use a GitHub secret expression.
@@ -129,7 +129,11 @@ class TestWorkflowSecurity(unittest.TestCase):
                         check_env_section(step["env"])
 
     def test_workflows_have_permissions(self):
-        """Test that workflows define appropriate permissions"""
+        """
+        Check whether workflow YAML files declare explicit 'permissions' at the workflow or job level.
+        
+        Iterates workflow files under the repository workflows directory and, for any workflow that defines `jobs` but neither the workflow nor any job declares a `permissions` mapping, emits an informational message identifying the workflow filename. This test does not fail the run; it serves to encourage least-privilege permissions declarations.
+        """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
                 with open(workflow_file, "r") as f:

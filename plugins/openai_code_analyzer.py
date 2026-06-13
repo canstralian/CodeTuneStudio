@@ -26,9 +26,11 @@ class OpenAICodeAnalyzerTool(AgentTool):
 
     def __init__(self) -> None:
         """
-        Initialize the OpenAICodeAnalyzerTool, set its metadata, and configure the OpenAI client.
+        Initialize tool metadata and configure the OpenAI client based on environment and dependency availability.
         
-        If the `OPENAI_API_KEY` environment variable is present and the OpenAI package was imported successfully, `self.client` is set to an OpenAI client instance. If the API key is missing or the OpenAI package is not available, a warning is logged and `self.client` is set to `None`.
+        Sets the tool's metadata (name, description, author, tags), reads the `OPENAI_API_KEY` environment variable, and assigns `self.client` as follows:
+        - If `OPENAI_API_KEY` is present and the OpenAI package was imported successfully, `self.client` is initialized with `OpenAI(api_key=...)`.
+        - If the API key is missing or the OpenAI package is unavailable, `self.client` is set to `None` and a warning is logged.
         """
         super().__init__()
         self.metadata = ToolMetadata(

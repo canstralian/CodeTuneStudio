@@ -58,12 +58,15 @@ class StructuredFormatter(logging.Formatter):
 
 def redact_url(value: str) -> str:
     """
-    Redact username credentials in a URL's network location for safe logging.
+    Redact any username in a URL's network location by replacing it with '***'.
     
-    Replaces any username present in the URL's netloc with '***' while preserving scheme, host, optional port, path, query, and fragment. Returns the input unchanged if it is falsy or has no network location.
+    If `value` is falsy or contains no network location, returns it unchanged. The scheme, host (IPv6 bracket formatting preserved), port, path, query, and fragment are retained; when a username is present it is replaced with `***`.
+    
+    Parameters:
+        value (str): The URL string to redact.
     
     Returns:
-        redacted (str): The URL with the username replaced by '***', or the original value if no redaction was performed.
+        str: The URL with the username replaced by `***`, or the original value if no redaction was performed.
     """
     from urllib.parse import urlsplit, urlunsplit
 
@@ -95,11 +98,11 @@ def setup_logging(
     enable_color: bool = True,
 ) -> None:
     """
-    Configure the root logger with a console handler (optional ANSI color) and an optional rotating file handler.
+    Configure the root logger with a console handler (optionally ANSI-colored) and an optional rotating file handler.
     
     Parameters:
         log_level (Optional[str]): Logging level name (e.g., "DEBUG", "INFO"). If None, reads the LOG_LEVEL environment variable or defaults to "INFO".
-        log_file (Optional[str]): Path to a log file. If provided, a rotating file handler is added (10 MB max per file, 5 backups).
+        log_file (Optional[str]): Path to a log file. If provided, a rotating file handler is added (10 MB max per file, 5 backups); parent directories are created if needed.
         enable_color (bool): Enable ANSI-colored console output when stdout is a TTY.
     
     Raises:

@@ -49,22 +49,22 @@ class AnthropicCodeSuggesterTool(AgentTool):
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
-        Check that inputs include a 'code' field containing the source code as a string.
+        Validate that inputs contain a 'code' key whose value is a string.
         
         Parameters:
-            inputs (dict[str, Any]): Input mapping; must contain a 'code' key with the source code.
+            inputs (dict[str, Any]): Mapping of input fields; expected to contain a 'code' key.
         
         Returns:
-            bool: True if 'code' exists in inputs and is a `str`, False otherwise.
+            bool: `True` if `inputs['code']` exists and is a `str`, `False` otherwise.
         """
         return isinstance(inputs.get("code"), str)
 
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Generate code-improvement suggestions for the provided source code using Anthropic's Claude model.
+        Generate code-improvement suggestions for the provided source code using Anthropic Claude.
         
         Parameters:
-            inputs (dict[str, Any]): Expect a `code` key with a string value containing the source code to analyze.
+            inputs (dict[str, Any]): Must include a `code` key with a string value containing the source code to analyze.
         
         Returns:
             dict[str, Any]: On success, contains:

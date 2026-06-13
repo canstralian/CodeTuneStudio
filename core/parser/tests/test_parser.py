@@ -26,6 +26,11 @@ def test_python_parsing_failure():
 
 
 def test_javascript_parser_error_is_sanitized(monkeypatch):
+    """
+    Verifies that JavaScript parser exceptions are converted into a sanitized error message.
+    
+    Replaces the JS parser with a stub that raises a raw RuntimeError, invokes parse_code on invalid JavaScript, and asserts the result indicates failure with the first error message equal to "Unable to parse JavaScript code.".
+    """
     class BrokenParser:
         def parse(self, code):
             """

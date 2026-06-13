@@ -9,9 +9,7 @@ class CodeAnalyzerTool(AgentTool):
 
     def __init__(self) -> None:
         """
-        Initialize the CodeAnalyzerTool and configure its tool metadata.
-        
-        Sets self.metadata to a ToolMetadata instance with name "code_analyzer", description "Analyzes Python code structure and complexity", version "0.1.0", author "CodeTuneStudio", and tags ["code-analysis", "python"].
+        Initialize the CodeAnalyzerTool and configure its ToolMetadata with name "code_analyzer", description "Analyzes Python code structure and complexity", version "0.1.0", author "CodeTuneStudio", and tags ["code-analysis", "python"].
         """
         super().__init__()
         self.metadata = ToolMetadata(
@@ -42,13 +40,13 @@ class CodeAnalyzerTool(AgentTool):
             inputs (dict[str, Any]): Input dictionary that must include a "code" key whose value is a Python source string.
         
         Returns:
-            dict[str, Any]: On success, a dictionary with keys:
-                - "num_functions" (int): Number of top-level and nested function definitions.
+            dict[str, Any]: On success, a dictionary with:
+                - "num_functions" (int): Number of function definitions (including nested).
                 - "num_classes" (int): Number of class definitions.
-                - "imports" (list[str]): List of imported module names collected from `import` and `from ... import` statements.
+                - "imports" (list[str]): Collected module names from `import` and `from ... import` statements.
                 - "complexity" (int): Total number of AST nodes in the parsed tree.
                 - "status" (str): The string "success".
-              On failure, a dictionary with keys:
+            On failure, a dictionary with:
                 - "error" (str): Human-readable error message.
                 - "status" (str): The string "error".
         """

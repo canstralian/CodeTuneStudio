@@ -60,6 +60,15 @@ def baz():
         assert result["complexity"] > 0
 
     def test_execute_no_functions_classes(self) -> None:
+        """
+        Checks that analyzing a code snippet containing only an expression reports no functions or classes, no imports, and a complexity greater than zero.
+        
+        Asserts that:
+        - `num_functions` is 0
+        - `num_classes` is 0
+        - `imports` is an empty list
+        - `complexity` is greater than 0
+        """
         code = "x = 1 + 2"
         inputs = {"code": code}
         result = self.tool.execute(inputs)

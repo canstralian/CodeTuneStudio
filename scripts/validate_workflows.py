@@ -19,17 +19,10 @@ class WorkflowValidator:
 
     def __init__(self, repo_root: Path) -> None:
         """
-        Initialize the WorkflowValidator with the repository root and prepare validation state.
+        Initialize the WorkflowValidator for a repository and prepare empty collections for results.
         
         Parameters:
-        	repo_root (Path): Path to the repository root; the validator will look for workflows under `<repo_root>/.github/workflows`.
-        
-        Attributes:
-        	repo_root (Path): The provided repository root.
-        	workflows_dir (Path): Path to the workflows directory (`repo_root/.github/workflows`).
-        	errors (list[str]): Collected error messages.
-        	warnings (list[str]): Collected warning messages.
-        	info (list[str]): Collected informational messages.
+            repo_root (Path): Path to the repository root; workflows are searched under <repo_root>/.github/workflows.
         """
         self.repo_root = repo_root
         self.workflows_dir = repo_root / ".github" / "workflows"
@@ -100,11 +93,7 @@ class WorkflowValidator:
         """
         Validate a single GitHub Actions workflow file and record any findings.
         
-        Parses the workflow file at `workflow_path`, skips empty or metadata-only files, and runs configured checks: structure and best-practice checks unless `security_only` is True, and always runs security checks. Any errors, warnings, or info messages are appended to the validator's corresponding lists.
-        
-        Parameters:
-        	workflow_path (Path): Path to the workflow YAML file to validate.
-        	security_only (bool): If True, skip structure and best-practice checks and run only security checks.
+        Parses the workflow YAML at the given path, skips empty or metadata-only files, runs structure and best-practice checks unless `security_only` is True, and always runs security checks. Findings are appended to `self.errors`, `self.warnings`, and `self.info`.
         """
         relative = workflow_path.relative_to(self.repo_root)
         print(f"📄 Validating: {relative}")
@@ -126,13 +115,13 @@ class WorkflowValidator:
 
     def _is_metadata_file(self, content: dict[str, Any]) -> bool:
         """
-        Detect whether a parsed workflow YAML represents a metadata-only file.
+        Determine whether a parsed workflow YAML is a metadata-only file.
         
         Parameters:
             content (dict[str, Any]): Parsed YAML mapping for a workflow file.
         
         Returns:
-            True if the mapping appears to be metadata-only (contains any of "sdk", "emoji", or "colorFrom", or has a "title" without "jobs" or "on"), False otherwise.
+            `True` if the mapping contains any of the keys "sdk", "emoji", or "colorFrom", or if it has a "title" key while lacking both "jobs" and "on"; `False` otherwise.
         """
         return any(key in content for key in ("sdk", "emoji", "colorFrom")) or (
             "title" in content and "jobs" not in content and "on" not in content

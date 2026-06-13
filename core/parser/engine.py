@@ -15,11 +15,11 @@ if importlib.util.find_spec("pyjsparser") is not None:
 
 def detect_language(code: str, filename: str | None = None) -> Language:
     """
-    Infer the programming language of a code snippet using filename extension and code heuristics.
+    Determine the programming language of a code snippet using the filename extension first, then simple content heuristics.
     
     Parameters:
         code (str): Source code to analyze.
-        filename (str | None): Optional filename whose extension is used first to guide detection.
+        filename (str | None): Optional filename; when provided, its extension is used before examining code content.
     
     Returns:
         Language: One of Language.PYTHON, Language.JAVASCRIPT, Language.BASH, or Language.UNKNOWN.
@@ -48,12 +48,10 @@ def parse_python(code: str) -> ParseResult:
     """
     Parse Python source into a compact AST summary.
     
-    On success returns a ParseResult with language set to Language.PYTHON and ast_data containing a summary
-    of the module (for example {'type': 'Module', 'body_count': ...}). On failure returns a ParseResult
-    with a single ParseError describing the syntax or parsing failure and success set to False.
+    If parsing succeeds, returns a ParseResult with language set to Language.PYTHON and ast_data containing a module summary (e.g. {'type': 'Module', 'body_count': N}). If a SyntaxError occurs, returns a ParseResult with a single ParseError(message="Invalid Python syntax.", line=..., column=...) and success=False. On any other unexpected exception the failure is logged and a ParseResult with ParseError("Unable to parse Python code.", 0, 0) and success=False is returned.
     
     Returns:
-        ParseResult: Parsed AST summary on success; on failure contains one ParseError and success=False.
+        ParseResult: On success contains the AST summary and Language.PYTHON; on failure contains one ParseError and success=False.
     """
     try:
         tree = ast.parse(code)
@@ -85,17 +83,11 @@ def parse_python(code: str) -> ParseResult:
 
 def parse_javascript(code: str) -> ParseResult:
     """
-    Parse JavaScript source into an AST-like structure using the installed pyjsparser.
-    
-    Parameters:
-        code (str): JavaScript source code to parse.
+    Parse JavaScript source into an AST-like structure using the installed JavaScript parser.
     
     Returns:
-        ParseResult: On success, contains Language.JAVASCRIPT and the parser's AST in `ast_data`.
-        On failure, `success` is False and `errors` contains a single ParseError describing one of:
-          - the JavaScript parser dependency is not installed,
-          - invalid JavaScript syntax,
-          - or an unexpected parser failure. In failure cases the returned `language` is Language.JAVASCRIPT and error positions default to (0, 0).
+        ParseResult: On success, `language` is Language.JAVASCRIPT and `ast_data` contains the parser result.
+        On failure, `language` is Language.JAVASCRIPT, `success` is False, and `errors` contains a single `ParseError` (error positions default to (0, 0)).
     """
     if not js_parser:
         return ParseResult(
@@ -128,14 +120,14 @@ def parse_javascript(code: str) -> ParseResult:
 
 def parse_code(code: str, filename: str | None = None) -> ParseResult:
     """
-    Detects the input language and returns a parsing result for the code.
+    Detects the language of the provided source and returns a ParseResult describing the parse outcome.
     
     Parameters:
-        code (str): Source code to analyze and parse.
-        filename (str | None): Optional filename used to improve language detection (by extension or shebang).
+        code (str): Source code to analyze.
+        filename (str | None): Optional filename used to improve language detection via extension or shebang.
     
     Returns:
-        ParseResult: An object containing detected language, parsed AST metadata when parsing succeeds, a list of parsing errors when parsing fails, and a success flag. If no parser is implemented for the detected language, `errors` will include a message indicating the parser is not implemented and `success` will be `False`.
+        ParseResult: Contains the detected language, parsed AST metadata on success, a list of ParseError on failure, and a boolean `success` flag. If no parser is implemented for the detected language, `errors` will include a message stating the parser is not implemented and `success` will be `False`.
     """
     lang = detect_language(code, filename)
 

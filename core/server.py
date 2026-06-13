@@ -87,7 +87,11 @@ class MLFineTuningApp:
         self._initialize_database_with_retry()
 
     def _configure_database(self) -> None:
-        """Configure database with optimized settings and connection pooling"""
+        """
+        Configure the Flask application's SQLAlchemy connection using environment-provided settings and tuned engine options.
+        
+        Reads DATABASE_URL from the environment (defaults to "sqlite:///database.db"), sets SQLALCHEMY_DATABASE_URI, disables SQLALCHEMY_TRACK_MODIFICATIONS, and populates SQLALCHEMY_ENGINE_OPTIONS with connection-pooling and engine tuning parameters (pool_size 10, max_overflow 20, pool_timeout 30, pool_recycle 1800, pool_pre_ping True). Controls SQL echo via the SQL_DEBUG environment variable. Logs the configured database URL with sensitive parts redacted.
+        """
         database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 
         # Optimized database configuration
@@ -112,16 +116,16 @@ class MLFineTuningApp:
         self, max_retries: int = 3, base_delay: float = 1.0
     ) -> None:
         """
-        Attempt to initialize the application's database, retrying with exponential backoff and falling back to a local SQLite database on repeated failures.
+        Initialize the application's database with retries and an optional SQLite fallback.
+        
+        Attempts to initialize the configured database up to `max_retries` times using exponential backoff between attempts; if all attempts fail, switches the app to use `sqlite:///fallback.db` and tries initialization once more.
         
         Parameters:
-            max_retries (int): Maximum number of initialization attempts before using the fallback database.
-            base_delay (float): Initial delay in seconds used to compute exponential backoff between attempts.
+            max_retries (int): Maximum number of initialization attempts before attempting the fallback.
+            base_delay (float): Base delay in seconds used to compute exponential backoff (delay = base_delay * 2**attempt).
         
-        Behavior:
-            - Tries to initialize the database up to `max_retries` times, waiting `base_delay * 2**attempt` seconds between retries.
-            - If all attempts fail, switches the app configuration to use a local SQLite fallback (`sqlite:///fallback.db`) and attempts initialization once more.
-            - Logs success, warnings, and critical errors; raises the final exception if fallback initialization also fails.
+        Raises:
+            Exception: If both the configured database initialization and the fallback SQLite initialization fail.
         """
         for attempt in range(max_retries):
             try:
@@ -225,7 +229,11 @@ class MLFineTuningApp:
             # Don't raise - plugins are optional
 
     def setup_sidebar(self) -> None:
-        """Setup sidebar with enhanced plugin information and navigation"""
+        """
+        Builds the Streamlit sidebar for the fine-tuning UI, listing loaded plugins and rendering resource navigation.
+        
+        Retrieves plugin names from the tool registry and displays each with a checkmark; shows a warning if no plugins are available. Adds a "Resources" section containing links to documentation, API reference, examples, and issue reporting.
+        """
         with st.sidebar:
             st.title("ML Model Fine-tuning")
 
@@ -244,7 +252,7 @@ class MLFineTuningApp:
 
     def _render_navigation(self) -> None:
         """
-        Render a "Resources" navigation section in the Streamlit sidebar containing links to documentation, API reference, example projects, and issue reporting.
+        Renders a "Resources" section in the Streamlit sidebar with links to documentation, the API reference, example projects, and the issue tracker.
         """
         st.markdown("""
             ### 📚 Resources
@@ -256,15 +264,14 @@ class MLFineTuningApp:
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """
-        Save a validated training configuration to the application's database and return its persistent ID.
+        Persist a validated training configuration and return its database ID.
         
         Parameters:
-            config (dict[str, Any]): Mapping containing training parameters. Must include keys:
-                `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
+            config (dict[str, Any]): Mapping of training parameters. Required keys: `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
             dataset (str): Name of the dataset associated with this configuration.
         
         Returns:
-            int | None: The database ID of the persisted TrainingConfig on success, `None` if validation fails or saving encounters an error.
+            int | None: The persisted TrainingConfig row ID on success, `None` if validation fails or an error occurs while saving.
         """
         if not isinstance(config, dict):
             logger.error(f"Invalid configuration type: {type(config)}")

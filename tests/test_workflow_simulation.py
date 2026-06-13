@@ -20,7 +20,12 @@ class TestStyleCheckSimulation(unittest.TestCase):
         self.repo_root = Path(__file__).parent.parent
 
     def test_black_check_execution(self):
-        """Simulate Black formatting check"""
+        """
+        Run Black's formatting check on the repository root to verify Black can be executed.
+        
+        Attempts to run `black --check --diff --line-length=88 --exclude "app\.py|index\.html" .`.
+        Skips the test if Black is not installed and fails the test if the check times out. Asserts that the command produced a return code.
+        """
         # This simulates the workflow step:
         # black --check --diff --line-length=88 .
 
@@ -45,9 +50,9 @@ class TestStyleCheckSimulation(unittest.TestCase):
 
     def test_ruff_check_execution(self):
         """
-        Run a Ruff lint check across the repository and assert the process completed.
+        Simulates running Ruff lint over the repository and asserts the process completed.
         
-        Executes the command `ruff check . --ignore E501` in the repository root. Skips the test if Ruff is not installed and fails the test if the command times out.
+        Runs `ruff check . --ignore E501` in the repository root; the test is skipped if Ruff is not installed and fails if the command times out.
         """
         # This simulates the workflow step:
         # ruff check . --ignore E501
@@ -73,7 +78,11 @@ class TestCIWorkflowSimulation(unittest.TestCase):
     """Simulate ci.yml workflow execution"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Initialize common test fixtures for each test case.
+        
+        Sets self.repo_root to the repository root directory (the parent of this test module's parent).
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_pytest_execution(self):
@@ -114,7 +123,11 @@ class TestDependencyValidationSimulation(unittest.TestCase):
     """Simulate dependency-graph workflow"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Initialize common test fixtures for each test case.
+        
+        Sets self.repo_root to the repository root directory (the parent of this test module's parent).
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_project_structure_validation(self):
@@ -143,7 +156,11 @@ class TestDependencyValidationSimulation(unittest.TestCase):
         self.assertGreater(found_files, 0, "No Python dependency files found")
 
     def test_requirements_file_format(self):
-        """Validate requirements.txt format"""
+        """
+        Validate that the project's requirements.txt exists and contains at least one non-comment, non-empty requirement line.
+        
+        Skips the test if requirements.txt is missing. Asserts that there is at least one non-empty, non-comment line and that the first up to five such lines are not empty.
+        """
         requirements_file = self.repo_root / "requirements.txt"
 
         if not requirements_file.exists():
@@ -171,7 +188,11 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
     """Simulate release.yml workflow validation"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Initialize common test fixtures for each test case.
+        
+        Sets self.repo_root to the repository root directory (the parent of this test module's parent).
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_version_extraction(self):
@@ -260,9 +281,9 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
 
     def test_script_has_required_imports(self):
         """
-        Verify the checklist update script imports required modules and references the GitHub token.
+        Check that the update_checklist.py script imports requests and references GITHUB_TOKEN.
         
-        If the script file is missing the test is skipped. Asserts the file contains "import requests" and "GITHUB_TOKEN".
+        If the script file does not exist, the test is skipped. Asserts the file contains the substring "import requests" and the substring "GITHUB_TOKEN".
         """
         if not self.script_path.exists():
             self.skipTest("Update script not found")
@@ -278,10 +299,10 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
     @patch("requests.get")
     def test_github_api_call_simulation(self, mock_get):
         """
-        Verify handling of a GitHub pulls API response by asserting the returned JSON is a list and, if non-empty, the first item contains the keys "number" and "state".
+        Simulates a GitHub Pulls API response and asserts the returned JSON is a list and, if non-empty, the first item contains the keys "number" and "state".
         
         Parameters:
-            mock_get (unittest.mock.Mock): Patched `requests.get` mock used to supply the simulated API response.
+            mock_get (unittest.mock.Mock): Patched `requests.get` mock supplying the simulated API response.
         """
         # Mock successful API response
         mock_response = Mock()
@@ -310,14 +331,18 @@ class TestHuggingFaceDeploySimulation(unittest.TestCase):
     """Simulate huggingface-deploy.yml workflow"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Initialize common test fixtures for each test case.
+        
+        Sets self.repo_root to the repository root directory (the parent of this test module's parent).
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_requirements_for_hf_hub(self):
         """
-        Verify that huggingface_hub can be imported and exposes a non-empty __version__.
+        Check that the huggingface_hub package is importable and provides a non-None `__version__`.
         
-        If the package is not installed, the test is skipped.
+        If the package cannot be imported, the test is skipped.
         """
         try:
             import huggingface_hub
@@ -364,7 +389,11 @@ class TestWorkflowEnvironment(unittest.TestCase):
         )
 
     def test_git_available(self):
-        """Verify git is available for workflows"""
+        """
+        Verify Git is installed and callable by ensuring `git --version` exits with status 0 and its stdout contains "git version".
+        
+        The test fails if the `git` executable is not found or the command times out.
+        """
         try:
             result = subprocess.run(
                 ["git", "--version"], capture_output=True, text=True, timeout=5
