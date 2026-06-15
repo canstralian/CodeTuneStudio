@@ -232,15 +232,13 @@ class MLFineTuningApp:
 
     def _render_navigation(self) -> None:
         """Render navigation links with improved styling"""
-        st.markdown(
-            """
+        st.markdown("""
             ### 📚 Resources
             - [Documentation](https://github.com/canstralian/CodeTuneStudio/wiki)
             - [API Reference](https://github.com/canstralian/CodeTuneStudio/blob/main/API.md)
             - [Examples](https://github.com/canstralian/CodeTuneStudio/tree/main/examples)
             - [Report Issues](https://github.com/canstralian/CodeTuneStudio/issues)
-        """
-        )
+        """)
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """Save training configuration with improved validation and error handling"""
