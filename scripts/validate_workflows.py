@@ -82,10 +82,14 @@ class WorkflowValidator:
                 f.seek(0)
                 content = yaml.safe_load(f)
         except yaml.YAMLError as e:
-            self.errors.append(f"{workflow_path.name}: Invalid YAML - {e}")
+            self.errors.append(
+                f"{workflow_path.name}: Invalid YAML - {self._redact(str(e))}"
+            )
             return
         except Exception as e:
-            self.errors.append(f"{workflow_path.name}: Error reading file - {e}")
+            self.errors.append(
+                f"{workflow_path.name}: Error reading file - {self._redact(str(e))}"
+            )
             return
 
         if content is None:
@@ -157,6 +161,19 @@ class WorkflowValidator:
 
             if "steps" not in job_config:
                 self.errors.append(f"{filename}: Job '{job_name}' missing 'steps'")
+
+    _SECRET_PATTERNS = [
+        r"ghp_[a-zA-Z0-9]{36}",
+        r"sk-[a-zA-Z0-9]{48}",
+        r"['\"]password['\"]:\s*['\"][^$\{][^'\"]*",
+        r"['\"]token['\"]:\s*['\"][^$\{][^'\"]*",
+    ]
+
+    def _redact(self, text: str) -> str:
+        """Replace any embedded secret patterns with [REDACTED] before logging."""
+        for pattern in self._SECRET_PATTERNS:
+            text = re.sub(pattern, "[REDACTED]", text, flags=re.IGNORECASE)
+        return text
 
     def _validate_security(
         self, filename: str, raw_content: str, content: Dict[str, Any]
