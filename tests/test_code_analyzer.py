@@ -81,13 +81,39 @@ def baz():
 
     def test_execute_syntax_error(self) -> None:
         """
-        Verify that executing syntactically invalid code returns an error status.
+        Verifies that executing code with a Python syntax error returns an error status and the expected error message.
+
+        Asserts that the tool returns result["status"] == "error" and result["error"] == "Invalid Python syntax." for an incomplete function definition.
         """
         code = "def foo("  # Incomplete function
         inputs = {"code": code}
         result = self.tool.execute(inputs)
         assert result["status"] == "error"
         assert result["error"] == "Invalid Python syntax."
+
+
+    def test_execute_valid_code_has_success_status(self) -> None:
+        """Success result must include status == 'success' (added in 0.2.1)."""
+        result = self.tool.execute({"code": "x = 1"})
+        assert result["status"] == "success"
+
+    def test_execute_from_import_collected(self) -> None:
+        """Imports via 'from x import y' should be collected as module names."""
+        code = "from os.path import join"
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert "os.path" in result["imports"]
+
+    def test_execute_missing_code_key_returns_error(self) -> None:
+        """Missing 'code' key returns error dict, not ValueError."""
+        result = self.tool.execute({})
+        assert result["status"] == "error"
+        assert "Invalid input" in result["error"]
+
+    def test_execute_none_code_returns_error(self) -> None:
+        """None value for 'code' returns error dict, not raise."""
+        result = self.tool.execute({"code": None})
+        assert result["status"] == "error"
 
 
 if __name__ == "__main__":

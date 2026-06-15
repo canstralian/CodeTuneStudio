@@ -57,10 +57,7 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
 
     def test_execute_invalid_input(self) -> None:
         """
-        Verify that execute returns an error when input is missing the required code field.
-        
-        Asserts that the result has error status with an "Invalid input" message and
-        that the OpenAI API is not invoked during validation failure.
+        Test the execute method with invalid inputs.
         """
         with patch.object(self.tool, "client") as mock_client:
             result = self.tool.execute({"wrong_input": "some_code"})
@@ -98,6 +95,32 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
             result = self.tool.execute({"code": "print('hello')"})
             assert result["status"] == "error"
             assert result["error"] == "OpenAI API response missing expected content."
+
+
+    def test_execute_no_client_returns_error(self) -> None:
+        """When client is None (no API key / package unavailable), execute returns an error dict."""
+        import os
+        env = {k: v for k, v in os.environ.items() if k != "OPENAI_API_KEY"}
+        with patch.dict(os.environ, env, clear=True):
+            tool = OpenAICodeAnalyzerTool()
+        assert tool.client is None
+        result = tool.execute({"code": "print('hello')"})
+        assert result["status"] == "error"
+        assert "OPENAI_API_KEY" in result["error"] or "unavailable" in result["error"]
+
+    @patch("plugins.openai_code_analyzer.OpenAI", None)
+    def test_init_package_unavailable_client_is_none(self) -> None:
+        """When the openai package module-level variable is None, client stays None."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+            tool = OpenAICodeAnalyzerTool()
+            assert tool.client is None
+
+    def test_execute_none_code_returns_error(self) -> None:
+        """None as code value returns error dict without calling API."""
+        with patch.object(self.tool, "client") as mock_client:
+            result = self.tool.execute({"code": None})
+            assert result["status"] == "error"
+            mock_client.chat.completions.create.assert_not_called()
 
 
 if __name__ == "__main__":

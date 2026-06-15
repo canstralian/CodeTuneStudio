@@ -178,5 +178,126 @@ class TestPackageMetadata(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(core_path, "logging.py")))
 
 
+
+class TestRedactUrl(unittest.TestCase):
+    """Tests for core.logging.redact_url added in 0.2.1."""
+
+    def _redact(self, value):
+        from core.logging import redact_url
+        return redact_url(value)
+
+    # ── falsy / no-netloc inputs ────────────────────────────────────────────
+
+    def test_empty_string_returned_unchanged(self):
+        self.assertEqual(self._redact(""), "")
+
+    def test_none_returned_unchanged(self):
+        # redact_url is specified to return the input if it is falsy
+        self.assertIsNone(self._redact(None))
+
+    def test_plain_string_without_scheme_returned_unchanged(self):
+        # No netloc → no redaction
+        self.assertEqual(self._redact("not_a_url"), "not_a_url")
+
+    def test_path_only_string_returned_unchanged(self):
+        self.assertEqual(self._redact("/etc/passwd"), "/etc/passwd")
+
+    # ── URLs without credentials ────────────────────────────────────────────
+
+    def test_url_without_credentials_unchanged(self):
+        url = "postgresql://localhost/mydb"
+        self.assertEqual(self._redact(url), url)
+
+    def test_url_with_host_and_port_no_credentials_unchanged(self):
+        url = "postgresql://db.example.com:5432/mydb"
+        self.assertEqual(self._redact(url), url)
+
+    # ── credential masking ──────────────────────────────────────────────────
+
+    def test_username_and_password_are_masked(self):
+        url = "postgresql://alice:s3cr3t@localhost/mydb"
+        result = self._redact(url)
+        self.assertIn("***:***@", result)
+        self.assertNotIn("alice", result)
+        self.assertNotIn("s3cr3t", result)
+
+    def test_scheme_is_preserved_after_redaction(self):
+        url = "postgresql://user:pass@db.example.com/prod"
+        result = self._redact(url)
+        self.assertTrue(result.startswith("postgresql://"))
+
+    def test_host_is_preserved_after_redaction(self):
+        url = "postgresql://user:pass@db.example.com/prod"
+        result = self._redact(url)
+        self.assertIn("db.example.com", result)
+
+    def test_path_is_preserved_after_redaction(self):
+        url = "postgresql://user:pass@db.example.com/prod"
+        result = self._redact(url)
+        self.assertTrue(result.endswith("/prod"))
+
+    def test_port_is_preserved_after_redaction(self):
+        url = "postgresql://user:pass@db.example.com:5432/prod"
+        result = self._redact(url)
+        self.assertIn(":5432", result)
+        self.assertIn("***:***@", result)
+
+    def test_username_only_is_masked(self):
+        # urllib.parse parses "user@host" as username="user", password=None
+        url = "postgresql://user@localhost/mydb"
+        result = self._redact(url)
+        self.assertIn("***:***@", result)
+        self.assertNotIn("user@", result)
+
+    def test_query_string_preserved(self):
+        url = "https://user:pass@example.com/path?a=1&b=2"
+        result = self._redact(url)
+        self.assertIn("?a=1&b=2", result)
+        self.assertNotIn("user", result)
+
+    def test_fragment_preserved(self):
+        url = "https://user:pass@example.com/path?q=x#frag"
+        result = self._redact(url)
+        self.assertIn("#frag", result)
+        self.assertNotIn("pass", result)
+
+    def test_mysql_connection_string(self):
+        url = "mysql://root:hunter2@127.0.0.1:3306/testdb"
+        result = self._redact(url)
+        self.assertNotIn("root", result)
+        self.assertNotIn("hunter2", result)
+        self.assertIn("127.0.0.1", result)
+        self.assertIn("3306", result)
+
+    def test_redis_url_with_password_only(self):
+        # Redis often omits the username: "redis://:password@host"
+        url = "redis://:secrettoken@cache.internal:6379/0"
+        result = self._redact(url)
+        self.assertNotIn("secrettoken", result)
+        self.assertIn("***:***@", result)
+
+    def test_ipv6_host_with_credentials(self):
+        url = "postgresql://user:pass@[::1]:5432/mydb"
+        result = self._redact(url)
+        self.assertIn("***:***@", result)
+        self.assertNotIn("user", result)
+        self.assertNotIn("pass", result)
+        # IPv6 address must still be present
+        self.assertIn("::1", result)
+
+    def test_username_not_in_cleartext_regression(self):
+        """Regression: v0.2.0 leaked the username in clear text; v0.2.1 must not."""
+        url = "postgresql://dbuser:dbpass@prod-db:5432/appdb"
+        result = self._redact(url)
+        self.assertNotIn("dbuser", result)
+        self.assertNotIn("dbpass", result)
+
+    def test_masked_marker_format(self):
+        """The redaction marker must be exactly ***:***@host."""
+        url = "https://u:p@example.com/"
+        result = self._redact(url)
+        self.assertIn("***:***@example.com", result)
+
+
 if __name__ == "__main__":
     unittest.main()
