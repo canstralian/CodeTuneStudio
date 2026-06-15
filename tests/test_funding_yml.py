@@ -14,28 +14,29 @@ from pathlib import Path
 class TestFundingYml(unittest.TestCase):
     """Test the .github/FUNDING.yml configuration file."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.repo_root = Path(__file__).parent.parent
         self.funding_file = self.repo_root / ".github" / "FUNDING.yml"
 
-    def _load_funding(self):
+    def _load_funding(self) -> dict:
         """Helper to load and return parsed FUNDING.yml content."""
         with open(self.funding_file, "r") as f:
-            return yaml.safe_load(f)
+            content = yaml.safe_load(f)
+            return content if content is not None else {}
 
     # ------------------------------------------------------------------
     # File existence and parseability
     # ------------------------------------------------------------------
 
-    def test_funding_file_exists(self):
+    def test_funding_file_exists(self) -> None:
         """Test that the FUNDING.yml file exists at the expected path."""
         self.assertTrue(
             self.funding_file.exists(),
             f"FUNDING.yml not found at {self.funding_file}",
         )
 
-    def test_funding_file_is_valid_yaml(self):
+    def test_funding_file_is_valid_yaml(self) -> None:
         """Test that FUNDING.yml is parseable as valid YAML."""
         try:
             content = self._load_funding()
@@ -43,7 +44,7 @@ class TestFundingYml(unittest.TestCase):
             self.fail(f"FUNDING.yml is not valid YAML: {exc}")
         self.assertIsNotNone(content, "FUNDING.yml parsed to None — file may be empty")
 
-    def test_funding_file_is_a_mapping(self):
+    def test_funding_file_is_a_mapping(self) -> None:
         """Test that the top-level YAML structure is a mapping (dict)."""
         content = self._load_funding()
         self.assertIsInstance(
@@ -56,7 +57,7 @@ class TestFundingYml(unittest.TestCase):
     # Configured platform values
     # ------------------------------------------------------------------
 
-    def test_github_platform_is_configured(self):
+    def test_github_platform_is_configured(self) -> None:
         """Test that the github funding platform is set to canstralian."""
         content = self._load_funding()
         self.assertIn("github", content, "FUNDING.yml should contain a 'github' key")
@@ -66,7 +67,7 @@ class TestFundingYml(unittest.TestCase):
             "github funding username should be 'canstralian'",
         )
 
-    def test_patreon_platform_is_configured(self):
+    def test_patreon_platform_is_configured(self) -> None:
         """Test that the patreon funding platform is set to canstralian."""
         content = self._load_funding()
         self.assertIn("patreon", content, "FUNDING.yml should contain a 'patreon' key")
@@ -76,7 +77,7 @@ class TestFundingYml(unittest.TestCase):
             "patreon funding username should be 'canstralian'",
         )
 
-    def test_only_configured_platforms_are_present(self):
+    def test_only_configured_platforms_are_present(self) -> None:
         """Test that only explicitly configured platforms exist (no extras)."""
         content = self._load_funding()
         expected_keys = {"github", "patreon"}
@@ -87,7 +88,7 @@ class TestFundingYml(unittest.TestCase):
             f"Unexpected keys in FUNDING.yml: {actual_keys - expected_keys}",
         )
 
-    def test_no_none_values(self):
+    def test_no_none_values(self) -> None:
         """Test that no platform entry has a None/empty value (placeholder cleanup)."""
         content = self._load_funding()
         for platform, value in content.items():
@@ -105,7 +106,7 @@ class TestFundingYml(unittest.TestCase):
     # Removed placeholder keys (regression: must not reappear)
     # ------------------------------------------------------------------
 
-    def test_open_collective_placeholder_removed(self):
+    def test_open_collective_placeholder_removed(self) -> None:
         """Test that the open_collective placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -114,7 +115,7 @@ class TestFundingYml(unittest.TestCase):
             "open_collective placeholder should have been removed",
         )
 
-    def test_ko_fi_placeholder_removed(self):
+    def test_ko_fi_placeholder_removed(self) -> None:
         """Test that the ko_fi placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -123,7 +124,7 @@ class TestFundingYml(unittest.TestCase):
             "ko_fi placeholder should have been removed",
         )
 
-    def test_tidelift_placeholder_removed(self):
+    def test_tidelift_placeholder_removed(self) -> None:
         """Test that the tidelift placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -132,7 +133,7 @@ class TestFundingYml(unittest.TestCase):
             "tidelift placeholder should have been removed",
         )
 
-    def test_community_bridge_placeholder_removed(self):
+    def test_community_bridge_placeholder_removed(self) -> None:
         """Test that the community_bridge placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -141,7 +142,7 @@ class TestFundingYml(unittest.TestCase):
             "community_bridge placeholder should have been removed",
         )
 
-    def test_liberapay_placeholder_removed(self):
+    def test_liberapay_placeholder_removed(self) -> None:
         """Test that the liberapay placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -150,7 +151,7 @@ class TestFundingYml(unittest.TestCase):
             "liberapay placeholder should have been removed",
         )
 
-    def test_issuehunt_placeholder_removed(self):
+    def test_issuehunt_placeholder_removed(self) -> None:
         """Test that the issuehunt placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -159,7 +160,7 @@ class TestFundingYml(unittest.TestCase):
             "issuehunt placeholder should have been removed",
         )
 
-    def test_lfx_crowdfunding_placeholder_removed(self):
+    def test_lfx_crowdfunding_placeholder_removed(self) -> None:
         """Test that the lfx_crowdfunding placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -168,7 +169,7 @@ class TestFundingYml(unittest.TestCase):
             "lfx_crowdfunding placeholder should have been removed",
         )
 
-    def test_polar_placeholder_removed(self):
+    def test_polar_placeholder_removed(self) -> None:
         """Test that the polar placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -177,7 +178,7 @@ class TestFundingYml(unittest.TestCase):
             "polar placeholder should have been removed",
         )
 
-    def test_buy_me_a_coffee_entry_removed(self):
+    def test_buy_me_a_coffee_entry_removed(self) -> None:
         """Test that the buy_me_a_coffee entry (previously 'sadejager') was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -186,7 +187,7 @@ class TestFundingYml(unittest.TestCase):
             "buy_me_a_coffee entry should have been removed",
         )
 
-    def test_thanks_dev_placeholder_removed(self):
+    def test_thanks_dev_placeholder_removed(self) -> None:
         """Test that the thanks_dev placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -195,7 +196,7 @@ class TestFundingYml(unittest.TestCase):
             "thanks_dev placeholder should have been removed",
         )
 
-    def test_custom_placeholder_removed(self):
+    def test_custom_placeholder_removed(self) -> None:
         """Test that the custom placeholder entry was removed."""
         content = self._load_funding()
         self.assertNotIn(
@@ -208,7 +209,7 @@ class TestFundingYml(unittest.TestCase):
     # Boundary / regression: raw file content checks
     # ------------------------------------------------------------------
 
-    def test_no_sadejager_value_in_file(self):
+    def test_no_sadejager_value_in_file(self) -> None:
         """Regression: the removed buy_me_a_coffee value 'sadejager' is not present."""
         with open(self.funding_file, "r") as f:
             raw_content = f.read()
@@ -218,7 +219,7 @@ class TestFundingYml(unittest.TestCase):
             "Value 'sadejager' (old buy_me_a_coffee) must not appear in FUNDING.yml",
         )
 
-    def test_no_replace_placeholder_comments_in_values(self):
+    def test_no_replace_placeholder_comments_in_values(self) -> None:
         """Test that no 'Replace with' placeholder text remains in the file."""
         with open(self.funding_file, "r") as f:
             raw_content = f.read()
@@ -228,7 +229,7 @@ class TestFundingYml(unittest.TestCase):
             "Placeholder comment 'Replace with ...' should not remain in FUNDING.yml",
         )
 
-    def test_platform_usernames_are_strings(self):
+    def test_platform_usernames_are_strings(self) -> None:
         """Test that configured platform values are plain strings, not lists or dicts."""
         content = self._load_funding()
         for platform in ("github", "patreon"):
@@ -239,7 +240,7 @@ class TestFundingYml(unittest.TestCase):
                 f"Platform '{platform}' value should be a string, got {type(content[platform])}",
             )
 
-    def test_file_has_expected_line_count(self):
+    def test_file_has_expected_line_count(self) -> None:
         """Test that the file is compact — no large block of placeholder lines remain."""
         with open(self.funding_file, "r") as f:
             lines = f.readlines()
