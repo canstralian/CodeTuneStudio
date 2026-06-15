@@ -19,17 +19,10 @@ class WorkflowValidator:
 
     def __init__(self, repo_root: Path) -> None:
         """
-        Initialize the WorkflowValidator with the repository root and prepare validation state.
-
+        Initialize the validator with the repository root path.
+        
         Parameters:
-                repo_root (Path): Path to the repository root; the validator will look for workflows under `<repo_root>/.github/workflows`.
-
-        Attributes:
-                repo_root (Path): The provided repository root.
-                workflows_dir (Path): Path to the workflows directory (`repo_root/.github/workflows`).
-                errors (list[str]): Collected error messages.
-                warnings (list[str]): Collected warning messages.
-                info (list[str]): Collected informational messages.
+            repo_root (Path): The repository root; workflows are expected at `<repo_root>/.github/workflows`.
         """
         self.repo_root = repo_root
         self.workflows_dir = repo_root / ".github" / "workflows"
@@ -98,13 +91,12 @@ class WorkflowValidator:
 
     def _validate_workflow(self, workflow_path: Path, security_only: bool) -> None:
         """
-        Validate a single GitHub Actions workflow file and record any findings.
-
-        Parses the workflow file at `workflow_path`, skips empty or metadata-only files, and runs configured checks: structure and best-practice checks unless `security_only` is True, and always runs security checks. Any errors, warnings, or info messages are appended to the validator's corresponding lists.
-
+        Validate a single workflow file.
+        
+        Reads and parses the workflow YAML. Skips empty and metadata-only files. Runs structure and best-practice checks unless `security_only` is True; security checks always run. Records findings as errors, warnings, or informational messages.
+        
         Parameters:
-                workflow_path (Path): Path to the workflow YAML file to validate.
-                security_only (bool): If True, skip structure and best-practice checks and run only security checks.
+        	security_only (bool): If True, skip structure and best-practice checks.
         """
         relative = workflow_path.relative_to(self.repo_root)
         print(f"📄 Validating: {relative}")
@@ -270,9 +262,7 @@ class WorkflowValidator:
 
     def _print_results(self) -> None:
         """
-        Print a consolidated report of collected validation errors, warnings, and informational messages to standard output.
-
-        Prints sectioned output with a header and footer, shows counts for each category and lists each message as a bullet. If there are no errors or warnings, prints a success message.
+        Output a formatted report of validation errors, warnings, and informational messages.
         """
         print("\n" + "=" * 60)
         print("🔎 Validation Results")
@@ -301,12 +291,10 @@ class WorkflowValidator:
 
 def main() -> int:
     """
-    Parse command-line arguments and validate GitHub Actions workflow files in the repository.
-
-    Supports --workflow to validate a single workflow file name and --security-only to restrict checks to security rules. Prints validation results and error messages to standard output.
-
+    Validate GitHub Actions workflow files in the repository.
+    
     Returns:
-        int: Exit code: 0 when validation completed with no recorded errors, 1 on validation failure or if the .github/workflows directory is missing.
+        int: Exit code 0 if validation completed with no errors, 1 if validation failed or the .github/workflows directory is missing.
     """
     parser = argparse.ArgumentParser(
         description="Validate GitHub workflow files",

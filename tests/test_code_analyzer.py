@@ -81,9 +81,7 @@ def baz():
 
     def test_execute_syntax_error(self) -> None:
         """
-        Verifies that executing code with a Python syntax error returns an error status and the expected error message.
-
-        Asserts that the tool returns result["status"] == "error" and result["error"] == "Invalid Python syntax." for an incomplete function definition.
+        Verify that executing syntactically invalid code returns an error status.
         """
         code = "def foo("  # Incomplete function
         inputs = {"code": code}

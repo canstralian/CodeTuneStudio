@@ -12,9 +12,7 @@ class CodeAnalyzerTool(AgentTool):
 
     def __init__(self) -> None:
         """
-        Initialize the CodeAnalyzerTool and configure its tool metadata.
-
-        Sets self.metadata to a ToolMetadata instance with name "code_analyzer", description "Analyzes Python code structure and complexity", version "0.1.0", author "CodeTuneStudio", and tags ["code-analysis", "python"].
+        Initialize the tool with code analysis metadata.
         """
         super().__init__()
         self.metadata = ToolMetadata(
@@ -27,33 +25,25 @@ class CodeAnalyzerTool(AgentTool):
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
-        Check that the inputs include a "code" field containing Python source as a string.
-
+        Validate that the input contains a 'code' field with a string value.
+        
         Parameters:
-            inputs (dict[str, Any]): Mapping expected to contain a "code" key with Python source code.
-
+            inputs (dict[str, Any]): Input dictionary expected to contain a 'code' key.
+        
         Returns:
-            bool: True if `inputs["code"]` exists and is a `str`, False otherwise.
+            bool: True if the 'code' field exists and is a string, False otherwise.
         """
         return isinstance(inputs.get("code"), str)
 
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
-        Analyze a Python source string and return structural metrics or a standardized error payload.
-
+        Analyze a Python source string by parsing it into an AST and compute structural metrics.
+        
         Parameters:
             inputs (dict[str, Any]): Input dictionary that must include a "code" key whose value is a Python source string.
-
+        
         Returns:
-            dict[str, Any]: On success, a dictionary with keys:
-                - "num_functions" (int): Number of top-level and nested function definitions.
-                - "num_classes" (int): Number of class definitions.
-                - "imports" (list[str]): List of imported module names collected from `import` and `from ... import` statements.
-                - "complexity" (int): Total number of AST nodes in the parsed tree.
-                - "status" (str): The string "success".
-              On failure, a dictionary with keys:
-                - "error" (str): Human-readable error message.
-                - "status" (str): The string "error".
+            dict[str, Any]: On success, a dictionary with keys "num_functions" (int), "num_classes" (int), "imports" (list[str]), "complexity" (int), and "status" ("success"). On failure, a dictionary with keys "error" (str) and "status" ("error").
         """
         if not self.validate_inputs(inputs):
             return {

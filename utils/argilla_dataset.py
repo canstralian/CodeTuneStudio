@@ -76,21 +76,16 @@ class ArgillaDatasetManager:
         filter_by: dict[str, Any] | None = None,
     ) -> Dataset:
         """
-        Load and convert an Argilla dataset into a Hugging Face Dataset for training.
-
+        Load an Argilla dataset and convert it to a Hugging Face Dataset.
+        
         Parameters:
             dataset_name (str): Name of the dataset in Argilla to load.
-            query (str | None): Optional query parameter accepted for compatibility but not used by this implementation.
-            filter_by (dict[str, Any] | None): Optional filters accepted for compatibility but not used by this implementation.
-
+        
         Returns:
-            Dataset: A Hugging Face Dataset containing three columns: `text`, `label`, and `metadata`.
-
+            Dataset: A Hugging Face Dataset with `text`, `label`, and `metadata` columns. The `text` column contains record text content, `label` contains response annotations or None, and `metadata` contains record metadata or empty dictionaries.
+        
         Raises:
-            ValueError: If a dataset with `dataset_name` is not found in the Argilla client.
-
-        Note:
-            This method loads all dataset records into memory; for very large datasets consider using pagination or streaming.
+            ValueError: If the dataset with the specified name is not found.
         """
         try:
             # Load dataset from Argilla 2.x client

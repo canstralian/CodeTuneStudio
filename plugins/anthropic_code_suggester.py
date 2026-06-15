@@ -20,9 +20,9 @@ class AnthropicCodeSuggesterTool(AgentTool):
 
     def __init__(self) -> None:
         """
-        Initialize the AnthropicCodeSuggesterTool, populate tool metadata, and configure the Anthropic client when available.
-
-        Reads the `ANTHROPIC_API_KEY` environment variable and, if present and the `anthropic` package was successfully imported, creates and assigns an Anthropic client to `self.client`. If the API key is missing or the package is unavailable, `self.client` is set to `None` and a warning is logged. Also initializes `self.metadata` with tool name, description, version, author, and tags.
+        Initialize the tool with metadata and configure the Anthropic client if the API key is set and the package is installed.
+        
+        Sets `self.client` to an Anthropic client instance if both the `ANTHROPIC_API_KEY` environment variable and the `anthropic` package are available; otherwise, sets `self.client` to `None`.
         """
         super().__init__()
         self.metadata = ToolMetadata(
@@ -49,13 +49,10 @@ class AnthropicCodeSuggesterTool(AgentTool):
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
-        Check that inputs include a 'code' field containing the source code as a string.
-
-        Parameters:
-            inputs (dict[str, Any]): Input mapping; must contain a 'code' key with the source code.
-
+        Validate that inputs contain a 'code' key with a string value.
+        
         Returns:
-            bool: True if 'code' exists in inputs and is a `str`, False otherwise.
+            bool: True if 'code' is present in inputs and is a string, False otherwise.
         """
         return isinstance(inputs.get("code"), str)
 

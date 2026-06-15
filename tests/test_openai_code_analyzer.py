@@ -57,7 +57,10 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
 
     def test_execute_invalid_input(self) -> None:
         """
-        Test the execute method with invalid inputs.
+        Verify that execute returns an error when input is missing the required code field.
+        
+        Asserts that the result has error status with an "Invalid input" message and
+        that the OpenAI API is not invoked during validation failure.
         """
         with patch.object(self.tool, "client") as mock_client:
             result = self.tool.execute({"wrong_input": "some_code"})

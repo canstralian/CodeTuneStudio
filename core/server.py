@@ -87,7 +87,14 @@ class MLFineTuningApp:
         self._initialize_database_with_retry()
 
     def _configure_database(self) -> None:
-        """Configure database with optimized settings and connection pooling"""
+        """
+        Configure the Flask application's database URI and connection pool settings.
+        
+        Reads the DATABASE_URL environment variable (or uses sqlite:///database.db as default)
+        and updates Flask configuration with SQLAlchemy engine options including connection
+        pool sizing, recycling, timeouts, and conditional SQL debug logging. Logs the
+        configured database URL with credential information redacted.
+        """
         database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 
         # Optimized database configuration
@@ -225,7 +232,9 @@ class MLFineTuningApp:
             # Don't raise - plugins are optional
 
     def setup_sidebar(self) -> None:
-        """Setup sidebar with enhanced plugin information and navigation"""
+        """
+        Populate the sidebar with the application title, available plugins, and resource navigation.
+        """
         with st.sidebar:
             st.title("ML Model Fine-tuning")
 
@@ -258,15 +267,15 @@ class MLFineTuningApp:
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """
-        Save a validated training configuration to the application's database and return its persistent ID.
-
+        Save a training configuration to the database.
+        
         Parameters:
             config (dict[str, Any]): Mapping containing training parameters. Must include keys:
                 `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
             dataset (str): Name of the dataset associated with this configuration.
-
+        
         Returns:
-            int | None: The database ID of the persisted TrainingConfig on success, `None` if validation fails or saving encounters an error.
+            int | None: The database ID of the persisted TrainingConfig if successfully saved, `None` if validation fails or an error occurs.
         """
         if not isinstance(config, dict):
             logger.error(f"Invalid configuration type: {type(config)}")

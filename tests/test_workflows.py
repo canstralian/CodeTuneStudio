@@ -20,7 +20,7 @@ class TestWorkflowStructure(unittest.TestCase):
         self.workflows_dir = self.repo_root / ".github" / "workflows"
 
     def test_workflows_directory_exists(self):
-        """Test that workflows directory exists"""
+        """Verify that the workflows directory exists and is a directory."""
         self.assertTrue(self.workflows_dir.exists())
         self.assertTrue(self.workflows_dir.is_dir())
 
@@ -50,7 +50,14 @@ class TestWorkflowStructure(unittest.TestCase):
                         self.fail(f"Invalid YAML in {workflow_file.name}: {e}")
 
     def test_workflows_have_required_fields(self):
-        """Test that workflows have required fields (name, on, jobs)"""
+        """
+        Validate that specified workflow files include required structural elements.
+        
+        For each predefined workflow file that exists and contains valid YAML,
+        checks that files with a 'name' field also define a trigger definition
+        ('on' field, which YAML parsers may interpret as boolean True) and a
+        'jobs' section.
+        """
         workflow_files = [
             self.workflows_dir / "auto-update-checklist.yml",
             self.workflows_dir / "ci.yml",

@@ -125,13 +125,16 @@ def configure_logging(log_level: str) -> None:
 
 def main(args: Optional[list[str]] = None) -> int:
     """
-    Main CLI entrypoint for CodeTune Studio.
-
+    Launch the CodeTune Studio Streamlit application with CLI-configured settings.
+    
+    Parses command-line arguments, configures logging, sets environment variables,
+    and executes the Streamlit application as a subprocess.
+    
     Parameters:
-        args (Optional[list[str]]): Command-line arguments to parse; if None, uses sys.argv[1:].
-
+        args: Command-line arguments to parse; if None, defaults to sys.argv[1:].
+    
     Returns:
-        int: Exit code, 0 on success, non-zero on failure.
+        0 on success or user interruption, 1 on fatal error.
     """
     try:
         # Parse arguments

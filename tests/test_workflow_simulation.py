@@ -73,7 +73,9 @@ class TestCIWorkflowSimulation(unittest.TestCase):
     """Simulate ci.yml workflow execution"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Set the repository root directory to the parent of the tests directory.
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_pytest_execution(self):
@@ -114,14 +116,16 @@ class TestDependencyValidationSimulation(unittest.TestCase):
     """Simulate dependency-graph workflow"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Set the repository root directory to the parent of the tests directory.
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_project_structure_validation(self):
         """
-        Check that the repository contains at least one common Python dependency file.
-
-        Checks for 'requirements.txt', 'pyproject.toml', and 'setup.py' at the repository root and asserts that at least one of these files exists; fails the test with "No Python dependency files found" if none are present.
+        Validate that the repository contains at least one Python dependency configuration file.
+        
+        This test passes if at least one of requirements.txt, pyproject.toml, or setup.py exists in the repository root.
         """
         # This simulates the workflow validation step
 
@@ -171,14 +175,14 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
     """Simulate release.yml workflow validation"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Set the repository root directory to the parent of the tests directory.
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_version_extraction(self):
         """
-        Verify that the package version can be imported from core.__version__ and follows X.Y.Z semantic versioning.
-
-        Attempts to import core.__version__ from the repository root and, on success, asserts that the value matches the regular expression '^\d+\.\d+\.\d+$'. If the import fails, the test is skipped with the import error message.
+        Verify that the core module exports a valid semantic version string in X.Y.Z format. Skips if the core module cannot be imported.
         """
         # This simulates:
         # python -c "from core import __version__; print(__version__)"
@@ -201,9 +205,7 @@ class TestReleaseWorkflowSimulation(unittest.TestCase):
 
     def test_changelog_exists(self):
         """
-        Ensure a CHANGELOG.md file exists at the repository root and is not empty.
-
-        If the file is present, its contents must have length greater than zero.
+        Validate that CHANGELOG.md exists at the repository root and contains content.
         """
         changelog = self.repo_root / "CHANGELOG.md"
 
@@ -310,13 +312,15 @@ class TestHuggingFaceDeploySimulation(unittest.TestCase):
     """Simulate huggingface-deploy.yml workflow"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Set the repository root directory to the parent of the tests directory.
+        """
         self.repo_root = Path(__file__).parent.parent
 
     def test_requirements_for_hf_hub(self):
         """
-        Verify that huggingface_hub can be imported and exposes a non-empty __version__.
-
+        Verify that huggingface_hub is installed and has a version attribute.
+        
         If the package is not installed, the test is skipped.
         """
         try:
@@ -364,7 +368,9 @@ class TestWorkflowEnvironment(unittest.TestCase):
         )
 
     def test_git_available(self):
-        """Verify git is available for workflows"""
+        """
+        Validate that git is installed and callable with the expected version output.
+        """
         try:
             result = subprocess.run(
                 ["git", "--version"], capture_output=True, text=True, timeout=5

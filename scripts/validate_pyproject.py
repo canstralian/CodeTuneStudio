@@ -19,13 +19,13 @@ from pathlib import Path
 
 def validate_pyproject(filepath: str = "pyproject.toml") -> bool:
     """
-    Validate pyproject.toml file syntax.
-
-    Args:
-        filepath: Path to pyproject.toml file
-
+    Validate the syntax of a TOML configuration file.
+    
+    Parameters:
+        filepath: Path to the TOML file. Defaults to "pyproject.toml".
+    
     Returns:
-        True if valid, False otherwise
+        `True` if the file contains valid TOML syntax, `False` otherwise.
     """
     toml_path = Path(filepath)
 
