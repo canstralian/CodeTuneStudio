@@ -64,4 +64,14 @@ jobs:
             --source=/repo \
             --no-git \
             --redact \
-            --exit-code 1
+            --report-format=sarif \
+            --report-path=/repo/audit-results.sarif \
+            --exit-code=1
+      - name: Upload audit artifact
+        if: always() && hashFiles('audit-results.sarif') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-sarif-${{ github.run_id }}
+          path: audit-results.sarif
+          retention-days: 30
+          if-no-files-found: ignore
