@@ -40,11 +40,8 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format a LogRecord into a string, applying ANSI color to the record's level name when color is enabled.
-
-        Parameters:
-            record (logging.LogRecord): The log record to format.
-
+        Format a log record, applying ANSI color to the level name if color is enabled.
+        
         Returns:
             str: The formatted log message.
         """

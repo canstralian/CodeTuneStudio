@@ -28,6 +28,17 @@ def _make_validator(tmp_dir: Path):
 
 
 def _write_workflow(workflows_dir: Path, name: str, content: str) -> Path:
+    """
+    Write a workflow configuration to a file in the specified directory.
+    
+    Parameters:
+    	workflows_dir (Path): The directory where the workflow file will be written.
+    	name (str): The filename for the workflow.
+    	content (str): The workflow content to write.
+    
+    Returns:
+    	Path: The path to the written workflow file.
+    """
     path = workflows_dir / name
     path.write_text(textwrap.dedent(content), encoding="utf-8")
     return path
@@ -49,6 +60,9 @@ class TestIsMetadataFile(unittest.TestCase):
         self.v = _make_validator(Path(self._tmp.name))
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def test_sdk_key_is_metadata(self):
@@ -80,6 +94,9 @@ class TestValidateStructure(unittest.TestCase):
         self.v = _make_validator(Path(self._tmp.name))
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def _fresh(self):
@@ -125,6 +142,9 @@ class TestValidateSecurity(unittest.TestCase):
         self.v = _make_validator(Path(self._tmp.name))
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def _run(self, raw, content=None):
@@ -268,9 +288,18 @@ class TestValidateBestPractices(unittest.TestCase):
         self.v = _make_validator(Path(self._tmp.name))
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def _run(self, content):
+        """
+        Clear warnings and validate best practices for a workflow.
+        
+        Parameters:
+            content (dict): The parsed workflow content to validate.
+        """
         self.v.warnings.clear()
         self.v._validate_best_practices("wf.yml", content)
 
@@ -355,6 +384,9 @@ class TestValidateWorkflow(unittest.TestCase):
         self.wf_dir = self.tmp / ".github" / "workflows"
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def test_empty_yaml_file_adds_warning(self):
@@ -419,6 +451,9 @@ class TestSelectWorkflows(unittest.TestCase):
         self.wf_dir = self.tmp / ".github" / "workflows"
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def test_nonexistent_named_workflow_records_error(self):
@@ -454,6 +489,9 @@ class TestValidateAll(unittest.TestCase):
         self.wf_dir.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self):
+        """
+        Remove the temporary test directory.
+        """
         self._tmp.cleanup()
 
     def _validator(self):

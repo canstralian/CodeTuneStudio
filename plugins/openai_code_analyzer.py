@@ -56,13 +56,13 @@ class OpenAICodeAnalyzerTool(AgentTool):
 
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
-        Check that the inputs include a 'code' entry and that its value is a string.
-
+        Validates that inputs contain a string-valued 'code' key.
+        
         Parameters:
-            inputs (dict[str, Any]): Input mapping expected to contain a 'code' key with source code.
-
+            inputs: Input mapping expected to contain a 'code' key with source code.
+        
         Returns:
-            bool: `True` if `inputs` contains a `'code'` key whose value is a `str`, `False` otherwise.
+            bool: `True` if the 'code' key is present and is a string, `False` otherwise.
         """
         return isinstance(inputs.get("code"), str)
 

@@ -34,14 +34,16 @@ class WorkflowValidator:
         self, workflow_name: str | None = None, security_only: bool = False
     ) -> bool:
         """
-        Validate workflows in the repository or a single specified workflow.
-
+        Validate GitHub Actions workflow files in the repository.
+        
+        Validates all workflow files found under .github/workflows (including nested directories) or a single specified workflow. Unless security_only is True, runs structure and best-practice checks in addition to security validation.
+        
         Parameters:
-            workflow_name (str | None): Name of a single workflow file to validate (relative to .github/workflows). If None, all workflow files (*.yml, *.yaml) under .github/workflows (including nested directories) are validated.
-            security_only (bool): If True, run only security-related checks and skip structure and best-practice validations.
-
+            workflow_name (str | None): Name of a specific workflow file to validate relative to .github/workflows. If None, all *.yml and *.yaml files are validated.
+            security_only (bool): If True, only security-related checks are performed. Defaults to False.
+        
         Returns:
-            bool: True if validation produced no errors, False otherwise.
+            bool: `true` if no errors were found, `false` otherwise.
         """
         print("🔍 GitHub Workflow Validator")
         print("=" * 60)
@@ -66,15 +68,15 @@ class WorkflowValidator:
 
     def _select_workflows(self, workflow_name: str | None) -> list[Path]:
         """
-        Select workflow files to validate from the repository workflows directory.
-
-        If `workflow_name` is provided, returns a list containing that specific workflow file path; if the file does not exist, records an error and returns an empty list. If `workflow_name` is not provided, returns a sorted, deduplicated list of all files in the workflows directory matching `*.yml` or `*.yaml`, including files in nested subdirectories.
-
+        Select workflow files to validate based on the given filter.
+        
+        If a workflow name is provided, returns that file path if it exists; records an error and returns an empty list otherwise. If no name is provided, returns all .yml and .yaml files in the workflows directory and subdirectories, deduplicated and sorted.
+        
         Parameters:
-            workflow_name (str | None): Optional filename of a single workflow to validate.
-
+            workflow_name (str | None): Optional filename of a specific workflow.
+        
         Returns:
-            list[Path]: A list of Path objects for the selected workflow files.
+            list[Path]: Paths of selected workflow files.
         """
         if workflow_name:
             workflow_file = self.workflows_dir / workflow_name
@@ -134,13 +136,10 @@ class WorkflowValidator:
 
     def _is_metadata_file(self, content: dict[str, Any]) -> bool:
         """
-        Detect whether a parsed workflow YAML represents a metadata-only file.
-
-        Parameters:
-            content (dict[str, Any]): Parsed YAML mapping for a workflow file.
-
+        Determine if a parsed workflow YAML is metadata-only.
+        
         Returns:
-            True if the mapping appears to be metadata-only (contains any of "sdk", "emoji", or "colorFrom", or has a "title" without "jobs" or "on"), False otherwise.
+            `true` if the mapping contains SDK/theme metadata ("sdk", "emoji", "colorFrom") or has "title" without "jobs" and "on", `false` otherwise.
         """
         return any(key in content for key in ("sdk", "emoji", "colorFrom")) or (
             "title" in content and "jobs" not in content and "on" not in content
@@ -183,9 +182,9 @@ class WorkflowValidator:
     ) -> None:
         """
         Scan a workflow's raw and parsed YAML for security issues and record findings.
-
-        Searches the raw file text for potential hardcoded secrets (passwords, tokens, GitHub tokens, OpenAI keys) and appends an error for each match. Warns if the workflow uses `pull_request_target`. If no top-level `permissions` and no job-level `permissions` are present, records an informational message that defaults may apply.
-
+        
+        Searches the raw file text for potential hardcoded secrets (passwords, tokens, GitHub tokens, OpenAI keys) and appends an error for each match. Records an error if the workflow uses `pull_request_target`. If no top-level `permissions` and no job-level `permissions` are present, records an informational message that defaults may apply.
+        
         Parameters:
             filename (str): Workflow file name used in recorded messages.
             raw_content (str): Raw YAML text of the workflow file.
@@ -230,13 +229,13 @@ class WorkflowValidator:
 
     def _validate_best_practices(self, filename: str, content: dict[str, Any]) -> None:
         """
-        Add warnings for unpinned third-party actions used in job steps.
-
-        Scans each job in the workflow content and, for every step that specifies a `uses`
-        reference which is not a local action (does not start with "./") and does not
-        include an `@` pin (version, tag, or digest), appends a warning indicating the
-        job and the unpinned action reference.
-
+        Record warnings for third-party actions not pinned to a full commit SHA.
+        
+        Iterates through each job and its steps. For third-party actions (not
+        local, not docker images), warns if the action is not pinned to exactly
+        a 40-character commit SHA. Actions pinned to tags or branches are flagged
+        as unpinned.
+        
         Parameters:
             filename (str): The workflow file name used in warning messages.
             content (dict[str, Any]): Parsed workflow YAML as a dictionary.
@@ -262,7 +261,9 @@ class WorkflowValidator:
 
     def _print_results(self) -> None:
         """
-        Output a formatted report of validation errors, warnings, and informational messages.
+        Print a formatted validation report of errors, warnings, and informational messages to stdout.
+        
+        Displays each error, warning, and info message with their respective counts. Shows a success message if both errors and warnings are empty.
         """
         print("\n" + "=" * 60)
         print("🔎 Validation Results")

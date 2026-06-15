@@ -76,7 +76,11 @@ class MLFineTuningApp:
     """
 
     def __init__(self) -> None:
-        """Initialize the application with improved error handling and caching"""
+        """
+        Initialize the application by configuring the Flask server, database, Streamlit UI, and loading plugins.
+        
+        Sets up database connectivity with automatic retry logic and fallback behavior. Plugin loading failures do not prevent application startup.
+        """
         self.flask_app = Flask(__name__)
         self._configure_database()
         self._configure_streamlit()
@@ -214,7 +218,11 @@ class MLFineTuningApp:
             raise RuntimeError(f"Failed to configure Streamlit: {e}") from e
 
     def _load_plugins(self) -> None:
-        """Load plugins with improved error handling and logging"""
+        """
+        Load all available plugins from the plugins directory.
+        
+        Plugins are optional; if loading fails, the application continues without them.
+        """
         try:
             # Clear any existing plugins
             registry.clear_tools()
@@ -253,7 +261,7 @@ class MLFineTuningApp:
 
     def _render_navigation(self) -> None:
         """
-        Render a "Resources" navigation section in the Streamlit sidebar containing links to documentation, API reference, example projects, and issue reporting.
+        Display navigation links in the sidebar for documentation, API reference, examples, and issue reporting.
         """
         st.markdown(
             """

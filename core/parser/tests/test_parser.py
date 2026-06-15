@@ -33,13 +33,13 @@ def test_javascript_parser_error_is_sanitized(monkeypatch):
     class BrokenParser:
         def parse(self, code):
             """
-            Simulate a broken parser that always fails with a raw error message containing the input code.
-
+            Raise a RuntimeError with the input code included in the error message.
+            
             Parameters:
                 code (str): Source code to parse.
-
+            
             Raises:
-                RuntimeError: Always raised with the message "raw parser detail for {code}" where `{code}` is the provided input.
+                RuntimeError: Always raised with message "raw parser detail for {code}".
             """
             raise RuntimeError(f"raw parser detail for {code}")
 

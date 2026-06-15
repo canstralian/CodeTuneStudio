@@ -122,10 +122,7 @@ class DocumentationGenerator:
     def _get_function_signature(self, node: ast.FunctionDef) -> str:
         """
         Build a simplified function signature string including only positional-or-keyword parameters.
-
-        Parameters:
-            node (ast.FunctionDef): AST node representing the function.
-
+        
         Returns:
             str: Signature in the form "function_name(arg1, arg2, ...)" where only parameters from `node.args.args` are included.
         """

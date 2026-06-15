@@ -59,7 +59,9 @@ class TestWorkflowSecurity(unittest.TestCase):
                     )
 
     def test_secrets_use_github_secrets(self):
-        """Test that workflows use GitHub secrets properly"""
+        """
+        Verify that sensitive environment variables in workflows use GitHub secrets syntax.
+        """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
                 with open(workflow_file, "r") as f:
@@ -129,7 +131,11 @@ class TestWorkflowSecurity(unittest.TestCase):
                         check_env_section(step["env"])
 
     def test_workflows_have_permissions(self):
-        """Test that workflows define appropriate permissions"""
+        """
+        Check workflows for permission definitions and log when none are found.
+        
+        Verifies whether each workflow declares permissions at the top-level or within individual job configurations. Does not fail if permissions are absent, only logs an informational message.
+        """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
                 with open(workflow_file, "r") as f:

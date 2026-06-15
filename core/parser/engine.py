@@ -17,14 +17,15 @@ _has_pyjsparser = importlib.util.find_spec("pyjsparser") is not None
 
 def detect_language(code: str, filename: str | None = None) -> Language:
     """
-    Infer the programming language of a code snippet using filename extension and code heuristics.
-
+    Determine the programming language of a code snippet.
+    
+    Checks the filename extension first if provided, then applies code analysis heuristics.
+    
     Parameters:
-        code (str): Source code to analyze.
-        filename (str | None): Optional filename whose extension is used first to guide detection.
-
+        filename (str | None): Optional filename to use for extension-based detection.
+    
     Returns:
-        Language: One of Language.PYTHON, Language.JAVASCRIPT, Language.BASH, or Language.UNKNOWN.
+        Language: The detected language (PYTHON, JAVASCRIPT, BASH, or UNKNOWN).
     """
     if filename:
         if filename.endswith(".py"):
@@ -48,10 +49,10 @@ def detect_language(code: str, filename: str | None = None) -> Language:
 
 def parse_python(code: str) -> ParseResult:
     """
-    Parse Python source code into a compact AST representation.
+    Parse Python source code into an abstract syntax tree.
     
     Returns:
-        ParseResult: A module summary on success; errors and success=False on failure.
+        ParseResult: Parsed AST data on success; error details and success=False on failure.
     """
     try:
         tree = ast.parse(code)
@@ -83,13 +84,10 @@ def parse_python(code: str) -> ParseResult:
 
 def parse_javascript(code: str) -> ParseResult:
     """
-    Parse JavaScript source code into an abstract syntax tree.
-    
-    Parameters:
-        code (str): JavaScript source code to parse.
+    Parse JavaScript code into an abstract syntax tree.
     
     Returns:
-        ParseResult: The parsed AST on success; error details if parsing fails.
+        ParseResult: The parsed AST on success, or error information if parsing fails or the parser dependency is unavailable.
     """
     if not _has_pyjsparser:
         return ParseResult(

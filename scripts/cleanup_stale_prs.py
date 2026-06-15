@@ -133,15 +133,15 @@ def get_github_token() -> str:
 
 def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> bool:
     """
-    Closes a pull request and adds a comment to it.
+    Close a pull request and add a comment.
     
-    In dry-run mode (the default), prints the intended actions without making API calls. In execute mode, adds the comment and closes the pull request via the GitHub API.
+    In dry-run mode, prints the intended actions without making API calls. In execute mode, posts the comment and closes the pull request via the GitHub API.
     
     Parameters:
-        dry_run (bool): If False, execute the closure; if True, only print intended actions
+    	dry_run (bool): If True, simulate the actions; if False, execute them
     
     Returns:
-        bool: True if successful, False if any API call failed (always True in dry-run mode)
+    	bool: `true` if the operation succeeded (always in dry-run mode), `false` if an API call failed
     """
     headers = {
         "Authorization": f"Bearer {token}",
@@ -190,18 +190,16 @@ def close_prs_by_category(
     category: str, pr_numbers: List[int], token: str, dry_run: bool = True
 ) -> Dict[str, int]:
     """
-    Close pull requests in a category and return success/failure counts.
-    
-    Selects the category's predefined closure message, prints a header with the PR list, and attempts to close each PR. Each PR closure attempt increments either the success or failure counter.
+    Close a set of pull requests in a given category.
     
     Parameters:
-    	category (str): Category name matching a key in CLOSURE_MESSAGES to determine the closure comment text.
+    	category (str): Category name used to select the closure comment message.
     	pr_numbers (List[int]): PR numbers to close.
     	token (str): GitHub API authentication token.
-    	dry_run (bool): If True, no network requests are made; actions are printed only.
+    	dry_run (bool): If True, simulates the operation without making network requests.
     
     Returns:
-    	Dict[str, int]: Counts with keys "success" and "failed" indicating how many PRs were closed successfully and how many failed.
+    	Dict[str, int]: Dictionary with "success" and "failed" keys indicating the count of closed and failed PRs.
     """
     message = CLOSURE_MESSAGES.get(category, CLOSURE_MESSAGES["september_prs"])
 
@@ -223,7 +221,12 @@ def close_prs_by_category(
 
 def main():
     """
-    Close stale and redundant GitHub pull requests for the configured repository.
+    Parse arguments and close stale GitHub pull requests based on configuration.
+    
+    Operates in dry-run mode by default, showing what would be closed without
+    making changes. Use --execute flag and confirm at the prompt to actually
+    close PRs. Processes all configured PR categories or a single category
+    via --category. Prints a summary of processed and closed PRs.
     """
     import argparse
 

@@ -18,20 +18,17 @@ __all__ = [
 
 def __getattr__(name: str) -> Any:
     """
-    Lazily load and return select public utility symbols on first attribute access.
-
-    This module attribute hook exposes a small set of utilities without performing
-    eager imports of optional runtime dependencies. Supported attribute names are
-    "validate_config", "init_db", "TrainingConfig", "TrainingMetric", and "db".
-
+    Retrieve a module-level utility symbol by name.
+    
     Parameters:
-        name (str): The attribute name being accessed.
-
+        name: The attribute name to resolve. Supported values are "validate_config",
+            "init_db", "TrainingConfig", "TrainingMetric", and "db".
+    
     Returns:
-        object: The requested module-level object corresponding to `name`.
-
+        The requested utility symbol (a function, class, or database object).
+    
     Raises:
-        AttributeError: If `name` is not one of the supported attribute names.
+        AttributeError: If `name` is not a supported utility name.
     """
     if name == "validate_config":
         from utils.config_validator import validate_config

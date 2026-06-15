@@ -15,7 +15,9 @@ class TestWorkflowStructure(unittest.TestCase):
     """Test workflow file structure and syntax"""
 
     def setUp(self):
-        """Set up test fixtures"""
+        """
+        Initialize repository root and workflows directory paths for test validation.
+        """
         self.repo_root = Path(__file__).parent.parent
         self.workflows_dir = self.repo_root / ".github" / "workflows"
 

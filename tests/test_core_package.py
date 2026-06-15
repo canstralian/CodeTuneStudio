@@ -271,6 +271,12 @@ class TestRedactUrl(unittest.TestCase):
 
     def test_redis_url_with_password_only(self):
         # Redis often omits the username: "redis://:password@host"
+        """
+        Verify redaction of Redis URLs with password-only credentials.
+        
+        Ensures that redis://:password@host patterns have the cleartext password masked
+        while preserving the host and port information.
+        """
         url = "redis://:secrettoken@cache.internal:6379/0"
         result = self._redact(url)
         self.assertNotIn("secrettoken", result)
