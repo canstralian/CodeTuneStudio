@@ -1,0 +1,11 @@
+title = "CodeTuneStudio Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow known non-secret documentation placeholders only."
+regexes = [
+  '''pypi[-]AgEIcHlwaS5vcmc[.][.][.]''',
+  '''sk[-]1234567890abcdef''',
+]
