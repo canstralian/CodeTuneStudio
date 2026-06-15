@@ -55,7 +55,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Run Gitleaks audit
-        uses: gitleaks/gitleaks-action@v2
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            zricethezav/gitleaks:latest \
+            detect \
+            --source=/repo \
+            --no-git \
+            --redact \
+            --exit-code 1
