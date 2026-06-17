@@ -91,7 +91,6 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             assert result["status"] == "error"
             assert "API error" in result["error"]
 
-
     def test_execute_no_client_returns_error(self) -> None:
         """When ANTHROPIC_API_KEY is missing, execute returns an error dict."""
         with patch.dict(os.environ, {}, clear=True):

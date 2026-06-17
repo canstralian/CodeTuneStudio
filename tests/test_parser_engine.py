@@ -1,58 +1,31 @@
 """
 Tests for core/parser/engine.py.
 
-NOTE: engine.py has a broken relative import (`from .s.types import ...`).
-This module-level setup injects the correct types into sys.modules so that
-engine.py can be imported for testing.
-
-Known bugs in the current code (from this PR):
-  - `Language.UNKNOWO` typo on line 37: causes AttributeError when
-    detect_language falls through all heuristics.
-  - `PashResult` type annotation on line 55: typo but not enforced at runtime.
-
 Covers:
   - detect_language: filename-based detection (.py, .js, .jsx, .ts, .tsx, .sh)
   - detect_language: heuristic-based detection (const/let/function/=>, import, def)
-  - detect_language: UNKNOWO bug (AttributeError for unrecognised code)
+  - detect_language: falls back to Language.UNKNOWN for unrecognised code
   - parse_python: valid code, invalid syntax, body_count, error fields
   - parse_javascript: no pyjsparser fallback behaviour
   - parse_code: dispatcher to python/javascript/unsupported language
 """
 
-import sys
-import os
-import types as _types
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-# ---------------------------------------------------------------------------
-# Inject mock for the broken `from .s.types import ...` in engine.py
-# ---------------------------------------------------------------------------
-import core.parser.types as _parser_types
-
-_s_pkg = _types.ModuleType("core.parser.s")
-_s_types_mod = _types.ModuleType("core.parser.s.types")
-_s_types_mod.Language = _parser_types.Language
-_s_types_mod.ParseResult = _parser_types.ParseResult
-_s_types_mod.ParseError = _parser_types.ParseError
-
-sys.modules.setdefault("core.parser.s", _s_pkg)
-sys.modules.setdefault("core.parser.s.types", _s_types_mod)
-
-from core.parser.engine import (  # noqa: E402
+from core.parser.engine import (
     detect_language,
     parse_python,
     parse_javascript,
     parse_code,
 )
-from core.parser.types import Language, ParseError, ParseResult  # noqa: E402
+from core.parser.types import Language
 
 
 # ---------------------------------------------------------------------------
 # detect_language: filename-based detection
 # ---------------------------------------------------------------------------
+
 
 class TestDetectLanguageByFilename(unittest.TestCase):
     def test_py_extension_returns_python(self):
@@ -88,6 +61,7 @@ class TestDetectLanguageByFilename(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # detect_language: heuristic-based detection (no filename)
 # ---------------------------------------------------------------------------
+
 
 class TestDetectLanguageHeuristics(unittest.TestCase):
     def test_const_keyword_returns_javascript(self):
@@ -127,19 +101,13 @@ class TestDetectLanguageHeuristics(unittest.TestCase):
     def test_shebang_env_bash_returns_bash(self):
         self.assertEqual(detect_language("#!/usr/bin/env bash\nls"), Language.BASH)
 
-    def test_unknown_code_raises_attribute_error(self):
-        """
-        Regression test: engine.py line 37 contains `Language.UNKNOWO` (typo).
-        Accessing a non-existent enum member raises AttributeError.
-        This test documents the bug.
-        """
-        with self.assertRaises(AttributeError):
-            detect_language("some random text without any keywords")
+    def test_unknown_code_returns_unknown_language(self):
+        result = detect_language("some random text without any keywords")
+        self.assertEqual(result, Language.UNKNOWN)
 
-    def test_plain_assignment_raises_attribute_error(self):
-        """Code with no heuristic matches hits the UNKNOWO bug."""
-        with self.assertRaises(AttributeError):
-            detect_language("x = 1")  # no 'const', 'let', 'def', 'import', '#!'
+    def test_plain_assignment_returns_unknown_language(self):
+        result = detect_language("x = 1")  # no 'const', 'let', 'def', 'import', '#!'
+        self.assertEqual(result, Language.UNKNOWN)
 
     def test_js_heuristic_takes_priority_over_python(self):
         # Code with both JS and Python indicators should prefer JS (checked first).
@@ -150,6 +118,7 @@ class TestDetectLanguageHeuristics(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # parse_python
 # ---------------------------------------------------------------------------
+
 
 class TestParsePython(unittest.TestCase):
     def test_valid_function_succeeds(self):
@@ -232,6 +201,7 @@ class TestParsePython(unittest.TestCase):
 # parse_javascript
 # ---------------------------------------------------------------------------
 
+
 class TestParseJavascript(unittest.TestCase):
     def test_without_pyjsparser_returns_error(self):
         """When pyjsparser is not installed, parse_javascript returns an error result."""
@@ -296,6 +266,7 @@ class TestParseJavascript(unittest.TestCase):
 # parse_code: dispatcher
 # ---------------------------------------------------------------------------
 
+
 class TestParseCode(unittest.TestCase):
     def test_python_code_dispatches_to_parse_python(self):
         result = parse_code("def foo(): pass")
@@ -348,13 +319,10 @@ class TestParseCode(unittest.TestCase):
         result = parse_code("def hello(): return 42")
         self.assertEqual(result.language, Language.PYTHON)
 
-    def test_unknown_code_without_filename_raises(self):
-        """
-        Regression: when no heuristic matches, engine.py accesses Language.UNKNOWO
-        which raises AttributeError (typo for Language.UNKNOWN).
-        """
-        with self.assertRaises(AttributeError):
-            parse_code("totally unrecognised content 12345")
+    def test_unknown_code_without_filename_returns_unknown_language(self):
+        result = parse_code("totally unrecognised content 12345")
+        self.assertFalse(result.success)
+        self.assertEqual(result.language, Language.UNKNOWN)
 
     def test_tsx_file_treated_as_javascript(self):
         result = parse_code("const C = () => <div />;", filename="comp.tsx")

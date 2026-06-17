@@ -20,6 +20,7 @@ from core.parser.types import Language, ParseError, ParseResult
 # Language enum tests
 # ---------------------------------------------------------------------------
 
+
 class TestLanguageEnum(unittest.TestCase):
     def test_python_value(self):
         self.assertEqual(Language.PYTHON.value, "python")
@@ -59,12 +60,14 @@ class TestLanguageEnum(unittest.TestCase):
 
     def test_members_are_enum_instances(self):
         from enum import Enum
+
         self.assertIsInstance(Language.PYTHON, Enum)
 
 
 # ---------------------------------------------------------------------------
 # ParseError dataclass tests
 # ---------------------------------------------------------------------------
+
 
 class TestParseError(unittest.TestCase):
     def test_construction_with_all_fields(self):
@@ -118,6 +121,7 @@ class TestParseError(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # ParseResult dataclass tests
 # ---------------------------------------------------------------------------
+
 
 class TestParseResult(unittest.TestCase):
     def test_minimal_construction(self):

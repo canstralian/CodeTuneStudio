@@ -1,7 +1,7 @@
 """
 Tests for core/parser/types.py and core/parser/engine.py.
 
-These tests cover the code introduced in this PR:
+Covers:
   - Language enum
   - ParseError dataclass
   - ParseResult dataclass
@@ -9,77 +9,18 @@ These tests cover the code introduced in this PR:
   - parse_python()
   - parse_javascript()
   - parse_code()
-
-Because engine.py contains a module-level annotation bug (``-> PashResult``),
-the module is loaded via importlib with the annotation patched in-memory.
-If loading still fails for any reason, all engine tests are skipped.
 """
 
-import importlib.util
-import sys
-import types as _types
 import unittest
-from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Path setup
-# ---------------------------------------------------------------------------
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-TYPES_PATH = REPO_ROOT / "core" / "parser" / "types.py"
-ENGINE_PATH = REPO_ROOT / "core" / "parser" / "engine.py"
-
-# ---------------------------------------------------------------------------
-# Load core.parser.types via importlib (bypasses broken __init__.py)
-# ---------------------------------------------------------------------------
-
-_types_spec = importlib.util.spec_from_file_location("core.parser.types", TYPES_PATH)
-_types_mod = importlib.util.module_from_spec(_types_spec)
-_types_spec.loader.exec_module(_types_mod)
-
-Language = _types_mod.Language
-ParseError = _types_mod.ParseError
-ParseResult = _types_mod.ParseResult
-
-# ---------------------------------------------------------------------------
-# Load core.parser.engine via importlib, working around the two known bugs:
-#   1. `from .s.types import ...`  — the subpackage "s" does not exist.
-#   2. `-> PashResult:`            — PashResult is undefined (typo).
-# ---------------------------------------------------------------------------
-
-_ENGINE_IMPORTABLE = False
-_engine_mod = None
-
-try:
-    # Create a fake 'core.parser.s' package that re-exports the real types
-    _s_pkg = _types.ModuleType("core.parser.s")
-    _s_pkg.__path__ = []
-    for _name in ("Language", "ParseError", "ParseResult"):
-        setattr(_s_pkg, _name, getattr(_types_mod, _name))
-    sys.modules.setdefault("core.parser.s", _s_pkg)
-    sys.modules.setdefault("core.parser.s.types", _types_mod)
-
-    # Read engine source and fix the annotation typo so the module loads
-    _engine_src = ENGINE_PATH.read_text()
-    _engine_src_fixed = _engine_src.replace("-> PashResult:", "-> ParseResult:")
-
-    _engine_fake = _types.ModuleType("core.parser.engine")
-    _engine_fake.__package__ = "core.parser"
-    _engine_fake.__spec__ = None
-    sys.modules["core.parser.engine"] = _engine_fake
-
-    exec(compile(_engine_src_fixed, str(ENGINE_PATH), "exec"), _engine_fake.__dict__)
-
-    detect_language = _engine_fake.detect_language
-    parse_python = _engine_fake.parse_python
-    parse_javascript = _engine_fake.parse_javascript
-    parse_code = _engine_fake.parse_code
-
-    _ENGINE_IMPORTABLE = True
-    _engine_mod = _engine_fake
-
-except Exception as _e:  # pragma: no cover
-    _ENGINE_IMPORT_ERROR = str(_e)
+from core.parser import engine as _engine_mod
+from core.parser.engine import (
+    detect_language,
+    parse_python,
+    parse_javascript,
+    parse_code,
+)
+from core.parser.types import Language, ParseError, ParseResult
 
 
 # ===========================================================================
@@ -184,12 +125,7 @@ class TestParseResult(unittest.TestCase):
 # Tests for core/parser/engine.py
 # ===========================================================================
 
-_skip_engine = unittest.skipUnless(
-    _ENGINE_IMPORTABLE, "core.parser.engine could not be imported"
-)
 
-
-@_skip_engine
 class TestDetectLanguageByFilename(unittest.TestCase):
     """detect_language uses file extension when a filename is supplied."""
 
@@ -218,7 +154,6 @@ class TestDetectLanguageByFilename(unittest.TestCase):
         self.assertNotIn(result, [Language.PYTHON, Language.JAVASCRIPT, Language.BASH])
 
 
-@_skip_engine
 class TestDetectLanguageByHeuristics(unittest.TestCase):
     """detect_language uses code content when no filename is given."""
 
@@ -235,13 +170,17 @@ class TestDetectLanguageByHeuristics(unittest.TestCase):
         self.assertIs(detect_language("const f = x => x + 1;"), Language.JAVASCRIPT)
 
     def test_import_from_with_brace_is_javascript(self):
-        self.assertIs(detect_language("import { foo } from 'bar';"), Language.JAVASCRIPT)
+        self.assertIs(
+            detect_language("import { foo } from 'bar';"), Language.JAVASCRIPT
+        )
 
     def test_def_keyword_is_python(self):
         self.assertIs(detect_language("def hello(): pass"), Language.PYTHON)
 
     def test_import_from_is_python(self):
-        self.assertIs(detect_language("import os\nfrom pathlib import Path"), Language.PYTHON)
+        self.assertIs(
+            detect_language("import os\nfrom pathlib import Path"), Language.PYTHON
+        )
 
     def test_shebang_is_bash(self):
         self.assertIs(detect_language("#!/bin/bash\necho hello"), Language.BASH)
@@ -255,7 +194,6 @@ class TestDetectLanguageByHeuristics(unittest.TestCase):
         self.assertNotIn(result, [Language.PYTHON, Language.JAVASCRIPT, Language.BASH])
 
 
-@_skip_engine
 class TestParsePython(unittest.TestCase):
     """Tests for parse_python()."""
 
@@ -308,7 +246,6 @@ class TestParsePython(unittest.TestCase):
         self.assertTrue(result.success)
 
 
-@_skip_engine
 class TestParseJavascript(unittest.TestCase):
     """Tests for parse_javascript() — focused on the no-parser path."""
 
@@ -363,7 +300,6 @@ class TestParseJavascript(unittest.TestCase):
             _engine_mod.js_parser = original
 
 
-@_skip_engine
 class TestParseCode(unittest.TestCase):
     """Tests for parse_code() — the primary API."""
 

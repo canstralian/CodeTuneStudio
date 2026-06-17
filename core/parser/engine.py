@@ -28,13 +28,13 @@ def detect_language(code: str, filename: Optional[str] = None) -> Language:
     if "import " in code and (" from " in code or "{" in code):
         return Language.JAVASCRIPT
 
-    if "def " in code or ("import " in code and "from " in code):
+    if "def " in code or "import " in code:
         return Language.PYTHON
 
     if code.startswith("#!"):
         return Language.BASH
 
-    return Language.UNKNOWO
+    return Language.UNKNOWN
 
 
 def parse_python(code: str) -> ParseResult:

@@ -22,6 +22,7 @@ from scripts.validate_workflows import WorkflowValidator
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_validator(tmp_path: Path) -> WorkflowValidator:
     """Return a WorkflowValidator whose workflows_dir is *tmp_path*."""
     # WorkflowValidator expects repo_root / ".github" / "workflows" to exist
@@ -39,6 +40,7 @@ def _write_workflow(workflows_dir: Path, name: str, content: str) -> Path:
 # ---------------------------------------------------------------------------
 # TestWorkflowValidatorInit
 # ---------------------------------------------------------------------------
+
 
 class TestWorkflowValidatorInit(unittest.TestCase):
     """Test WorkflowValidator initialisation."""
@@ -60,6 +62,7 @@ class TestWorkflowValidatorInit(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # TestRedact
 # ---------------------------------------------------------------------------
+
 
 class TestRedact(unittest.TestCase):
     """Test WorkflowValidator._redact strips secret patterns."""
@@ -100,6 +103,7 @@ class TestRedact(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # TestIsMetadataFile
 # ---------------------------------------------------------------------------
+
 
 class TestIsMetadataFile(unittest.TestCase):
 
@@ -143,6 +147,7 @@ class TestIsMetadataFile(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # TestValidateStructure
 # ---------------------------------------------------------------------------
+
 
 class TestValidateStructure(unittest.TestCase):
 
@@ -231,6 +236,7 @@ class TestValidateStructure(unittest.TestCase):
 # TestValidateSecurity
 # ---------------------------------------------------------------------------
 
+
 class TestValidateSecurity(unittest.TestCase):
 
     def _v(self):
@@ -242,9 +248,7 @@ class TestValidateSecurity(unittest.TestCase):
         v = self._v()
         raw = "token: ghp_" + "x" * 36
         v._validate_security("ci.yml", raw, {})
-        self.assertTrue(
-            any("GitHub personal access token" in e for e in v.errors)
-        )
+        self.assertTrue(any("GitHub personal access token" in e for e in v.errors))
 
     def test_openai_key_in_raw_content_adds_error(self):
         v = self._v()
@@ -261,7 +265,10 @@ class TestValidateSecurity(unittest.TestCase):
     def test_no_secrets_no_errors(self):
         v = self._v()
         raw = "echo hello"
-        content = {"on": "push", "jobs": {"build": {"permissions": {"contents": "read"}}}}
+        content = {
+            "on": "push",
+            "jobs": {"build": {"permissions": {"contents": "read"}}},
+        }
         v._validate_security("ci.yml", raw, content)
         self.assertEqual(v.errors, [])
 
@@ -269,9 +276,7 @@ class TestValidateSecurity(unittest.TestCase):
         v = self._v()
         content = {"on": {"pull_request_target": {}}}
         v._validate_security("ci.yml", "echo hi", content)
-        self.assertTrue(
-            any("pull_request_target" in w for w in v.warnings)
-        )
+        self.assertTrue(any("pull_request_target" in w for w in v.warnings))
 
     def test_no_permissions_adds_info(self):
         v = self._v()
@@ -301,6 +306,7 @@ class TestValidateSecurity(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # TestValidateBestPractices
 # ---------------------------------------------------------------------------
+
 
 class TestValidateBestPractices(unittest.TestCase):
 
@@ -385,6 +391,7 @@ class TestValidateBestPractices(unittest.TestCase):
 # TestValidateAll
 # ---------------------------------------------------------------------------
 
+
 class TestValidateAll(unittest.TestCase):
     """Integration-level tests for validate_all."""
 
@@ -467,6 +474,7 @@ class TestValidateAll(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # TestGetWorkflowFiles
 # ---------------------------------------------------------------------------
+
 
 class TestGetWorkflowFiles(unittest.TestCase):
 
