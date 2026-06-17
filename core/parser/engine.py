@@ -1,7 +1,7 @@
 import ast
 import json
 from typing import Optional, Any, Dict
-from .s.types import Language, ParseResult, ParseError
+from .types import Language, ParseResult, ParseError
 
 try:
     from pyjsparser import PyJsParser
@@ -52,7 +52,7 @@ def parse_python(code: str) -> ParseResult:
         )
 
 
-def parse_javascript(code: str) -> PashResult:
+def parse_javascript(code: str) -> ParseResult:
     """Parse JavaScript code using pyjsparser."""
     if not js_parser:
         return ParseResult(

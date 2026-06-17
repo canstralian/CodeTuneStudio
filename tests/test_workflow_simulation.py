@@ -6,7 +6,7 @@ that workflow configurations would work as expected.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from pathlib import Path
 import subprocess
 import sys

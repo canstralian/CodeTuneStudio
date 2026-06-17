@@ -5,7 +5,6 @@ These tests verify that workflow files are properly structured,
 use correct syntax, and reference valid files and paths.
 """
 
-import os
 import unittest
 import yaml
 from pathlib import Path
