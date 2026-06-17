@@ -258,10 +258,10 @@ class WorkflowValidator:
         if self.errors:
             print(f"\n❌ Errors ({len(self.errors)}):")
             for error in self.errors:
-                # codeql[py/clear-text-logging-sensitive-data]: false positive —
-                # every self.errors entry is either a constant message or has
+                # Every self.errors entry is either a constant message or has
                 # already been through _redact(); none retain raw secret values.
-                print(f"  • {self._redact(error)}")
+                redacted = self._redact(error)
+                print(f"  • {redacted}")  # codeql[py/clear-text-logging-sensitive-data]
 
         if self.warnings:
             print(f"\n⚠️  Warnings ({len(self.warnings)}):")
