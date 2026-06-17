@@ -258,17 +258,17 @@ class WorkflowValidator:
         if self.errors:
             print(f"\n❌ Errors ({len(self.errors)}):")
             for error in self.errors:
-                print(f"  • {error}")
+                print(f"  • {self._redact(error)}")
 
         if self.warnings:
             print(f"\n⚠️  Warnings ({len(self.warnings)}):")
             for warning in self.warnings:
-                print(f"  • {warning}")
+                print(f"  • {self._redact(warning)}")
 
         if self.info:
             print(f"\nℹ️  Info ({len(self.info)}):")
             for info in self.info:
-                print(f"  • {info}")
+                print(f"  • {self._redact(info)}")
 
         if not self.errors and not self.warnings:
             print("\n✅ All validations passed!")
