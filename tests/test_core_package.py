@@ -304,6 +304,51 @@ class TestRedactUrl(unittest.TestCase):
         result = self._redact(url)
         self.assertIn("***:***@example.com", result)
 
+    # ── additional edge-case coverage ───────────────────────────────────────
+
+    def test_sqlite_local_path_returned_unchanged(self):
+        """sqlite:///local.db has no netloc; must be returned unchanged."""
+        url = "sqlite:///local.db"
+        self.assertEqual(self._redact(url), url)
+
+    def test_sqlite_absolute_path_returned_unchanged(self):
+        """Three-slash SQLite paths have no netloc."""
+        url = "sqlite:////var/lib/app/data.db"
+        self.assertEqual(self._redact(url), url)
+
+    def test_http_url_without_credentials_unchanged(self):
+        """Plain http URL with no credentials must not be altered."""
+        url = "http://api.example.com/v1/health"
+        self.assertEqual(self._redact(url), url)
+
+    def test_https_url_with_port_no_credentials_unchanged(self):
+        """https URL with port and no credentials must not be altered."""
+        url = "https://api.example.com:8443/v2"
+        self.assertEqual(self._redact(url), url)
+
+    def test_password_only_url_masked(self):
+        """URL with password field set but no username still gets masked."""
+        # urllib treats 'redis://:pass@host' as username='', password='pass'
+        url = "redis://:secretpass@cache.example.com:6379"
+        result = self._redact(url)
+        self.assertNotIn("secretpass", result)
+        self.assertIn("***:***@", result)
+
+    def test_amqp_url_with_credentials(self):
+        """AMQP connection strings with credentials are redacted."""
+        url = "amqp://mquser:mqpass@rabbitmq.internal:5672/vhost"
+        result = self._redact(url)
+        self.assertNotIn("mquser", result)
+        self.assertNotIn("mqpass", result)
+        self.assertIn("rabbitmq.internal", result)
+        self.assertIn("5672", result)
+
+    def test_redacted_result_is_valid_url_fragment(self):
+        """After redaction the scheme and host are still present and well-formed."""
+        url = "postgresql://admin:topsecret@primary.db.example.com:5432/myapp"
+        result = self._redact(url)
+        self.assertTrue(result.startswith("postgresql://***:***@primary.db.example.com"))
+
 
 if __name__ == "__main__":
     unittest.main()

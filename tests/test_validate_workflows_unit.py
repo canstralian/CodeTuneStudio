@@ -481,10 +481,209 @@ class TestSelectWorkflows(unittest.TestCase):
         self.assertEqual(result, [])
 
 
+class TestValidateSecurityExtended(unittest.TestCase):
+    """Additional edge-case coverage for _validate_security added in 0.2.1."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.v = _make_validator(Path(self._tmp.name))
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _run(self, raw, content=None):
+        self.v.errors.clear()
+        self.v.warnings.clear()
+        self.v.info.clear()
+        if content is None:
+            import yaml
+            content = yaml.safe_load(raw)
+        self.v._validate_security("wf.yml", raw, content)
+
+    def test_pull_request_target_as_string_trigger_is_error(self):
+        """When 'on' is a plain string 'pull_request_target', it should be flagged as an error."""
+        raw = "name: PR\non: pull_request_target\njobs:\n  b:\n    runs-on: ubuntu-latest\n    steps: []\n"
+        import yaml
+        content = yaml.safe_load(raw)
+        self._run(raw, content)
+        self.assertTrue(
+            any("pull_request_target" in e for e in self.v.errors),
+            f"Expected pull_request_target error for string trigger, got: {self.v.errors}",
+        )
+
+    def test_pull_request_target_in_list_trigger_is_error(self):
+        """When 'on' is a list containing 'pull_request_target', it should be flagged."""
+        raw = textwrap.dedent(
+            """\
+            name: PR
+            on:
+              - push
+              - pull_request_target
+            jobs:
+              b:
+                runs-on: ubuntu-latest
+                steps: []
+            """
+        )
+        import yaml
+        content = yaml.safe_load(raw)
+        self._run(raw, content)
+        self.assertTrue(
+            any("pull_request_target" in e for e in self.v.errors),
+            f"Expected pull_request_target error for list trigger, got: {self.v.errors}",
+        )
+
+    def test_hardcoded_token_key_is_flagged(self):
+        """A literal 'token: \"value\"' pattern in raw YAML is treated as a hardcoded secret."""
+        raw = textwrap.dedent(
+            """\
+            name: CI
+            on: push
+            jobs:
+              b:
+                runs-on: ubuntu-latest
+                env:
+                  token: "myrawtoken"
+                steps: []
+            """
+        )
+        import yaml
+        self._run(raw, yaml.safe_load(raw))
+        self.assertTrue(
+            any("token" in e.lower() for e in self.v.errors),
+            f"Expected hardcoded token error, got: {self.v.errors}",
+        )
+
+    def test_api_dash_key_variant_is_flagged(self):
+        """'api-key: value' (dash variant) should be detected as a hardcoded secret."""
+        raw = textwrap.dedent(
+            """\
+            name: CI
+            on: push
+            jobs:
+              b:
+                runs-on: ubuntu-latest
+                env:
+                  api-key: "supersecret"
+                steps: []
+            """
+        )
+        import yaml
+        self._run(raw, yaml.safe_load(raw))
+        self.assertTrue(
+            any("api key" in e.lower() for e in self.v.errors),
+            f"Expected api key error for 'api-key' variant, got: {self.v.errors}",
+        )
+
+    def test_github_secret_reference_not_flagged_as_hardcoded_token(self):
+        """'token: ${{ secrets.GITHUB_TOKEN }}' must not be flagged as a hardcoded secret."""
+        raw = textwrap.dedent(
+            """\
+            name: CI
+            on: push
+            permissions:
+              contents: read
+            jobs:
+              b:
+                runs-on: ubuntu-latest
+                env:
+                  TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                steps: []
+            """
+        )
+        import yaml
+        self._run(raw, yaml.safe_load(raw))
+        self.assertFalse(
+            any("hardcoded token" in e.lower() for e in self.v.errors),
+            f"Secret reference should not trigger hardcoded-token error, got: {self.v.errors}",
+        )
+
+
+class TestValidateBestPracticesExtended(unittest.TestCase):
+    """Additional coverage for _validate_best_practices (action SHA pinning)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.v = _make_validator(Path(self._tmp.name))
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _run(self, content):
+        self.v.warnings.clear()
+        self.v._validate_best_practices("wf.yml", content)
+
+    def test_sha_39_chars_adds_warning(self):
+        """A 39-character hex string is not a full SHA-40 and must be flagged."""
+        short_sha = "a" * 39
+        content = {
+            "jobs": {
+                "build": {
+                    "steps": [{"uses": f"actions/checkout@{short_sha}"}],
+                }
+            }
+        }
+        self._run(content)
+        self.assertTrue(
+            any("not pinned" in w for w in self.v.warnings),
+            f"39-char SHA should be flagged as unpinned, got: {self.v.warnings}",
+        )
+
+    def test_sha_41_chars_adds_warning(self):
+        """A 41-character string after @ is also not a valid 40-char SHA."""
+        long_sha = "a" * 41
+        content = {
+            "jobs": {
+                "build": {
+                    "steps": [{"uses": f"actions/checkout@{long_sha}"}],
+                }
+            }
+        }
+        self._run(content)
+        self.assertTrue(
+            any("not pinned" in w for w in self.v.warnings),
+            f"41-char SHA should be flagged as unpinned, got: {self.v.warnings}",
+        )
+
+    def test_step_without_uses_key_is_ignored(self):
+        """Steps that use 'run' instead of 'uses' must not generate warnings."""
+        content = {
+            "jobs": {
+                "build": {
+                    "steps": [{"run": "echo hello"}],
+                }
+            }
+        }
+        self._run(content)
+        self.assertEqual(self.v.warnings, [])
+
+    def test_non_dict_step_is_skipped_gracefully(self):
+        """Non-dict step entries must not raise and must produce no warnings."""
+        content = {
+            "jobs": {
+                "build": {
+                    "steps": ["just-a-string"],
+                }
+            }
+        }
+        self._run(content)
+        self.assertEqual(self.v.warnings, [])
+
+    def test_non_dict_job_is_skipped_gracefully(self):
+        """Non-dict job configs must not raise and must produce no warnings."""
+        content = {
+            "jobs": {
+                "build": "not-a-dict",
+            }
+        }
+        self._run(content)
+        self.assertEqual(self.v.warnings, [])
+
+
 class TestValidateAll(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
-        self.tmp = Path(self._tmp.name)
+
         self.wf_dir = self.tmp / ".github" / "workflows"
         self.wf_dir.mkdir(parents=True, exist_ok=True)
 

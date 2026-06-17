@@ -1,3 +1,4 @@
+import textwrap
 import unittest
 
 from plugins.code_analyzer import CodeAnalyzerTool
@@ -114,6 +115,56 @@ def baz():
         """None value for 'code' returns error dict, not raise."""
         result = self.tool.execute({"code": None})
         assert result["status"] == "error"
+
+    def test_execute_import_from_with_none_module_skipped(self) -> None:
+        """'from . import x' produces an ImportFrom with module=None; must not raise."""
+        # Python's ast module sets module=None for relative imports like 'from . import x'.
+        # The new guard (``if node.module``) prevents a TypeError on None.
+        code = "from . import something"
+        result = self.tool.execute({"code": code})
+        # The code parses fine; module=None entries should simply be omitted from imports.
+        assert result["status"] == "success"
+        assert "something" not in result["imports"]
+
+    def test_execute_relative_import_with_module_is_collected(self) -> None:
+        """'from .subpackage import x' has module='subpackage'; it must be collected."""
+        code = "from .utils import helper"
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert "utils" in result["imports"]
+
+    def test_execute_nested_functions_counted(self) -> None:
+        """Nested FunctionDef nodes must each be counted separately."""
+        code = textwrap.dedent(
+            """\
+            def outer():
+                def inner():
+                    pass
+            """
+        )
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert result["num_functions"] == 2
+
+    def test_execute_class_with_methods_counted(self) -> None:
+        """Methods inside a class are FunctionDefs and must be included in num_functions."""
+        code = textwrap.dedent(
+            """\
+            class MyClass:
+                def method_a(self): pass
+                def method_b(self): pass
+            """
+        )
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert result["num_classes"] == 1
+        assert result["num_functions"] == 2
+
+    def test_execute_complexity_increases_with_more_nodes(self) -> None:
+        """More AST nodes in longer code must produce a higher complexity score."""
+        simple_result = self.tool.execute({"code": "x = 1"})
+        complex_result = self.tool.execute({"code": "def f(x):\n    if x:\n        return x + 1\n    return x"})
+        assert complex_result["complexity"] > simple_result["complexity"]
 
 
 if __name__ == "__main__":
