@@ -2,7 +2,6 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-import pytest
 from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
@@ -75,8 +74,9 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
     def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with pytest.raises(ValueError):
-                tool.execute({})
+            result = tool.execute({})
+            assert result["status"] == "error"
+            assert "Invalid inputs" in result["error"]
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_api_error(self, mock_anthropic_class) -> None:
@@ -137,14 +137,15 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             assert "Invalid" in result["error"] or "format" in result["error"].lower()
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
-    def test_execute_invalid_code_type_raises_value_error(
+    def test_execute_invalid_code_type_returns_error(
         self, mock_anthropic_class
     ) -> None:
-        """execute raises ValueError when 'code' value is not a string."""
+        """execute returns an error dict when 'code' value is not a string."""
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with self.assertRaises(ValueError):
-                tool.execute({"code": 42})
+            result = tool.execute({"code": 42})
+            assert result["status"] == "error"
+            assert "Invalid inputs" in result["error"]
 
     def test_validate_inputs_empty_string_code(self) -> None:
         """validate_inputs returns True for empty string — it is still a string."""

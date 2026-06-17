@@ -1,6 +1,5 @@
 import ast
-import json
-from typing import Optional, Any, Dict
+from typing import Optional
 from .types import Language, ParseResult, ParseError
 
 try:
@@ -32,7 +31,13 @@ def detect_language(code: str, filename: Optional[str] = None) -> Language:
         return Language.PYTHON
 
     if code.startswith("#!"):
-        return Language.BASH
+        first_line = code.splitlines()[0].lower()
+        if "python" in first_line:
+            return Language.PYTHON
+        if "node" in first_line or "deno" in first_line:
+            return Language.JAVASCRIPT
+        if "bash" in first_line or first_line.endswith("sh"):
+            return Language.BASH
 
     return Language.UNKNOWN
 
@@ -76,6 +81,16 @@ def parse_javascript(code: str) -> ParseResult:
 
 def parse_code(code: str, filename: Optional[str] = None) -> ParseResult:
     """Primary API for the Code Parsing Pipeline."""
+    if not isinstance(code, str) or (
+        filename is not None and not isinstance(filename, str)
+    ):
+        return ParseResult(
+            language=Language.UNKNOWN,
+            ast_data={},
+            errors=[ParseError("code and filename must be strings", 0, 0, "")],
+            success=False,
+        )
+
     lang = detect_language(code, filename)
 
     if lang == Language.PYTHON:

@@ -162,7 +162,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Add comment
     try:
         comment_response = requests.post(
-            comment_url, headers=headers, json={"body": comment}
+            comment_url, headers=headers, json={"body": comment}, timeout=30
         )
         if comment_response.status_code != 201:
             print(f"Error adding comment to PR #{pr_number}: {comment_response.text}")
@@ -174,7 +174,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Close PR
     try:
         close_response = requests.patch(
-            pr_url, headers=headers, json={"state": "closed"}
+            pr_url, headers=headers, json={"state": "closed"}, timeout=30
         )
         if close_response.status_code != 200:
             print(f"Error closing PR #{pr_number}: {close_response.text}")

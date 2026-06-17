@@ -14,7 +14,7 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 import yaml
 import re
 
@@ -99,7 +99,7 @@ class WorkflowValidator:
         # Check if this is a metadata file (not a workflow)
         if self._is_metadata_file(workflow_path.name, content):
             print(
-                f"  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n"
+                "  ℹ️  Metadata file (not a workflow) - skipping workflow validation\n"
             )
             return
 
@@ -112,7 +112,7 @@ class WorkflowValidator:
         # Validate best practices
         self._validate_best_practices(workflow_path.name, content)
 
-        print(f"  ✓ Validation complete\n")
+        print("  ✓ Validation complete\n")
 
     def _is_metadata_file(self, filename: str, content: Dict[str, Any]) -> bool:
         """Check if file is metadata rather than a workflow"""
@@ -245,7 +245,8 @@ class WorkflowValidator:
                     # Check if action is pinned
                     if "@" not in uses:
                         self.warnings.append(
-                            f"{filename}: Unpinned action in job '{job_name}': {uses}"
+                            f"{filename}: Unpinned action in job '{job_name}': "
+                            f"{self._redact(uses)}"
                         )
 
     def _print_results(self):

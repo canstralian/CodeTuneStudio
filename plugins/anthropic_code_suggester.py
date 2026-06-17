@@ -81,8 +81,10 @@ class AnthropicCodeSuggesterTool(AgentTool):
             Dictionary containing suggested improvements
         """
         if not self.validate_inputs(inputs):
-            msg = "Invalid inputs"
-            raise ValueError(msg)
+            return {
+                "error": "Invalid inputs: 'code' must be a non-empty string",
+                "status": "error",
+            }
 
         if not self.client:
             return {

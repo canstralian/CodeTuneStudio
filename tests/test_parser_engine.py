@@ -204,7 +204,7 @@ class TestParsePython(unittest.TestCase):
 
 class TestParseJavascript(unittest.TestCase):
     def test_without_pyjsparser_returns_error(self):
-        """When pyjsparser is not installed, parse_javascript returns an error result."""
+        """When pyjsparser is not installed, parse_javascript returns an error."""
         import core.parser.engine as engine_mod
 
         original = engine_mod.js_parser
@@ -278,10 +278,16 @@ class TestParseCode(unittest.TestCase):
         self.assertEqual(result.language, Language.PYTHON)
 
     def test_javascript_code_dispatches_to_parse_javascript(self):
-        result = parse_code("const x = 1;")
-        self.assertEqual(result.language, Language.JAVASCRIPT)
-        # pyjsparser likely not installed → error result but still JavaScript
-        self.assertFalse(result.success)
+        import core.parser.engine as engine_mod
+
+        original = engine_mod.js_parser
+        try:
+            engine_mod.js_parser = None
+            result = parse_code("const x = 1;")
+            self.assertEqual(result.language, Language.JAVASCRIPT)
+            self.assertFalse(result.success)
+        finally:
+            engine_mod.js_parser = original
 
     def test_javascript_file_by_filename(self):
         result = parse_code("var x = 1;", filename="app.js")

@@ -6,7 +6,6 @@ metadata-file detection, structure validation, security scanning,
 best-practice checks, and the _redact helper.
 """
 
-import shutil
 import sys
 import tempfile
 import unittest
@@ -15,7 +14,7 @@ from pathlib import Path
 # Ensure the project root is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts.validate_workflows import WorkflowValidator
+from scripts.validate_workflows import WorkflowValidator  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -325,7 +324,7 @@ class TestValidateBestPractices(unittest.TestCase):
                     "steps": [
                         {
                             "uses": "actions/setup-python@v4",
-                            "with": {f"python-version": version},
+                            "with": {"python-version": version},
                         }
                     ],
                 }
