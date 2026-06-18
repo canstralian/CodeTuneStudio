@@ -103,9 +103,7 @@ class TestClosePrLiveMode(unittest.TestCase):
 
         close_pr(10, "closing message", "my_token", dry_run=False)
 
-        expected_pr_url = (
-            f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/10"
-        )
+        expected_pr_url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/10"
         mock_requests.patch.assert_called_once_with(
             expected_pr_url,
             headers={
@@ -188,9 +186,7 @@ class TestClosePrLiveMode(unittest.TestCase):
         close_pr(5, "msg", "secret_token", dry_run=False)
 
         _, post_kwargs = mock_requests.post.call_args
-        self.assertEqual(
-            post_kwargs["headers"]["Authorization"], "Bearer secret_token"
-        )
+        self.assertEqual(post_kwargs["headers"]["Authorization"], "Bearer secret_token")
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +323,9 @@ class TestStalePrsConfiguration(unittest.TestCase):
 
     def test_stale_prs_all_values_are_lists(self):
         for category, pr_list in STALE_PRS.items():
-            self.assertIsInstance(pr_list, list, f"STALE_PRS['{category}'] is not a list")
+            self.assertIsInstance(
+                pr_list, list, f"STALE_PRS['{category}'] is not a list"
+            )
 
     def test_stale_prs_all_values_are_integers(self):
         for category, pr_list in STALE_PRS.items():
@@ -344,7 +342,9 @@ class TestStalePrsConfiguration(unittest.TestCase):
 
     def test_closure_messages_are_non_empty_strings(self):
         for category, msg in CLOSURE_MESSAGES.items():
-            self.assertIsInstance(msg, str, f"CLOSURE_MESSAGES['{category}'] is not a str")
+            self.assertIsInstance(
+                msg, str, f"CLOSURE_MESSAGES['{category}'] is not a str"
+            )
             self.assertGreater(len(msg), 0, f"CLOSURE_MESSAGES['{category}'] is empty")
 
 

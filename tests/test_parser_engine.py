@@ -378,7 +378,8 @@ class TestDetectLanguageShebangSubtypes(unittest.TestCase):
 
     def test_shebang_env_node_returns_javascript(self):
         self.assertEqual(
-            detect_language("#!/usr/bin/env node\nprocess.exit(0);"), Language.JAVASCRIPT
+            detect_language("#!/usr/bin/env node\nprocess.exit(0);"),
+            Language.JAVASCRIPT,
         )
 
     def test_shebang_deno_returns_javascript(self):
@@ -388,9 +389,7 @@ class TestDetectLanguageShebangSubtypes(unittest.TestCase):
         )
 
     def test_shebang_sh_returns_bash(self):
-        self.assertEqual(
-            detect_language("#!/bin/sh\nls"), Language.BASH
-        )
+        self.assertEqual(detect_language("#!/bin/sh\nls"), Language.BASH)
 
     def test_shebang_env_bash_returns_bash(self):
         self.assertEqual(

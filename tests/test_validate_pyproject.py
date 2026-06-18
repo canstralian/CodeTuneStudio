@@ -171,6 +171,7 @@ class TestValidatePyprojectTomlFallback(unittest.TestCase):
     def test_neither_library_returns_false(self):
         """When neither tomli nor tomllib is importable, validate_pyproject returns False."""
         import builtins
+
         original_import = builtins.__import__
 
         def _blocked_import(name, *args, **kwargs):
@@ -203,6 +204,7 @@ class TestValidatePyprojectTomlFallback(unittest.TestCase):
         """validate_pyproject works when using tomllib (Python 3.11+)."""
         # Simulate tomli not present, tomllib available
         import builtins
+
         original_import = builtins.__import__
 
         def _no_tomli_import(name, *args, **kwargs):
