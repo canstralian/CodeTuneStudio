@@ -348,5 +348,117 @@ class TestParseCode(unittest.TestCase):
         )
 
 
+# ---------------------------------------------------------------------------
+# detect_language: shebang sub-type detection (new in this PR)
+# ---------------------------------------------------------------------------
+
+
+class TestDetectLanguageShebangSubtypes(unittest.TestCase):
+    """detect_language identifies Python, JS and Bash from shebang first-line."""
+
+    def test_shebang_python_returns_python(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/python\nprint('hi')"), Language.PYTHON
+        )
+
+    def test_shebang_usr_bin_env_python_returns_python(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/env python\nprint('hi')"), Language.PYTHON
+        )
+
+    def test_shebang_python3_returns_python(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/python3\nprint('hi')"), Language.PYTHON
+        )
+
+    def test_shebang_node_returns_javascript(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/node\nconsole.log(1);"), Language.JAVASCRIPT
+        )
+
+    def test_shebang_env_node_returns_javascript(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/env node\nprocess.exit(0);"), Language.JAVASCRIPT
+        )
+
+    def test_shebang_deno_returns_javascript(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/deno run\nconsole.log('hi');"),
+            Language.JAVASCRIPT,
+        )
+
+    def test_shebang_sh_returns_bash(self):
+        self.assertEqual(
+            detect_language("#!/bin/sh\nls"), Language.BASH
+        )
+
+    def test_shebang_env_bash_returns_bash(self):
+        self.assertEqual(
+            detect_language("#!/usr/bin/env bash\necho hello"), Language.BASH
+        )
+
+    def test_shebang_unknown_interpreter_returns_unknown(self):
+        # A shebang with an unrecognised interpreter falls through to UNKNOWN
+        result = detect_language("#!/usr/bin/ruby\nputs 'hi'")
+        self.assertEqual(result, Language.UNKNOWN)
+
+
+# ---------------------------------------------------------------------------
+# parse_code: type validation (new in this PR)
+# ---------------------------------------------------------------------------
+
+
+class TestParseCodeTypeValidation(unittest.TestCase):
+    """parse_code validates that code and filename are strings."""
+
+    def test_non_string_code_returns_error(self):
+        result = parse_code(42)
+        self.assertFalse(result.success)
+        self.assertEqual(result.language, Language.UNKNOWN)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_none_code_returns_error(self):
+        result = parse_code(None)
+        self.assertFalse(result.success)
+        self.assertEqual(result.language, Language.UNKNOWN)
+
+    def test_list_code_returns_error(self):
+        result = parse_code(["def foo(): pass"])
+        self.assertFalse(result.success)
+
+    def test_non_string_filename_returns_error(self):
+        result = parse_code("def foo(): pass", filename=42)
+        self.assertFalse(result.success)
+        self.assertEqual(result.language, Language.UNKNOWN)
+
+    def test_none_filename_is_allowed(self):
+        """None filename is explicitly allowed (default)."""
+        result = parse_code("def foo(): pass", filename=None)
+        self.assertTrue(result.success)
+        self.assertEqual(result.language, Language.PYTHON)
+
+    def test_type_error_message_mentions_strings(self):
+        result = parse_code(42)
+        self.assertTrue(
+            any("string" in e.message.lower() for e in result.errors),
+            f"Error messages: {[e.message for e in result.errors]}",
+        )
+
+    def test_type_error_ast_data_is_empty(self):
+        result = parse_code(42)
+        self.assertEqual(result.ast_data, {})
+
+    def test_empty_string_code_is_valid(self):
+        """An empty string is a valid code argument."""
+        result = parse_code("")
+        # Empty string → UNKNOWN language (no heuristics match)
+        self.assertFalse(result.success)
+        # But the failure is due to unknown language, not type error
+        self.assertNotIn(
+            "must be strings",
+            " ".join(e.message for e in result.errors),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

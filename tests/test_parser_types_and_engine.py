@@ -351,6 +351,75 @@ class TestParseCode(unittest.TestCase):
         err_msg = result.errors[0].message
         self.assertIn("bash", err_msg.lower())
 
+    # ------------------------------------------------------------------
+    # Type validation (new in this PR)
+    # ------------------------------------------------------------------
+
+    def test_non_string_code_returns_error_result(self):
+        """parse_code rejects non-string code with an error ParseResult."""
+        result = parse_code(42)
+        self.assertFalse(result.success)
+        self.assertIs(result.language, Language.UNKNOWN)
+        self.assertGreater(len(result.errors), 0)
+
+    def test_none_code_returns_error_result(self):
+        result = parse_code(None)
+        self.assertFalse(result.success)
+        self.assertIs(result.language, Language.UNKNOWN)
+
+    def test_non_string_filename_returns_error_result(self):
+        result = parse_code("def foo(): pass", 123)
+        self.assertFalse(result.success)
+        self.assertIs(result.language, Language.UNKNOWN)
+
+    def test_none_filename_is_valid(self):
+        """filename=None is explicitly permitted."""
+        result = parse_code("def foo(): pass", None)
+        self.assertTrue(result.success)
+
+    def test_type_error_message_mentions_strings(self):
+        result = parse_code(0)
+        error_text = " ".join(e.message for e in result.errors).lower()
+        self.assertIn("string", error_text)
+
+
+class TestDetectLanguageShebangSubtypes(unittest.TestCase):
+    """Shebang sub-type detection paths added in this PR."""
+
+    def test_shebang_python_returns_python(self):
+        self.assertIs(
+            detect_language("#!/usr/bin/python\nprint('hi')"), Language.PYTHON
+        )
+
+    def test_shebang_env_python_returns_python(self):
+        self.assertIs(
+            detect_language("#!/usr/bin/env python\nprint('hi')"), Language.PYTHON
+        )
+
+    def test_shebang_node_returns_javascript(self):
+        self.assertIs(
+            detect_language("#!/usr/bin/node\nconsole.log(1);"), Language.JAVASCRIPT
+        )
+
+    def test_shebang_env_node_returns_javascript(self):
+        self.assertIs(
+            detect_language("#!/usr/bin/env node\nprocess.exit(0);"),
+            Language.JAVASCRIPT,
+        )
+
+    def test_shebang_deno_returns_javascript(self):
+        self.assertIs(
+            detect_language("#!/usr/bin/deno run\nconsole.log('hi');"),
+            Language.JAVASCRIPT,
+        )
+
+    def test_shebang_sh_returns_bash(self):
+        self.assertIs(detect_language("#!/bin/sh\nls"), Language.BASH)
+
+    def test_shebang_unknown_interpreter_returns_unknown(self):
+        result = detect_language("#!/usr/bin/ruby\nputs 'hi'")
+        self.assertIs(result, Language.UNKNOWN)
+
 
 if __name__ == "__main__":
     unittest.main()
