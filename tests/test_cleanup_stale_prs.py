@@ -18,7 +18,7 @@ Covers:
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 # Ensure the project root is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -313,12 +313,15 @@ class TestStalePrsConfiguration(unittest.TestCase):
     """Verify STALE_PRS and CLOSURE_MESSAGES are consistent (structural sanity)."""
 
     def test_all_categories_have_closure_messages(self):
-        """Every category in STALE_PRS must have a corresponding CLOSURE_MESSAGES entry."""
+        """Every STALE_PRS category must have a CLOSURE_MESSAGES entry."""
         for category in STALE_PRS:
             self.assertIn(
                 category,
                 CLOSURE_MESSAGES,
-                f"Category '{category}' in STALE_PRS has no matching CLOSURE_MESSAGES entry",
+                (
+                    f"Category '{category}' in STALE_PRS has no matching "
+                    "CLOSURE_MESSAGES entry"
+                ),
             )
 
     def test_stale_prs_all_values_are_lists(self):

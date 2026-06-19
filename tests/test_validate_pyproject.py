@@ -10,6 +10,7 @@ Covers:
   - File path argument handling
 """
 
+import os
 import sys
 import tempfile
 import unittest
@@ -75,10 +76,14 @@ class TestValidatePyprojectValidFile(unittest.TestCase):
         self.assertTrue(validate_pyproject(str(p)))
 
     def test_default_filename_is_pyproject_toml(self):
-        """When called without argument from the right directory, it defaults to pyproject.toml."""
-        # Verify that the default argument 'pyproject.toml' is used when no path given.
-        p = _write_toml(self.tmp, "pyproject.toml", VALID_TOML)
-        self.assertTrue(validate_pyproject(str(p)))
+        """Without args, it should use the default `pyproject.toml` path."""
+        _write_toml(self.tmp, "pyproject.toml", VALID_TOML)
+        prev_cwd = os.getcwd()
+        try:
+            os.chdir(self.tmp)
+            self.assertTrue(validate_pyproject())
+        finally:
+            os.chdir(prev_cwd)
 
     def test_returns_bool_true_type(self):
         p = _write_toml(self.tmp, "pyproject.toml", VALID_TOML)
@@ -169,7 +174,7 @@ class TestValidatePyprojectTomlFallback(unittest.TestCase):
         self._tmpdir.cleanup()
 
     def test_neither_library_returns_false(self):
-        """When neither tomli nor tomllib is importable, validate_pyproject returns False."""
+        """Return False when both tomli and tomllib are unavailable."""
         import builtins
 
         original_import = builtins.__import__
@@ -196,9 +201,8 @@ class TestValidatePyprojectTomlFallback(unittest.TestCase):
             finally:
                 if saved != "SENTINEL":
                     sys.modules["tomllib"] = saved
-        # If tomli was used, the file should have been processed
-        # (result depends on mock — but function should not crash)
-        self.assertIsInstance(result, bool)
+        self.assertTrue(result)
+        mock_tomli.load.assert_called_once()
 
     def test_valid_file_with_tomllib_fallback(self):
         """validate_pyproject works when using tomllib (Python 3.11+)."""

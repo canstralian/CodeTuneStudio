@@ -82,7 +82,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
         """
         if not self.validate_inputs(inputs):
             return {
-                "error": "Invalid inputs: 'code' must be a non-empty string",
+                "error": "Invalid inputs: 'code' must be a string",
                 "status": "error",
             }
 
