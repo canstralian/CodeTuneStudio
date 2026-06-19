@@ -1,9 +1,26 @@
-ZnJvbSBkYXRhY2xhc3NlcyBpbXBvcnQgZGF0YWNsYXNzLCBmaWVsZApmcm9tIGVudW0gaW1wb3J0
-IEVudW0KZnJvbSB0eXBpbmcgaW1wb3J0IEFueSwgRGljdCwgTGlzdCwgT3B0aW9uYWwKCmNsYXNz
-IExhbmd1YWdlKEVudW0pOgogICAgUFlUSE9OID0gInB5dGhvbiIKICAgIEpBVkFTQ1JJUFQgPSAi
-amF2YXNjcmlwdCIKICAgIEJBU0ggPSAiYmFzaCIKICAgIFVOS05PV04gPSAidW5rbm93biIKCkBk
-YXRhY2xhc3MKY2xhc3MgUGFyc2VFcnJvcjoKICAgIG1lc3NhZ2U6IHN0cgogICAgbGluZTogaW50
-CiAgICBjb2x1bW46IGludAogICAgc291cmNlOiBzdHIKCkBkYXRhY2xhc3MKY2xhc3MgUGFyc2VS
-ZXN1bHQ6CiAgICBsYW5ndWFnZTogTGFuZ3VhZ2UKICAgIGFzdF9kYXRhOiBEaWN0W3N0ciwgQW55
-XQogICAgZXJyb3JzOiBMaXN0W1BhcnNlRXJyb3JdID0gZmllbGQoZGVmYXVsdF9mYWN0b3J5PWxp
-c3QpCiAgICBzdWNjZXNzOiBib29sID0gVHJ1ZQo=
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List
+
+
+class Language(Enum):
+    PYTHON = "python"
+    JAVASCRIPT = "javascript"
+    BASH = "bash"
+    UNKNOWN = "unknown"
+
+
+@dataclass
+class ParseError:
+    message: str
+    line: int
+    column: int
+    source: str
+
+
+@dataclass
+class ParseResult:
+    language: Language
+    ast_data: Dict[str, Any]
+    errors: List[ParseError] = field(default_factory=list)
+    success: bool = True

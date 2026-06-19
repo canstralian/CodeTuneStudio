@@ -33,7 +33,7 @@ class ArgillaDatasetManager:
     def _init_argilla(self, api_url: str | None, api_key: str | None) -> None:
         """
         Initialize Argilla client using Argilla 2.x API.
-        
+
         Security Note:
             The api_key parameter contains sensitive credentials and should never
             be logged or exposed in error messages. All logging in this method
@@ -77,7 +77,7 @@ class ArgillaDatasetManager:
 
         Returns:
             HuggingFace dataset object
-            
+
         Note:
             This method loads all records into memory at once. For large datasets
             (>10,000 records), consider implementing pagination or streaming to
@@ -92,13 +92,13 @@ class ArgillaDatasetManager:
                 if ds.name == dataset_name:
                     argilla_dataset = ds
                     break
-            
+
             if not argilla_dataset:
                 raise ValueError(f"Dataset '{dataset_name}' not found")
-            
+
             # Fetch all records from the dataset
             records = list(argilla_dataset.records)
-            
+
             # Convert to HuggingFace dataset format
             # Extract text fields and responses from records
             dataset_dict = {
@@ -106,25 +106,25 @@ class ArgillaDatasetManager:
                 "label": [],
                 "metadata": [],
             }
-            
+
             for record in records:
                 # Get the text from the first text field
-                text_fields = [f.value for f in record.fields if hasattr(f, 'value')]
+                text_fields = [f.value for f in record.fields if hasattr(f, "value")]
                 dataset_dict["text"].append(text_fields[0] if text_fields else "")
-                
+
                 # Get responses/annotations if available
-                responses = record.responses if hasattr(record, 'responses') else []
+                responses = record.responses if hasattr(record, "responses") else []
                 # Safely extract values from first response
                 label_value = None
                 if responses and len(responses) > 0:
-                    label_value = getattr(responses[0], 'values', None)
+                    label_value = getattr(responses[0], "values", None)
                 dataset_dict["label"].append(label_value)
-                
+
                 # Get metadata if available
                 dataset_dict["metadata"].append(
-                    record.metadata if hasattr(record, 'metadata') else {}
+                    record.metadata if hasattr(record, "metadata") else {}
                 )
-            
+
             hf_dataset = Dataset.from_dict(dataset_dict)
 
             logger.info(
