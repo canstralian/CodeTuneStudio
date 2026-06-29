@@ -25,7 +25,7 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Set up Python
       - name: Set up Python
@@ -35,7 +35,7 @@ jobs:
 
       # Cache pip packages to speed up subsequent runs
       - name: Cache pip dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
