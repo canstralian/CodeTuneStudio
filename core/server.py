@@ -84,6 +84,26 @@ class MLFineTuningApp:
         self._load_plugins()
 
         self._initialize_database_with_retry()
+        self._init_rate_limiting()
+        self._init_observability()
+
+    def _init_rate_limiting(self) -> None:
+        """Attach flask-limiter if available (optional dependency)."""
+        try:
+            from utils.rate_limit import init_limiter
+
+            init_limiter(self.flask_app)
+        except Exception as e:
+            logger.warning(f"Rate limiting not initialised: {e}")
+
+    def _init_observability(self) -> None:
+        """Initialise Sentry + Prometheus if configured (optional dependency)."""
+        try:
+            from utils.observability import init_observability
+
+            init_observability(flask_app=self.flask_app)
+        except Exception as e:
+            logger.warning(f"Observability not initialised: {e}")
 
     def _configure_database(self) -> None:
         """Configure database with optimized settings and connection pooling"""
@@ -283,6 +303,11 @@ class MLFineTuningApp:
 
     def run(self) -> None:
         """Run the application with improved error boundaries and state management"""
+        from utils.auth import require_auth
+
+        if not require_auth():
+            return
+
         try:
             self.setup_sidebar()
 
