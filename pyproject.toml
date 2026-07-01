@@ -54,6 +54,19 @@ dev = [
     "mypy>=1.0.0",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "bandit>=1.7.0",
+    "pip-audit>=2.7.0",
+]
+observability = [
+    "sentry-sdk[flask,sqlalchemy]>=2.0.0",
+    "prometheus-client>=0.20.0",
+]
+auth = [
+    "streamlit-authenticator>=0.3.0",
+    "bcrypt>=4.0.0",
+]
+rate-limiting = [
+    "flask-limiter>=3.5.0",
 ]
 
 [tool.setuptools.dynamic]

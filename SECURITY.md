@@ -11,7 +11,9 @@
 
 **DO NOT** open public issues for security vulnerabilities.
 
-Please report security vulnerabilities to: [your-email@domain.com]
+Please report security vulnerabilities to: **security@codetunestudio.dev**
+
+Alternatively, use GitHub's [private vulnerability reporting](https://github.com/canstralian/CodeTuneStudio/security/advisories/new) feature.
 
 ### Response Time
 - Initial response: 48 hours

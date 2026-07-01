@@ -22,3 +22,8 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-added-large-files
         args: ["--maxkb=500"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks

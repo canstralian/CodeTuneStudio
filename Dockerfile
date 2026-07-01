@@ -17,16 +17,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first for better layer caching
-COPY requirements.txt .
+# Copy only dependency specs first for better layer caching
+COPY pyproject.toml requirements.txt ./
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install -e .
+    pip install -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# Install the local package now that source is present
+RUN pip install --no-deps .
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \

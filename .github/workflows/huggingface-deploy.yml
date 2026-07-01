@@ -67,14 +67,19 @@ jobs:
           pip install huggingface_hub
           pip list
 
+      - name: Mask HF_TOKEN in logs
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: echo "::add-mask::$HF_TOKEN"
+
       - name: Login to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: huggingface-cli login --token $HF_TOKEN
+        run: huggingface-cli login --token "$HF_TOKEN"
 
       - name: Push model to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           huggingface-cli repo create my-model --type=model --yes || echo "Repo already exists."
-          huggingface-cli upload ./path_to_model --repo my-model --include-metadata
+          huggingface-cli upload ./path_to_model --repo my-model
