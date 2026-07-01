@@ -27,41 +27,43 @@ Usage:
 
 import logging
 import os
-from typing import Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_limiter: Optional[object] = None
+_limiter: object | None = None
 
 
-def init_limiter(app) -> Optional[object]:
-    """Attach flask-limiter to *app* and return the Limiter instance (or None on failure)."""
-    global _limiter
+def init_limiter(app: Any) -> object | None:
+    """Attach flask-limiter to *app*; return Limiter or None on failure."""
+    global _limiter  # noqa: PLW0603
 
-    default_limits = os.environ.get("RATELIMIT_DEFAULT", "200 per day;50 per hour").split(";")
+    raw = os.environ.get("RATELIMIT_DEFAULT", "200 per day;50 per hour")
+    default_limits = [limit.strip() for limit in raw.split(";") if limit.strip()]
     storage_uri = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
 
     try:
-        from flask_limiter import Limiter
-        from flask_limiter.util import get_remote_address
+        from flask_limiter import Limiter  # noqa: PLC0415
+        from flask_limiter.util import get_remote_address  # noqa: PLC0415
 
         _limiter = Limiter(
             app=app,
             key_func=get_remote_address,
-            default_limits=[limit.strip() for limit in default_limits],
+            default_limits=default_limits,
             storage_uri=storage_uri,
             strategy="fixed-window",
         )
         logger.info("Rate limiter initialised (storage=%s)", storage_uri)
-        return _limiter
     except ImportError:
         logger.warning("flask-limiter not installed; run: pip install flask-limiter")
         return None
     except Exception:
         logger.exception("Failed to initialise rate limiter")
         return None
+    else:
+        return _limiter
 
 
-def get_limiter() -> Optional[object]:
+def get_limiter() -> object | None:
     """Return the initialised Limiter instance, or None if not yet initialised."""
     return _limiter

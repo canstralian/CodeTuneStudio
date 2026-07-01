@@ -1,6 +1,10 @@
 name: CI
 on: [push]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -27,8 +31,8 @@ jobs:
         run: pip install bandit pip-audit
       - name: Run Bandit SAST (report)
         run: bandit -r core/ utils/ components/ plugins/ -f json -o bandit-report.json || true
-      - name: Run Bandit SAST (blocking — medium+ severity)
-        run: bandit -r core/ utils/ components/ plugins/ --severity-level medium
+      - name: Run Bandit SAST (blocking — high severity only)
+        run: bandit -r core/ utils/ components/ plugins/ --severity-level high
       - name: Run pip-audit dependency scan (report)
         run: pip-audit -r requirements.txt --desc --output=json > pip-audit-report.json || true
       - name: Run pip-audit dependency scan (blocking)

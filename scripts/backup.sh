@@ -22,6 +22,9 @@ log() {
 if [[ -z "${DB_URL}" ]]; then
     log "ERROR: DATABASE_URL is not set — aborting"
     exit 1
+elif [[ ! "${DB_URL}" =~ ^postgres(ql)?:// ]]; then
+    log "WARNING: DATABASE_URL is not a PostgreSQL URL (got non-pg scheme) — skipping backup"
+    exit 0
 fi
 
 mkdir -p "${BACKUP_DIR}"

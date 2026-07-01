@@ -11,30 +11,60 @@ Environment variables:
                             set to "0" or leave unset to disable (default: disabled)
 
 All functions are no-ops when the relevant env var / optional dependency is absent.
+Metric globals are always callable via the NoOpMetric fallback.
 """
 
 import logging
 import os
-from typing import Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# Module-level metric placeholders — importable without guarding
-training_runs_total = None
-training_duration_seconds = None
-db_errors_total = None
+
+class NoOpMetric:
+    """Drop-in replacement used when prometheus-client is absent or disabled."""
+
+    def labels(self, *args: Any, **kwargs: Any) -> "NoOpMetric":
+        return self
+
+    def inc(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def dec(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def observe(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def set(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def time(self) -> "NoOpMetric":
+        return self
+
+    def __enter__(self) -> "NoOpMetric":
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        pass
 
 
-def init_sentry(flask_app=None) -> bool:
+# Module-level metrics — always callable (real counters replaced by init_prometheus)
+training_runs_total: Any = NoOpMetric()
+training_duration_seconds: Any = NoOpMetric()
+db_errors_total: Any = NoOpMetric()
+
+
+def init_sentry(flask_app: Any | None = None) -> bool:
     """Initialise Sentry SDK if SENTRY_DSN is set. Returns True on success."""
     dsn = os.environ.get("SENTRY_DSN", "")
     if not dsn:
         return False
 
     try:
-        import sentry_sdk
-        from sentry_sdk.integrations.logging import LoggingIntegration
-        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        import sentry_sdk  # noqa: PLC0415
+        from sentry_sdk.integrations.logging import LoggingIntegration  # noqa: PLC0415
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration  # noqa: PLC0415
 
         integrations = [
             LoggingIntegration(level=logging.INFO, event_level=logging.ERROR),
@@ -42,7 +72,7 @@ def init_sentry(flask_app=None) -> bool:
         ]
 
         if flask_app is not None:
-            from sentry_sdk.integrations.flask import FlaskIntegration
+            from sentry_sdk.integrations.flask import FlaskIntegration  # noqa: PLC0415
 
             integrations.append(FlaskIntegration())
 
@@ -54,26 +84,35 @@ def init_sentry(flask_app=None) -> bool:
             integrations=integrations,
             send_default_pii=False,
         )
-        logger.info("Sentry initialised (environment=%s)", os.environ.get("SENTRY_ENVIRONMENT", "production"))
+        env = os.environ.get("SENTRY_ENVIRONMENT", "production")
+        logger.info("Sentry initialised (environment=%s)", env)
         return True
     except ImportError:
-        logger.warning("sentry-sdk not installed; run: pip install 'sentry-sdk[flask,sqlalchemy]'")
+        logger.warning(
+            "sentry-sdk not installed; run: pip install 'sentry-sdk[flask,sqlalchemy]'"
+        )
         return False
     except Exception:
         logger.exception("Failed to initialise Sentry")
         return False
 
 
-def init_prometheus(port: Optional[int] = None) -> bool:
-    """Start the Prometheus metrics HTTP server if PROMETHEUS_PORT is set. Returns True on success."""
-    global training_runs_total, training_duration_seconds, db_errors_total
+def init_prometheus(port: int | None = None) -> bool:
+    """Start Prometheus metrics HTTP server if PROMETHEUS_PORT is set."""
+    global training_runs_total, training_duration_seconds, db_errors_total  # noqa: PLW0603
 
-    resolved_port = port if port is not None else int(os.environ.get("PROMETHEUS_PORT", "0"))
-    if resolved_port == 0:
+    # Defensive port resolution — ignore non-integer env values
+    if port is not None:
+        resolved_port = port
+    else:
+        port_env = os.environ.get("PROMETHEUS_PORT", "0").strip()
+        resolved_port = int(port_env) if port_env.isdigit() else 0
+
+    if resolved_port <= 0:
         return False
 
     try:
-        from prometheus_client import Counter, Histogram, start_http_server
+        from prometheus_client import Counter, Histogram, start_http_server  # noqa: PLC0415
 
         training_runs_total = Counter(
             "codetune_training_runs_total",
@@ -94,16 +133,17 @@ def init_prometheus(port: Optional[int] = None) -> bool:
 
         start_http_server(resolved_port)
         logger.info("Prometheus metrics server started on port %d", resolved_port)
-        return True
     except ImportError:
         logger.warning("prometheus-client not installed; run: pip install prometheus-client")
         return False
     except Exception:
         logger.exception("Failed to start Prometheus metrics server")
         return False
+    else:
+        return True
 
 
-def init_observability(flask_app=None) -> None:
+def init_observability(flask_app: Any | None = None) -> None:
     """Convenience wrapper — initialise Sentry and Prometheus."""
     init_sentry(flask_app=flask_app)
     init_prometheus()

@@ -27,17 +27,32 @@ logger = logging.getLogger(__name__)
 
 _AUTH_ENABLED = os.environ.get("AUTH_ENABLED", "true").lower() != "false"
 
+_DEFAULT_COOKIE_KEY = "change-me-in-production"
+
 
 def _build_credentials() -> dict:
     """Parse env vars into the credential dict expected by streamlit-authenticator."""
-    usernames = [u.strip() for u in os.environ.get("AUTH_USERNAME", "admin").split(",") if u.strip()]
-    hashes = [h.strip() for h in os.environ.get("AUTH_PASSWORD_HASH", "").split(",") if h.strip()]
-    names = [n.strip() for n in os.environ.get("AUTH_NAME", "").split(",") if n.strip()]
+    usernames = [
+        u.strip()
+        for u in os.environ.get("AUTH_USERNAME", "admin").split(",")
+        if u.strip()
+    ]
+    hashes = [
+        h.strip()
+        for h in os.environ.get("AUTH_PASSWORD_HASH", "").split(",")
+        if h.strip()
+    ]
+    names = [
+        n.strip()
+        for n in os.environ.get("AUTH_NAME", "").split(",")
+        if n.strip()
+    ]
 
     if not hashes:
         logger.warning(
             "AUTH_PASSWORD_HASH is not set — authentication will block all logins. "
-            "Generate a hash with: python -c \"import bcrypt; print(bcrypt.hashpw(b'password', bcrypt.gensalt()).decode())\""
+            "Generate a hash: python -c \"import bcrypt; "
+            "print(bcrypt.hashpw(b'password', bcrypt.gensalt()).decode())\""
         )
 
     credentials: dict = {"usernames": {}}
@@ -45,6 +60,7 @@ def _build_credentials() -> dict:
         credentials["usernames"][username] = {
             "name": names[i] if i < len(names) else username.capitalize(),
             "password": hashes[i] if i < len(hashes) else "",
+            "email": f"{username}@placeholder.local",
         }
     return credentials
 
@@ -59,12 +75,19 @@ def require_auth() -> bool:
         return True
 
     try:
-        import streamlit as st
-        import streamlit_authenticator as stauth
+        import streamlit as st  # noqa: PLC0415
+        import streamlit_authenticator as stauth  # noqa: PLC0415
 
         cookie_name = os.environ.get("AUTH_COOKIE_NAME", "codetune_auth")
-        cookie_key = os.environ.get("AUTH_COOKIE_KEY", "change-me-in-production")
+        cookie_key = os.environ.get("AUTH_COOKIE_KEY", _DEFAULT_COOKIE_KEY)
         cookie_expiry = int(os.environ.get("AUTH_COOKIE_EXPIRY_DAYS", "1"))
+
+        if cookie_key == _DEFAULT_COOKIE_KEY:
+            logger.warning(
+                "AUTH_COOKIE_KEY is using the default value. "
+                "Set AUTH_COOKIE_KEY to a secret value in production "
+                "to prevent session-cookie forgery."
+            )
 
         credentials = _build_credentials()
         authenticator = stauth.Authenticate(
@@ -74,7 +97,8 @@ def require_auth() -> bool:
             cookie_expiry,
         )
 
-        name, authentication_status, username = authenticator.login("Login", "main")
+        # streamlit-authenticator >=0.3.0: login() takes location as first arg
+        name, authentication_status, _username = authenticator.login(location="main")
 
         if authentication_status is False:
             st.error("Incorrect username or password.")
@@ -89,7 +113,7 @@ def require_auth() -> bool:
         return True
 
     except ImportError:
-        import streamlit as st
+        import streamlit as st  # noqa: PLC0415
 
         st.error(
             "Authentication library not installed. "
@@ -98,7 +122,7 @@ def require_auth() -> bool:
         logger.error("streamlit-authenticator not installed; access blocked")
         return False
     except Exception:
-        import streamlit as st
+        import streamlit as st  # noqa: PLC0415
 
         logger.exception("Authentication error")
         st.error("Authentication failed unexpectedly. Please reload the page.")
