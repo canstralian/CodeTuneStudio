@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+# Gitleaks configuration — allowlist for documentation false positives.
+# These files intentionally contain example/placeholder secret patterns
+# to illustrate correct vs. incorrect usage.
+title = "CodeTuneStudio gitleaks config"
+
+[allowlist]
+  description = "Documentation files with intentional placeholder patterns"
+  paths = [
+    ".github/copilot-instructions.md",
+    "codex/templates/SECRETS.md",
+  ]
