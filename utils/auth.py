@@ -42,16 +42,12 @@ def _build_credentials() -> dict:
         for h in os.environ.get("AUTH_PASSWORD_HASH", "").split(",")
         if h.strip()
     ]
-    names = [
-        n.strip()
-        for n in os.environ.get("AUTH_NAME", "").split(",")
-        if n.strip()
-    ]
+    names = [n.strip() for n in os.environ.get("AUTH_NAME", "").split(",") if n.strip()]
 
     if not hashes:
         logger.warning(
             "AUTH_PASSWORD_HASH is not set — authentication will block all logins. "
-            "Generate a hash: python -c \"import bcrypt; "
+            'Generate a hash: python -c "import bcrypt; '
             "print(bcrypt.hashpw(b'password', bcrypt.gensalt()).decode())\""
         )
 
