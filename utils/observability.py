@@ -134,7 +134,9 @@ def init_prometheus(port: int | None = None) -> bool:
         start_http_server(resolved_port)
         logger.info("Prometheus metrics server started on port %d", resolved_port)
     except ImportError:
-        logger.warning("prometheus-client not installed; run: pip install prometheus-client")
+        logger.warning(
+            "prometheus-client not installed; run: pip install prometheus-client"
+        )
         return False
     except Exception:
         logger.exception("Failed to start Prometheus metrics server")

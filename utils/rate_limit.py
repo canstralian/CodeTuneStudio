@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 _limiter: object | None = None
 
 
-def init_limiter(app: Any) -> object | None:
+def init_limiter(app: Any) -> object | None:  # noqa: ANN401
     """Attach flask-limiter to *app*; return Limiter or None on failure."""
     global _limiter  # noqa: PLW0603
 
