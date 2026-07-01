@@ -63,8 +63,12 @@ def init_sentry(flask_app: Any | None = None) -> bool:
 
     try:
         import sentry_sdk  # noqa: PLC0415
-        from sentry_sdk.integrations.logging import LoggingIntegration  # noqa: PLC0415
-        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration  # noqa: PLC0415
+        from sentry_sdk.integrations.logging import (  # noqa: PLC0415
+            LoggingIntegration,
+        )
+        from sentry_sdk.integrations.sqlalchemy import (  # noqa: PLC0415
+            SqlalchemyIntegration,
+        )
 
         integrations = [
             LoggingIntegration(level=logging.INFO, event_level=logging.ERROR),
@@ -112,7 +116,11 @@ def init_prometheus(port: int | None = None) -> bool:
         return False
 
     try:
-        from prometheus_client import Counter, Histogram, start_http_server  # noqa: PLC0415
+        from prometheus_client import (  # noqa: PLC0415
+            Counter,
+            Histogram,
+            start_http_server,
+        )
 
         training_runs_total = Counter(
             "codetune_training_runs_total",
