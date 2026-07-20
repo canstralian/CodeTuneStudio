@@ -5,10 +5,11 @@ These tests verify that workflows follow security best practices
 and don't expose sensitive information or use insecure patterns.
 """
 
-import unittest
-import yaml
-from pathlib import Path
 import re
+import unittest
+from pathlib import Path
+
+import yaml
 
 
 class TestWorkflowSecurity(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestWorkflowSecurity(unittest.TestCase):
 
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 for pattern in secret_patterns:
@@ -64,7 +65,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None or "jobs" not in content:
@@ -116,7 +117,7 @@ class TestWorkflowSecurity(unittest.TestCase):
             if "jobs" in trigger_section:
                 jobs = trigger_section["jobs"]
 
-        for job_name, job_config in jobs.items():
+        for job_config in jobs.values():
             if not isinstance(job_config, dict):
                 continue
 
@@ -133,12 +134,12 @@ class TestWorkflowSecurity(unittest.TestCase):
     def test_workflows_have_permissions(self):
         """
         Check workflows for permission definitions and log when none are found.
-        
+
         Verifies whether each workflow declares permissions at the top-level or within individual job configurations. Does not fail if permissions are absent, only logs an informational message.
         """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None:
@@ -163,7 +164,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         """Test that pull_request_target is used safely"""
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None:
@@ -186,7 +187,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         """Test that dangerous workflows checkout specific refs"""
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 # Look for pull_request_target
@@ -204,7 +205,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         # This is a best practice but not strictly required
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 # Find all action uses
@@ -235,7 +236,7 @@ class TestWorkflowDependencies(unittest.TestCase):
         supported_versions = ["3.10", "3.11", "3.12"]
 
         for workflow_file in self.workflows_dir.glob("*.yml"):
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 content = f.read()
 
             # Find Python version specifications
@@ -263,7 +264,7 @@ class TestWorkflowDependencies(unittest.TestCase):
         }
 
         for workflow_file in self.workflows_dir.glob("*.yml"):
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 content = f.read()
 
             for action, min_version in min_versions.items():

@@ -10,7 +10,7 @@ import os
 import time
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third-party imports
 import streamlit as st
@@ -78,7 +78,7 @@ class MLFineTuningApp:
     def __init__(self) -> None:
         """
         Initialize the application by configuring the Flask server, database, Streamlit UI, and loading plugins.
-        
+
         Sets up database connectivity with automatic retry logic and fallback behavior. Plugin loading failures do not prevent application startup.
         """
         self.flask_app = Flask(__name__)
@@ -93,7 +93,7 @@ class MLFineTuningApp:
     def _configure_database(self) -> None:
         """
         Configure the Flask application's database URI and connection pool settings.
-        
+
         Reads the DATABASE_URL environment variable (or uses sqlite:///database.db as default)
         and updates Flask configuration with SQLAlchemy engine options including connection
         pool sizing, recycling, timeouts, and conditional SQL debug logging. Logs the
@@ -113,7 +113,7 @@ class MLFineTuningApp:
                     "pool_timeout": 30,
                     "pool_recycle": 1800,
                     "pool_pre_ping": True,
-                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
+                    "echo": bool(os.environ.get("SQL_DEBUG", "")),
                 },
             }
         )
@@ -220,7 +220,7 @@ class MLFineTuningApp:
     def _load_plugins(self) -> None:
         """
         Load all available plugins from the plugins directory.
-        
+
         Plugins are optional; if loading fails, the application continues without them.
         """
         try:
@@ -263,25 +263,23 @@ class MLFineTuningApp:
         """
         Display navigation links in the sidebar for documentation, API reference, examples, and issue reporting.
         """
-        st.markdown(
-            """
+        st.markdown("""
             ### 📚 Resources
             - [Documentation](https://github.com/canstralian/CodeTuneStudio/wiki)
             - [API Reference](https://github.com/canstralian/CodeTuneStudio/blob/main/API.md)
             - [Examples](https://github.com/canstralian/CodeTuneStudio/tree/main/examples)
             - [Report Issues](https://github.com/canstralian/CodeTuneStudio/issues)
-        """
-        )
+        """)
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """
         Save a training configuration to the database.
-        
+
         Parameters:
             config (dict[str, Any]): Mapping containing training parameters. Must include keys:
                 `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
             dataset (str): Name of the dataset associated with this configuration.
-        
+
         Returns:
             int | None: The database ID of the persisted TrainingConfig if successfully saved, `None` if validation fails or an error occurs.
         """
@@ -330,21 +328,21 @@ class MLFineTuningApp:
             # Enhanced header with visual appeal
             st.markdown(
                 """
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 2rem; 
-                            border-radius: 16px; 
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 2rem;
+                            border-radius: 16px;
                             margin-bottom: 2rem;
                             box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
-                    <h1 style="color: white; 
-                               margin: 0; 
+                    <h1 style="color: white;
+                               margin: 0;
                                text-align: center;
                                font-size: 2.5rem;
                                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                                -webkit-text-fill-color: white;">
                         🚀 ML Model Fine-tuning Platform
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.9); 
-                              text-align: center; 
+                    <p style="color: rgba(255, 255, 255, 0.9);
+                              text-align: center;
                               margin-top: 0.5rem;
                               font-size: 1.1rem;">
                         Advanced training and optimization for machine learning models

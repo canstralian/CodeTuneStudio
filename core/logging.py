@@ -10,7 +10,6 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 
 class StructuredFormatter(logging.Formatter):
@@ -41,7 +40,7 @@ class StructuredFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """
         Format a log record, applying ANSI color to the level name if color is enabled.
-        
+
         Returns:
             str: The formatted log message.
         """
@@ -81,8 +80,13 @@ def redact_url(value: str) -> str:
         host = f"[{host}]"
 
     redacted_netloc = host
-    if parts.port:
-        redacted_netloc = f"{redacted_netloc}:{parts.port}"
+    try:
+        port = parts.port
+    except ValueError:
+        # Keep logging safe on malformed ports instead of raising from redaction.
+        port = None
+    if port is not None:
+        redacted_netloc = f"{redacted_netloc}:{port}"
     if parts.username is not None or parts.password is not None:
         redacted_netloc = f"***:***@{redacted_netloc}"
 
@@ -92,8 +96,8 @@ def redact_url(value: str) -> str:
 
 
 def setup_logging(
-    log_level: Optional[str] = None,
-    log_file: Optional[str] = None,
+    log_level: str | None = None,
+    log_file: str | None = None,
     enable_color: bool = True,
 ) -> None:
     """

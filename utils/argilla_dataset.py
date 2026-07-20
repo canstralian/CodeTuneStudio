@@ -77,13 +77,13 @@ class ArgillaDatasetManager:
     ) -> Dataset:
         """
         Load an Argilla dataset and convert it to a Hugging Face Dataset.
-        
+
         Parameters:
             dataset_name (str): Name of the dataset in Argilla to load.
-        
+
         Returns:
             Dataset: A Hugging Face Dataset with `text`, `label`, and `metadata` columns. The `text` column contains record text content, `label` contains response annotations or None, and `metadata` contains record metadata or empty dictionaries.
-        
+
         Raises:
             ValueError: If the dataset with the specified name is not found.
         """

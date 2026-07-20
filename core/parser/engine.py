@@ -18,12 +18,12 @@ _has_pyjsparser = importlib.util.find_spec("pyjsparser") is not None
 def detect_language(code: str, filename: str | None = None) -> Language:
     """
     Determine the programming language of a code snippet.
-    
+
     Checks the filename extension first if provided, then applies code analysis heuristics.
-    
+
     Parameters:
         filename (str | None): Optional filename to use for extension-based detection.
-    
+
     Returns:
         Language: The detected language (PYTHON, JAVASCRIPT, BASH, or UNKNOWN).
     """
@@ -42,6 +42,11 @@ def detect_language(code: str, filename: str | None = None) -> Language:
     if "def " in code or ("import " in code and "from " in code):
         return Language.PYTHON
     if code.startswith("#!"):
+        first_line = code.splitlines()[0]
+        if "python" in first_line:
+            return Language.PYTHON
+        if "node" in first_line:
+            return Language.JAVASCRIPT
         return Language.BASH
 
     return Language.UNKNOWN
@@ -50,7 +55,7 @@ def detect_language(code: str, filename: str | None = None) -> Language:
 def parse_python(code: str) -> ParseResult:
     """
     Parse Python source code into an abstract syntax tree.
-    
+
     Returns:
         ParseResult: Parsed AST data on success; error details and success=False on failure.
     """
@@ -85,7 +90,7 @@ def parse_python(code: str) -> ParseResult:
 def parse_javascript(code: str) -> ParseResult:
     """
     Parse JavaScript code into an abstract syntax tree.
-    
+
     Returns:
         ParseResult: The parsed AST on success, or error information if parsing fails or the parser dependency is unavailable.
     """
@@ -124,11 +129,11 @@ def parse_javascript(code: str) -> ParseResult:
 def parse_code(code: str, filename: str | None = None) -> ParseResult:
     """
     Detect the language of the given code and parse it accordingly.
-    
+
     Parameters:
         code (str): Source code to parse.
         filename (str | None): Optional filename to improve language detection.
-    
+
     Returns:
         ParseResult: Parsed result including detected language, AST metadata, errors (if any), and a success flag.
     """

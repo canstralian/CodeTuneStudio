@@ -24,7 +24,7 @@ class TestCorePackage(unittest.TestCase):
 
     def test_cli_module_imports(self):
         """Test that CLI module can be imported"""
-        from core.cli import parse_args, configure_logging, main
+        from core.cli import configure_logging, main, parse_args
 
         self.assertTrue(callable(parse_args))
         self.assertTrue(callable(configure_logging))
@@ -32,7 +32,7 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_module_imports(self):
         """Test that logging module can be imported"""
-        from core.logging import setup_logging, get_logger, StructuredFormatter
+        from core.logging import StructuredFormatter, get_logger, setup_logging
 
         self.assertTrue(callable(setup_logging))
         self.assertTrue(callable(get_logger))
@@ -74,7 +74,6 @@ class TestCorePackage(unittest.TestCase):
     def test_cli_version_flag(self):
         """Test that version flag works"""
         from core.cli import parse_args
-        from core import __version__
 
         with self.assertRaises(SystemExit) as cm:
             parse_args(["--version"])
@@ -83,8 +82,9 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_setup(self):
         """Test logging configuration"""
-        from core.logging import setup_logging
         import logging
+
+        from core.logging import setup_logging
 
         # Setup with INFO level
         setup_logging("INFO")
@@ -95,8 +95,9 @@ class TestCorePackage(unittest.TestCase):
 
     def test_logging_formatter(self):
         """Test structured formatter"""
-        from core.logging import StructuredFormatter
         import logging
+
+        from core.logging import StructuredFormatter
 
         formatter = StructuredFormatter(
             use_color=False, fmt="%(levelname)s - %(message)s"
@@ -178,12 +179,12 @@ class TestPackageMetadata(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(core_path, "logging.py")))
 
 
-
 class TestRedactUrl(unittest.TestCase):
     """Tests for core.logging.redact_url added in 0.2.1."""
 
     def _redact(self, value):
         from core.logging import redact_url
+
         return redact_url(value)
 
     # ── falsy / no-netloc inputs ────────────────────────────────────────────
@@ -273,7 +274,7 @@ class TestRedactUrl(unittest.TestCase):
         # Redis often omits the username: "redis://:password@host"
         """
         Verify redaction of Redis URLs with password-only credentials.
-        
+
         Ensures that redis://:password@host patterns have the cleartext password masked
         while preserving the host and port information.
         """
@@ -347,7 +348,9 @@ class TestRedactUrl(unittest.TestCase):
         """After redaction the scheme and host are still present and well-formed."""
         url = "postgresql://admin:topsecret@primary.db.example.com:5432/myapp"
         result = self._redact(url)
-        self.assertTrue(result.startswith("postgresql://***:***@primary.db.example.com"))
+        self.assertTrue(
+            result.startswith("postgresql://***:***@primary.db.example.com")
+        )
 
 
 if __name__ == "__main__":

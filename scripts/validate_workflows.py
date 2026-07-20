@@ -20,7 +20,7 @@ class WorkflowValidator:
     def __init__(self, repo_root: Path) -> None:
         """
         Initialize the validator with the repository root path.
-        
+
         Parameters:
             repo_root (Path): The repository root; workflows are expected at `<repo_root>/.github/workflows`.
         """
@@ -35,13 +35,13 @@ class WorkflowValidator:
     ) -> bool:
         """
         Validate GitHub Actions workflow files in the repository.
-        
+
         Validates all workflow files found under .github/workflows (including nested directories) or a single specified workflow. Unless security_only is True, runs structure and best-practice checks in addition to security validation.
-        
+
         Parameters:
             workflow_name (str | None): Name of a specific workflow file to validate relative to .github/workflows. If None, all *.yml and *.yaml files are validated.
             security_only (bool): If True, only security-related checks are performed. Defaults to False.
-        
+
         Returns:
             bool: `true` if no errors were found, `false` otherwise.
         """
@@ -69,17 +69,34 @@ class WorkflowValidator:
     def _select_workflows(self, workflow_name: str | None) -> list[Path]:
         """
         Select workflow files to validate based on the given filter.
-        
+
         If a workflow name is provided, returns that file path if it exists; records an error and returns an empty list otherwise. If no name is provided, returns all .yml and .yaml files in the workflows directory and subdirectories, deduplicated and sorted.
-        
+
         Parameters:
             workflow_name (str | None): Optional filename of a specific workflow.
-        
+
         Returns:
             list[Path]: Paths of selected workflow files.
         """
         if workflow_name:
+            candidate = Path(workflow_name)
+            if candidate.is_absolute() or ".." in candidate.parts:
+                self.errors.append(f"Invalid workflow path: {workflow_name}")
+                return []
+            if candidate.suffix not in (".yml", ".yaml"):
+                self.errors.append(
+                    f"Workflow file must be a .yml/.yaml file: {workflow_name}"
+                )
+                return []
             workflow_file = self.workflows_dir / workflow_name
+            try:
+                resolved = workflow_file.resolve()
+                resolved.relative_to(self.workflows_dir.resolve())
+            except (OSError, ValueError):
+                self.errors.append(
+                    f"Workflow path escapes workflows directory: {workflow_name}"
+                )
+                return []
             if not workflow_file.exists():
                 self.errors.append(f"Workflow file not found: {workflow_name}")
                 return []
@@ -94,13 +111,19 @@ class WorkflowValidator:
     def _validate_workflow(self, workflow_path: Path, security_only: bool) -> None:
         """
         Validate a single workflow file.
-        
+
         Reads and parses the workflow YAML. Skips empty and metadata-only files. Runs structure and best-practice checks unless `security_only` is True; security checks always run. Records findings as errors, warnings, or informational messages.
-        
+
         Parameters:
-        	security_only (bool): If True, skip structure and best-practice checks.
+                security_only (bool): If True, skip structure and best-practice checks.
         """
-        relative = workflow_path.relative_to(self.repo_root)
+        try:
+            relative = workflow_path.relative_to(self.repo_root)
+        except ValueError:
+            self.errors.append(
+                f"{workflow_path.name}: Workflow path is outside the repository"
+            )
+            return
         print(f"📄 Validating: {relative}")
 
         try:
@@ -137,7 +160,7 @@ class WorkflowValidator:
     def _is_metadata_file(self, content: dict[str, Any]) -> bool:
         """
         Determine if a parsed workflow YAML is metadata-only.
-        
+
         Returns:
             `true` if the mapping contains SDK/theme metadata ("sdk", "emoji", "colorFrom") or has "title" without "jobs" and "on", `false` otherwise.
         """
@@ -182,18 +205,30 @@ class WorkflowValidator:
     ) -> None:
         """
         Scan a workflow's raw and parsed YAML for security issues and record findings.
-        
+
         Searches the raw file text for potential hardcoded secrets (passwords, tokens, GitHub tokens, OpenAI keys) and appends an error for each match. Records an error if the workflow uses `pull_request_target`. If no top-level `permissions` and no job-level `permissions` are present, records an informational message that defaults may apply.
-        
+
         Parameters:
             filename (str): Workflow file name used in recorded messages.
             raw_content (str): Raw YAML text of the workflow file.
             content (dict[str, Any]): Parsed YAML content (mapping) of the workflow.
         """
         secret_patterns = [
-            (r"password\s*[:=]\s*['\"](?!.*\$\{)", "hardcoded password"),
-            (r"token\s*[:=]\s*['\"](?!.*\$\{)", "hardcoded token"),
-            (r"api[_-]?key\s*[:=]\s*['\"](?!.*\$\{)", "hardcoded api key"),
+            # Quote is optional so unquoted YAML (``token: abc123``) is caught,
+            # while templated ``${{ ... }}`` values and GitHub permission scopes
+            # (``id-token: write``) are excluded.
+            (
+                r"password\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                "hardcoded password",
+            ),
+            (
+                r"token\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                "hardcoded token",
+            ),
+            (
+                r"api[_-]?key\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                "hardcoded api key",
+            ),
             (r"ghp_[A-Za-z0-9]{36}", "GitHub token"),
             (r"sk-[A-Za-z0-9]{48}", "OpenAI API key"),
         ]
@@ -205,9 +240,7 @@ class WorkflowValidator:
 
         triggers = content.get("on", {}) or content.get(True, {})
         uses_pr_target = False
-        if isinstance(triggers, dict):
-            uses_pr_target = "pull_request_target" in triggers
-        elif isinstance(triggers, list):
+        if isinstance(triggers, (dict, list)):
             uses_pr_target = "pull_request_target" in triggers
         elif isinstance(triggers, str):
             uses_pr_target = triggers == "pull_request_target"
@@ -230,12 +263,12 @@ class WorkflowValidator:
     def _validate_best_practices(self, filename: str, content: dict[str, Any]) -> None:
         """
         Record warnings for third-party actions not pinned to a full commit SHA.
-        
+
         Iterates through each job and its steps. For third-party actions (not
         local, not docker images), warns if the action is not pinned to exactly
         a 40-character commit SHA. Actions pinned to tags or branches are flagged
         as unpinned.
-        
+
         Parameters:
             filename (str): The workflow file name used in warning messages.
             content (dict[str, Any]): Parsed workflow YAML as a dictionary.
@@ -248,7 +281,7 @@ class WorkflowValidator:
                 if not isinstance(step, dict):
                     continue
                 uses = step.get("uses", "")
-                if not uses or uses.startswith("./") or uses.startswith("docker://"):
+                if not uses or uses.startswith(("./", "docker://")):
                     continue
                 # A fully pinned action references an immutable 40-char commit
                 # SHA (e.g. ``owner/repo@<sha>``). Tag/branch pins such as
@@ -262,7 +295,7 @@ class WorkflowValidator:
     def _print_results(self) -> None:
         """
         Print a formatted validation report of errors, warnings, and informational messages to stdout.
-        
+
         Displays each error, warning, and info message with their respective counts. Shows a success message if both errors and warnings are empty.
         """
         print("\n" + "=" * 60)
@@ -293,7 +326,7 @@ class WorkflowValidator:
 def main() -> int:
     """
     Validate GitHub Actions workflow files in the repository.
-    
+
     Returns:
         int: Exit code 0 if validation completed with no errors, 1 if validation failed or the .github/workflows directory is missing.
     """

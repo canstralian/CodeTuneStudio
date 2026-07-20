@@ -26,7 +26,7 @@ class CodeAnalyzerTool(AgentTool):
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
         Verify that the input contains a string-valued 'code' field.
-        
+
         Returns:
             bool: True if the 'code' field exists and is a string, False otherwise.
         """
@@ -35,10 +35,10 @@ class CodeAnalyzerTool(AgentTool):
     def execute(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """
         Analyze Python source code and compute structural metrics.
-        
+
         Parameters:
             inputs (dict[str, Any]): Input dictionary containing a "code" key with a Python source string.
-        
+
         Returns:
             dict[str, Any]: On success, a dictionary with "num_functions", "num_classes", "imports", "complexity", and "status": "success". On error, a dictionary with "error" and "status": "error".
         """

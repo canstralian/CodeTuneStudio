@@ -21,7 +21,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
     def __init__(self) -> None:
         """
         Initialize the tool with metadata and configure the Anthropic client if the API key is set and the package is installed.
-        
+
         Sets `self.client` to an Anthropic client instance if both the `ANTHROPIC_API_KEY` environment variable and the `anthropic` package are available; otherwise, sets `self.client` to `None`.
         """
         super().__init__()
@@ -50,7 +50,7 @@ class AnthropicCodeSuggesterTool(AgentTool):
     def validate_inputs(self, inputs: dict[str, Any]) -> bool:
         """
         Validate that inputs contain a 'code' key with a string value.
-        
+
         Returns:
             bool: True if 'code' is present in inputs and is a string, False otherwise.
         """

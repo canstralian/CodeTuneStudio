@@ -96,10 +96,10 @@ class TestOpenAICodeAnalyzerTool(unittest.TestCase):
             assert result["status"] == "error"
             assert result["error"] == "OpenAI API response missing expected content."
 
-
     def test_execute_no_client_returns_error(self) -> None:
         """When client is None (no API key / package unavailable), execute returns an error dict."""
         import os
+
         env = {k: v for k, v in os.environ.items() if k != "OPENAI_API_KEY"}
         with patch.dict(os.environ, env, clear=True):
             tool = OpenAICodeAnalyzerTool()

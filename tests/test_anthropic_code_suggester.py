@@ -95,11 +95,10 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
                 == "Anthropic code suggestion failed. See logs for details."
             )
 
-
-
     def test_init_no_api_key_client_is_none(self) -> None:
         """Missing API key must set client to None without raising."""
         import os
+
         env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
         with unittest.mock.patch.dict(os.environ, env, clear=True):
             tool = AnthropicCodeSuggesterTool()
@@ -113,7 +112,9 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         tool.client = None  # force no-client state
         result = tool.execute({"code": "def foo(): pass"})
         assert result["status"] == "error"
-        assert "ANTHROPIC_API_KEY" in result["error"] or "unavailable" in result["error"]
+        assert (
+            "ANTHROPIC_API_KEY" in result["error"] or "unavailable" in result["error"]
+        )
         mock_anthropic_class.return_value.messages.create.assert_not_called()
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
@@ -133,13 +134,16 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
         assert "empty" in result["error"].lower() or "API" in result["error"]
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
-    def test_execute_response_without_text_attribute_returns_error(self, mock_anthropic_class) -> None:
+    def test_execute_response_without_text_attribute_returns_error(
+        self, mock_anthropic_class
+    ) -> None:
         """Content block missing .text returns an error dict."""
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
         mock_message = MagicMock()
-        # Remove the 'text' attribute from the first content block
-        del mock_message.content[0].text
+        # A bare object() has no 'text' attribute, unlike an auto-speccing
+        # MagicMock, so the missing-text branch is exercised deterministically.
+        mock_message.content = [object()]
         mock_client.messages.create.return_value = mock_message
 
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):

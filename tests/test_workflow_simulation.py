@@ -5,11 +5,11 @@ These tests simulate workflow execution logic to validate
 that workflow configurations would work as expected.
 """
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 import subprocess
 import sys
+import unittest
+from pathlib import Path
+from unittest.mock import Mock, patch
 
 
 class TestStyleCheckSimulation(unittest.TestCase):
@@ -22,21 +22,29 @@ class TestStyleCheckSimulation(unittest.TestCase):
     def test_black_check_execution(self):
         """
         Validate that the Black code formatter check executes successfully.
-        
+
         Runs Black in check mode with line-length=88, excluding app.py and index.html. Asserts that the command completes and returns a code. Skips if Black is not installed; fails if the check times out.
         """
         # This simulates the workflow step:
         # black --check --diff --line-length=88 .
 
         try:
-            # Use shell=True for proper regex handling in exclude pattern
+            # Pass args as a list (no shell) so the exclude regex is delivered
+            # to Black verbatim without shell interpretation.
             result = subprocess.run(
-                'black --check --diff --line-length=88 --exclude "app\\.py|index\\.html" .',
+                [
+                    "black",
+                    "--check",
+                    "--diff",
+                    "--line-length=88",
+                    "--exclude",
+                    "app\\.py|index\\.html",
+                    ".",
+                ],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
                 timeout=30,
-                shell=True,
             )
 
             # Workflow uses continue-on-error, but we check it ran
@@ -149,7 +157,7 @@ class TestDependencyValidationSimulation(unittest.TestCase):
     def test_requirements_file_format(self):
         """
         Validates that requirements.txt contains non-empty requirement entries.
-        
+
         Ensures the file exists and contains at least one non-empty, non-comment line. Skips the test if the file is not found.
         """
         requirements_file = self.repo_root / "requirements.txt"
@@ -157,7 +165,7 @@ class TestDependencyValidationSimulation(unittest.TestCase):
         if not requirements_file.exists():
             self.skipTest("requirements.txt not found")
 
-        with open(requirements_file, "r") as f:
+        with open(requirements_file) as f:
             lines = f.readlines()
 
         # Should have some requirements
@@ -267,7 +275,7 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
     def test_script_has_required_imports(self):
         """
         Validate that the checklist update script imports the requests library and references the GitHub token.
-        
+
         Skips if the script file is missing.
         """
         if not self.script_path.exists():
@@ -297,7 +305,9 @@ class TestChecklistUpdateSimulation(unittest.TestCase):
         # Simulate API call
         import requests
 
-        response = requests.get("https://api.github.com/repos/test/test/pulls")
+        response = requests.get(
+            "https://api.github.com/repos/test/test/pulls", timeout=30
+        )
 
         # Should return list of PRs
         prs = response.json()
@@ -321,7 +331,7 @@ class TestHuggingFaceDeploySimulation(unittest.TestCase):
     def test_requirements_for_hf_hub(self):
         """
         Verify that huggingface_hub is installed and has a version attribute.
-        
+
         If the package is not installed, the test is skipped.
         """
         try:

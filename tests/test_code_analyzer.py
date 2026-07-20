@@ -92,7 +92,6 @@ def baz():
         assert result["status"] == "error"
         assert result["error"] == "Invalid Python syntax."
 
-
     def test_execute_valid_code_has_success_status(self) -> None:
         """Success result must include status == 'success' (added in 0.2.1)."""
         result = self.tool.execute({"code": "x = 1"})
@@ -135,26 +134,22 @@ def baz():
 
     def test_execute_nested_functions_counted(self) -> None:
         """Nested FunctionDef nodes must each be counted separately."""
-        code = textwrap.dedent(
-            """\
+        code = textwrap.dedent("""\
             def outer():
                 def inner():
                     pass
-            """
-        )
+            """)
         result = self.tool.execute({"code": code})
         assert result["status"] == "success"
         assert result["num_functions"] == 2
 
     def test_execute_class_with_methods_counted(self) -> None:
         """Methods inside a class are FunctionDefs and must be included in num_functions."""
-        code = textwrap.dedent(
-            """\
+        code = textwrap.dedent("""\
             class MyClass:
                 def method_a(self): pass
                 def method_b(self): pass
-            """
-        )
+            """)
         result = self.tool.execute({"code": code})
         assert result["status"] == "success"
         assert result["num_classes"] == 1
@@ -163,7 +158,8 @@ def baz():
     def test_execute_complexity_increases_with_more_nodes(self) -> None:
         """More AST nodes in longer code must produce a higher complexity score."""
         simple_result = self.tool.execute({"code": "x = 1"})
-        complex_result = self.tool.execute({"code": "def f(x):\n    if x:\n        return x + 1\n    return x"})
+        complex_code = "def f(x):\n    if x:\n        return x + 1\n    return x"
+        complex_result = self.tool.execute({"code": complex_code})
         assert complex_result["complexity"] > simple_result["complexity"]
 
 

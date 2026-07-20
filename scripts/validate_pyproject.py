@@ -20,10 +20,10 @@ from pathlib import Path
 def validate_pyproject(filepath: str = "pyproject.toml") -> bool:
     """
     Validate that a TOML file contains syntactically valid TOML.
-    
+
     Parameters:
         filepath: Path to the TOML file. Defaults to "pyproject.toml".
-    
+
     Returns:
         `true` if the file contains valid TOML syntax, `false` otherwise.
     """

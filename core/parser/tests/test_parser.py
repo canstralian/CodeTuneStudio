@@ -34,10 +34,10 @@ def test_javascript_parser_error_is_sanitized(monkeypatch):
         def parse(self, code):
             """
             Raise a RuntimeError with the input code included in the error message.
-            
+
             Parameters:
                 code (str): Source code to parse.
-            
+
             Raises:
                 RuntimeError: Always raised with message "raw parser detail for {code}".
             """
@@ -70,78 +70,94 @@ def test_non_string_filename_returns_structured_error():
 
 # ─── detect_language tests ──────────────────────────────────────────────────
 
+
 def test_detect_language_python_by_filename():
     from core.parser.engine import detect_language
+
     assert detect_language("x = 1", filename="script.py") == Language.PYTHON
 
 
 def test_detect_language_javascript_by_js_extension():
     from core.parser.engine import detect_language
+
     assert detect_language("var x = 1", filename="app.js") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_by_ts_extension():
     from core.parser.engine import detect_language
+
     assert detect_language("var x = 1", filename="app.ts") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_by_jsx_extension():
     from core.parser.engine import detect_language
+
     assert detect_language("var x = 1", filename="app.jsx") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_by_tsx_extension():
     from core.parser.engine import detect_language
+
     assert detect_language("var x = 1", filename="app.tsx") == Language.JAVASCRIPT
 
 
 def test_detect_language_bash_by_sh_extension():
     from core.parser.engine import detect_language
+
     assert detect_language("echo hi", filename="run.sh") == Language.BASH
 
 
 def test_detect_language_python_heuristic_def():
     from core.parser.engine import detect_language
+
     assert detect_language("def foo(): pass") == Language.PYTHON
 
 
 def test_detect_language_javascript_heuristic_const():
     from core.parser.engine import detect_language
+
     assert detect_language("const x = 1;") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_heuristic_let():
     from core.parser.engine import detect_language
+
     assert detect_language("let y = 2;") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_heuristic_function():
     from core.parser.engine import detect_language
+
     assert detect_language("function greet() {}") == Language.JAVASCRIPT
 
 
 def test_detect_language_javascript_heuristic_arrow():
     from core.parser.engine import detect_language
+
     assert detect_language("const f = x => x + 1;") == Language.JAVASCRIPT
 
 
 def test_detect_language_bash_heuristic_shebang():
     from core.parser.engine import detect_language
+
     assert detect_language("#!/bin/bash\necho hello") == Language.BASH
 
 
 def test_detect_language_unknown_for_unrecognised_code():
     from core.parser.engine import detect_language
+
     assert detect_language("x = 42; y = x + 1;") == Language.UNKNOWN
 
 
 def test_detect_language_filename_overrides_heuristic():
     # Content looks like JavaScript but filename says Python
     from core.parser.engine import detect_language
+
     assert detect_language("const x = 1;", filename="module.py") == Language.PYTHON
 
 
 # ─── parse_code: BASH / UNKNOWN branch ─────────────────────────────────────
+
 
 def test_parse_code_bash_returns_not_implemented():
     result = parse_code("#!/bin/bash\necho hi")
@@ -158,6 +174,7 @@ def test_parse_code_unknown_returns_not_implemented():
 
 # ─── parse_python edge-cases ────────────────────────────────────────────────
 
+
 def test_parse_python_empty_module_succeeds():
     result = parse_code("", filename="empty.py")
     assert result.success is True
@@ -172,6 +189,7 @@ def test_parse_python_body_count_matches():
 
 # ─── parse_javascript when pyjsparser is absent ─────────────────────────────
 
+
 def test_parse_javascript_no_pyjsparser(monkeypatch):
     monkeypatch.setattr("core.parser.engine._has_pyjsparser", False)
     result = parse_code("const x = 1;")
@@ -180,6 +198,7 @@ def test_parse_javascript_no_pyjsparser(monkeypatch):
 
 
 # ─── parse_code: None filename passes through correctly ─────────────────────
+
 
 def test_parse_code_none_filename_uses_heuristics():
     result = parse_code("def f(): pass", filename=None)
