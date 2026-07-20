@@ -134,22 +134,26 @@ def baz():
 
     def test_execute_nested_functions_counted(self) -> None:
         """Nested FunctionDef nodes must each be counted separately."""
-        code = textwrap.dedent("""\
+        code = textwrap.dedent(
+            """\
             def outer():
                 def inner():
                     pass
-            """)
+            """
+        )
         result = self.tool.execute({"code": code})
         assert result["status"] == "success"
         assert result["num_functions"] == 2
 
     def test_execute_class_with_methods_counted(self) -> None:
         """Methods inside a class are FunctionDefs and must be included in num_functions."""
-        code = textwrap.dedent("""\
+        code = textwrap.dedent(
+            """\
             class MyClass:
                 def method_a(self): pass
                 def method_b(self): pass
-            """)
+            """
+        )
         result = self.tool.execute({"code": code})
         assert result["status"] == "success"
         assert result["num_classes"] == 1

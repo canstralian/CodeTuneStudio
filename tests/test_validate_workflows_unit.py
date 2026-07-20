@@ -158,7 +158,8 @@ class TestValidateSecurity(unittest.TestCase):
         self.v._validate_security("wf.yml", raw, content)
 
     def test_clean_workflow_no_errors(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             permissions:
@@ -167,12 +168,14 @@ class TestValidateSecurity(unittest.TestCase):
               build:
                 runs-on: ubuntu-latest
                 steps: []
-            """)
+            """
+        )
         self._run(raw)
         self.assertEqual(self.v.errors, [])
 
     def test_hardcoded_password_flagged(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
@@ -181,7 +184,8 @@ class TestValidateSecurity(unittest.TestCase):
                 env:
                   DB_PASS: "hardcoded123"
                 steps: []
-            """)
+            """
+        )
         # The raw text contains password: "..." pattern
         raw_with_password = raw.replace(
             'DB_PASS: "hardcoded123"', 'password: "hardcoded123"'
@@ -207,7 +211,8 @@ class TestValidateSecurity(unittest.TestCase):
         self.assertTrue(any("OpenAI" in e for e in self.v.errors))
 
     def test_pull_request_target_is_an_error(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: PR
             on:
               pull_request_target:
@@ -216,7 +221,8 @@ class TestValidateSecurity(unittest.TestCase):
               build:
                 runs-on: ubuntu-latest
                 steps: []
-            """)
+            """
+        )
         self._run(raw)
         self.assertTrue(
             any("pull_request_target" in e for e in self.v.errors),
@@ -224,14 +230,16 @@ class TestValidateSecurity(unittest.TestCase):
         )
 
     def test_no_permissions_adds_info(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
               build:
                 runs-on: ubuntu-latest
                 steps: []
-            """)
+            """
+        )
         self._run(raw)
         self.assertTrue(
             any("permissions" in i for i in self.v.info),
@@ -239,7 +247,8 @@ class TestValidateSecurity(unittest.TestCase):
         )
 
     def test_job_level_permissions_suppresses_info(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
@@ -248,12 +257,14 @@ class TestValidateSecurity(unittest.TestCase):
                   contents: read
                 runs-on: ubuntu-latest
                 steps: []
-            """)
+            """
+        )
         self._run(raw)
         self.assertFalse(any("permissions" in i for i in self.v.info))
 
     def test_api_key_variant_flagged(self):
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
@@ -262,7 +273,8 @@ class TestValidateSecurity(unittest.TestCase):
                 env:
                   api_key: "mysecretkey"
                 steps: []
-            """)
+            """
+        )
         self._run(raw)
         self.assertTrue(
             any("api key" in e.lower() for e in self.v.errors),
@@ -412,7 +424,8 @@ class TestValidateWorkflow(unittest.TestCase):
 
     def test_valid_workflow_no_errors(self):
         sha = "a" * 40
-        content = textwrap.dedent(f"""\
+        content = textwrap.dedent(
+            f"""\
             name: CI
             on: push
             permissions:
@@ -422,7 +435,8 @@ class TestValidateWorkflow(unittest.TestCase):
                 runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@{sha}
-            """)
+            """
+        )
         path = self.wf_dir / "valid.yml"
         path.write_text(content, encoding="utf-8")
         self.v._validate_workflow(path, security_only=False)
@@ -501,7 +515,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
 
     def test_pull_request_target_in_list_trigger_is_error(self):
         """When 'on' is a list containing 'pull_request_target', it should be flagged."""
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: PR
             on:
               - push
@@ -510,7 +525,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
               b:
                 runs-on: ubuntu-latest
                 steps: []
-            """)
+            """
+        )
         import yaml
 
         content = yaml.safe_load(raw)
@@ -522,7 +538,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
 
     def test_hardcoded_token_key_is_flagged(self):
         """A literal 'token: \"value\"' pattern in raw YAML is treated as a hardcoded secret."""
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
@@ -531,7 +548,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
                 env:
                   token: "myrawtoken"
                 steps: []
-            """)
+            """
+        )
         import yaml
 
         self._run(raw, yaml.safe_load(raw))
@@ -542,7 +560,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
 
     def test_api_dash_key_variant_is_flagged(self):
         """'api-key: value' (dash variant) should be detected as a hardcoded secret."""
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             jobs:
@@ -551,7 +570,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
                 env:
                   api-key: "supersecret"
                 steps: []
-            """)
+            """
+        )
         import yaml
 
         self._run(raw, yaml.safe_load(raw))
@@ -562,7 +582,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
 
     def test_github_secret_reference_not_flagged_as_hardcoded_token(self):
         """'token: ${{ secrets.GITHUB_TOKEN }}' must not be flagged as a hardcoded secret."""
-        raw = textwrap.dedent("""\
+        raw = textwrap.dedent(
+            """\
             name: CI
             on: push
             permissions:
@@ -573,7 +594,8 @@ class TestValidateSecurityExtended(unittest.TestCase):
                 env:
                   TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 steps: []
-            """)
+            """
+        )
         import yaml
 
         self._run(raw, yaml.safe_load(raw))
@@ -690,7 +712,8 @@ class TestValidateAll(unittest.TestCase):
 
     def test_valid_workflow_returns_true(self):
         sha = "b" * 40
-        content = textwrap.dedent(f"""\
+        content = textwrap.dedent(
+            f"""\
             name: CI
             on: push
             permissions:
@@ -700,7 +723,8 @@ class TestValidateAll(unittest.TestCase):
                 runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@{sha}
-            """)
+            """
+        )
         (self.wf_dir / "ci.yml").write_text(content, encoding="utf-8")
         v = self._validator()
         result = v.validate_all()
@@ -724,7 +748,8 @@ class TestValidateAll(unittest.TestCase):
 
     def test_named_workflow_only_validates_that_file(self):
         sha = "c" * 40
-        good = textwrap.dedent(f"""\
+        good = textwrap.dedent(
+            f"""\
             name: Good
             on: push
             permissions:
@@ -734,7 +759,8 @@ class TestValidateAll(unittest.TestCase):
                 runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@{sha}
-            """)
+            """
+        )
         bad = "invalid_yaml: [broken"
         (self.wf_dir / "good.yml").write_text(good, encoding="utf-8")
         (self.wf_dir / "bad.yml").write_text(bad, encoding="utf-8")
