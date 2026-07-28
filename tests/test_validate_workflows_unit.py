@@ -281,6 +281,17 @@ class TestValidateSecurity(unittest.TestCase):
             f"Expected api key error, got: {self.v.errors}",
         )
 
+    def test_non_mapping_jobs_does_not_crash(self):
+        # A malformed ``jobs:`` (e.g. a list) must not raise AttributeError
+        # when checking for job-level permissions.
+        raw = "name: CI\non: push\njobs:\n  - build\n"
+        content = {"on": "push", "jobs": ["build"]}
+        self._run(raw, content=content)
+        self.assertTrue(
+            any("permissions" in i for i in self.v.info),
+            f"Expected permissions info, got: {self.v.info}",
+        )
+
 
 class TestValidateBestPractices(unittest.TestCase):
     def setUp(self):
@@ -372,6 +383,12 @@ class TestValidateBestPractices(unittest.TestCase):
         }
         self._run(content)
         self.assertTrue(any("not pinned" in w for w in self.v.warnings))
+
+    def test_non_mapping_jobs_does_not_crash(self):
+        # A malformed ``jobs:`` (e.g. a list) must not raise AttributeError
+        # while scanning steps for unpinned actions.
+        self._run({"jobs": ["build"]})
+        self.assertEqual(self.v.warnings, [])
 
 
 class TestValidateWorkflow(unittest.TestCase):

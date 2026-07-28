@@ -227,15 +227,15 @@ class WorkflowValidator:
             # while templated ``${{ ... }}`` values and GitHub permission scopes
             # (``id-token: write``) are excluded.
             (
-                r"password\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                r"password\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded password",
             ),
             (
-                r"token\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                r"token\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded token",
             ),
             (
-                r"api[_-]?key\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)\S",
+                r"api[_-]?key\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded api key",
             ),
             (r"ghp_[A-Za-z0-9]{36}", "GitHub token"),
@@ -261,6 +261,8 @@ class WorkflowValidator:
 
         if "permissions" not in content:
             jobs = content.get("jobs", {})
+            if not isinstance(jobs, dict):
+                jobs = {}
             has_job_permissions = any(
                 isinstance(job, dict) and "permissions" in job for job in jobs.values()
             )
@@ -283,6 +285,8 @@ class WorkflowValidator:
             content (dict[str, Any]): Parsed workflow YAML as a dictionary.
         """
         jobs = content.get("jobs", {})
+        if not isinstance(jobs, dict):
+            return
         for job_name, job_config in jobs.items():
             if not isinstance(job_config, dict):
                 continue
