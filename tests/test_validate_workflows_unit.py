@@ -292,6 +292,26 @@ class TestValidateSecurity(unittest.TestCase):
             f"Expected permissions info, got: {self.v.info}",
         )
 
+    def test_secret_not_masked_by_trailing_template(self):
+        # A real secret must still be flagged even when a ``${...}`` expression
+        # appears later on the same line (regression: the exclusion lookahead
+        # must not be fail-open across the whole line).
+        raw = "token: abc123  # ${{ github.sha }}"
+        self._run(raw, content={"jobs": {}})
+        self.assertTrue(
+            any("token" in e.lower() for e in self.v.errors),
+            f"Expected hardcoded token error, got: {self.v.errors}",
+        )
+
+    def test_templated_secret_value_not_flagged(self):
+        # A value that *is* a GitHub expression must not be flagged.
+        raw = "token: ${{ secrets.GITHUB_TOKEN }}"
+        self._run(raw, content={"jobs": {}})
+        self.assertFalse(
+            any("token" in e.lower() for e in self.v.errors),
+            f"Templated token should not be flagged, got: {self.v.errors}",
+        )
+
 
 class TestValidateBestPractices(unittest.TestCase):
     def setUp(self):

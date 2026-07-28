@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  checks: write  # Required for task-completed-checker-action to publish its check run
   pull-requests: write  # Required for task-completed-checker-action to comment on PR
 
 # Ensure only one run per PR at a time; cancel older runs on the same branch

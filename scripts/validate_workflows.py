@@ -227,15 +227,15 @@ class WorkflowValidator:
             # while templated ``${{ ... }}`` values and GitHub permission scopes
             # (``id-token: write``) are excluded.
             (
-                r"password\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                r"password\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded password",
             ),
             (
-                r"token\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                r"token\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded token",
             ),
             (
-                r"api[_-]?key\s*[:=]\s*['\"]?(?!.*\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                r"api[_-]?key\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
                 "hardcoded api key",
             ),
             (r"ghp_[A-Za-z0-9]{36}", "GitHub token"),
