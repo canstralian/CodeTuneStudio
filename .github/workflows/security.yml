@@ -63,7 +63,7 @@ jobs:
         run: |
           docker run --rm \
             -v "$PWD:/repo" \
-            zricethezav/gitleaks:latest \
+            zricethezav/gitleaks:v8.18.4 \
             detect \
             --source=/repo \
             --no-git \

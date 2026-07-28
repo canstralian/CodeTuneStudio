@@ -45,6 +45,12 @@ class WorkflowValidator:
         Returns:
             bool: `true` if no errors were found, `false` otherwise.
         """
+        # Reset accumulated findings so repeated calls on the same instance
+        # do not report stale errors/warnings from a previous run.
+        self.errors = []
+        self.warnings = []
+        self.info = []
+
         print("🔍 GitHub Workflow Validator")
         print("=" * 60)
 
@@ -55,7 +61,10 @@ class WorkflowValidator:
 
         workflows = self._select_workflows(workflow_name)
         if not workflows:
-            self.errors.append("No workflow files found")
+            # _select_workflows may already have recorded a specific error
+            # (e.g. a named file was not found); avoid a duplicate generic one.
+            if not self.errors:
+                self.errors.append("No workflow files found")
             self._print_results()
             return False
 
