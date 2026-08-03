@@ -25,6 +25,7 @@ from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from core.monitoring import setup_sentry
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
@@ -379,6 +380,10 @@ def run_app() -> None:
     This function instantiates and runs the MLFineTuningApp.
     It's the primary entry point called by the CLI and legacy app.py.
     """
+    # Initialize Sentry (error monitoring + performance tracing) before the
+    # Flask/Streamlit application objects are created so the SDK's automatic
+    # instrumentation can hook into them. Safe no-op if Sentry is unconfigured.
+    setup_sentry()
     try:
         app = MLFineTuningApp()
         app.run()
