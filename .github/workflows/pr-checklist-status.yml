@@ -5,10 +5,9 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 
+# Default all jobs to read-only; the checklist job elevates its own permissions.
 permissions:
   contents: read
-  checks: write  # Required for task-completed-checker-action to publish its check run
-  pull-requests: write  # Required for task-completed-checker-action to comment on PR
 
 # Ensure only one run per PR at a time; cancel older runs on the same branch
 concurrency:
@@ -68,6 +67,14 @@ jobs:
   checklist-validation:
     name: Checklist Validation
     runs-on: ubuntu-latest
+
+    # Only this job needs write access for task-completed-checker-action:
+    #   checks: write        → publish the check run
+    #   pull-requests: write → read/comment on the PR
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     # Skip validation on draft PRs
     if: github.event.pull_request.draft == false
