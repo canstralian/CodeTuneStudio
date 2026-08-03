@@ -139,6 +139,13 @@ def main(args: Optional[list[str]] = None) -> int:
         # Configure logging
         configure_logging(parsed_args.log_level)
 
+        # Initialize Sentry as early as possible so launcher-side failures are
+        # also captured. The env vars set below are inherited by the Streamlit
+        # subprocess, which re-initializes Sentry in its own interpreter.
+        from core.monitoring import setup_sentry
+
+        setup_sentry()
+
         logger.info(f"Starting CodeTune Studio v{__version__}")
         logger.info(f"Host: {parsed_args.host}")
         logger.info(f"Port: {parsed_args.port}")
