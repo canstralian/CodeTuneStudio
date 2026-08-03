@@ -34,30 +34,20 @@ class TestEnvParsers(unittest.TestCase):
         monitoring = _fresh_monitoring()
         for truthy in ("1", "true", "TRUE", "Yes", "on"):
             with patch.dict(os.environ, {"SENTRY_TEST_BOOL": truthy}):
-                self.assertTrue(
-                    monitoring._env_bool("SENTRY_TEST_BOOL", default=False)
-                )
+                self.assertTrue(monitoring._env_bool("SENTRY_TEST_BOOL", default=False))
         for falsy in ("0", "false", "no", "off", "nonsense"):
             with patch.dict(os.environ, {"SENTRY_TEST_BOOL": falsy}):
-                self.assertFalse(
-                    monitoring._env_bool("SENTRY_TEST_BOOL", default=True)
-                )
+                self.assertFalse(monitoring._env_bool("SENTRY_TEST_BOOL", default=True))
 
     def test_env_float_valid_and_invalid(self):
         monitoring = _fresh_monitoring()
         with patch.dict(os.environ, {"SENTRY_TEST_FLOAT": "0.25"}):
-            self.assertEqual(
-                monitoring._env_float("SENTRY_TEST_FLOAT", 1.0), 0.25
-            )
+            self.assertEqual(monitoring._env_float("SENTRY_TEST_FLOAT", 1.0), 0.25)
         with patch.dict(os.environ, {"SENTRY_TEST_FLOAT": "not-a-number"}):
-            self.assertEqual(
-                monitoring._env_float("SENTRY_TEST_FLOAT", 1.0), 1.0
-            )
+            self.assertEqual(monitoring._env_float("SENTRY_TEST_FLOAT", 1.0), 1.0)
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("SENTRY_TEST_FLOAT", None)
-            self.assertEqual(
-                monitoring._env_float("SENTRY_TEST_FLOAT", 0.5), 0.5
-            )
+            self.assertEqual(monitoring._env_float("SENTRY_TEST_FLOAT", 0.5), 0.5)
 
 
 class TestSetupSentry(unittest.TestCase):
@@ -71,8 +61,9 @@ class TestSetupSentry(unittest.TestCase):
     def test_idempotent(self):
         monitoring = _fresh_monitoring()
         fake_sdk = MagicMock()
-        with patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}), patch.dict(
-            "sys.modules", {"sentry_sdk": fake_sdk}
+        with (
+            patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}),
+            patch.dict("sys.modules", {"sentry_sdk": fake_sdk}),
         ):
             self.assertTrue(monitoring.setup_sentry())
             # Second call is a no-op because init already happened.
@@ -88,8 +79,9 @@ class TestSetupSentry(unittest.TestCase):
             "SENTRY_SEND_DEFAULT_PII": "false",
             "SENTRY_ENVIRONMENT": "staging",
         }
-        with patch.dict(os.environ, env), patch.dict(
-            "sys.modules", {"sentry_sdk": fake_sdk}
+        with (
+            patch.dict(os.environ, env),
+            patch.dict("sys.modules", {"sentry_sdk": fake_sdk}),
         ):
             self.assertTrue(monitoring.setup_sentry())
 
@@ -103,8 +95,9 @@ class TestSetupSentry(unittest.TestCase):
         monitoring = _fresh_monitoring()
         fake_sdk = MagicMock()
         fake_sdk.init.side_effect = RuntimeError("boom")
-        with patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}), patch.dict(
-            "sys.modules", {"sentry_sdk": fake_sdk}
+        with (
+            patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}),
+            patch.dict("sys.modules", {"sentry_sdk": fake_sdk}),
         ):
             # Failure must not propagate; returns False instead.
             self.assertFalse(monitoring.setup_sentry())

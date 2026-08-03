@@ -48,9 +48,7 @@ def _env_float(name: str, default: float) -> float:
     try:
         return float(raw)
     except ValueError:
-        logger.warning(
-            "Invalid float for %s=%r; using default %s", name, raw, default
-        )
+        logger.warning("Invalid float for %s=%r; using default %s", name, raw, default)
         return default
 
 
@@ -88,7 +86,7 @@ def setup_sentry() -> bool:
         return False
 
     try:
-        import sentry_sdk
+        import sentry_sdk  # noqa: PLC0415 - optional dependency, imported lazily
     except ImportError:
         logger.warning(
             "sentry_sdk is not installed; skipping Sentry initialization. "
