@@ -1,6 +1,5 @@
+import textwrap
 import unittest
-
-import pytest
 
 from plugins.code_analyzer import CodeAnalyzerTool
 
@@ -33,6 +32,8 @@ class TestCodeAnalyzerTool(unittest.TestCase):
 
     def test_execute_valid_code(self) -> None:
         code = """
+import os
+import sys
 
 def foo():
     pass
@@ -69,15 +70,101 @@ def baz():
         assert result["complexity"] > 0
 
     def test_execute_invalid_inputs(self) -> None:
+        """
+        Verifies that executing the analyzer with a non-string `code` input returns an error result.
+
+        Calls `self.tool.execute` with `{"code": 123}` and asserts the returned result has `status == "error"` and the `error` message contains "Invalid input".
+        """
         inputs = {"code": 123}
-        with pytest.raises(ValueError):
-            self.tool.execute(inputs)
+        result = self.tool.execute(inputs)
+        assert result["status"] == "error"
+        assert "Invalid input" in result["error"]
 
     def test_execute_syntax_error(self) -> None:
+        """
+        Verifies that executing code with a Python syntax error returns an error status and the expected error message.
+
+        Asserts that the tool returns result["status"] == "error" and result["error"] == "Invalid Python syntax." for an incomplete function definition.
+        """
         code = "def foo("  # Incomplete function
         inputs = {"code": code}
-        with pytest.raises(RuntimeError):
-            self.tool.execute(inputs)
+        result = self.tool.execute(inputs)
+        assert result["status"] == "error"
+        assert result["error"] == "Invalid Python syntax."
+
+    def test_execute_valid_code_has_success_status(self) -> None:
+        """Success result must include status == 'success' (added in 0.2.1)."""
+        result = self.tool.execute({"code": "x = 1"})
+        assert result["status"] == "success"
+
+    def test_execute_from_import_collected(self) -> None:
+        """Imports via 'from x import y' should be collected as module names."""
+        code = "from os.path import join"
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert "os.path" in result["imports"]
+
+    def test_execute_missing_code_key_returns_error(self) -> None:
+        """Missing 'code' key returns error dict, not ValueError."""
+        result = self.tool.execute({})
+        assert result["status"] == "error"
+        assert "Invalid input" in result["error"]
+
+    def test_execute_none_code_returns_error(self) -> None:
+        """None value for 'code' returns error dict, not raise."""
+        result = self.tool.execute({"code": None})
+        assert result["status"] == "error"
+
+    def test_execute_import_from_with_none_module_skipped(self) -> None:
+        """'from . import x' produces an ImportFrom with module=None; must not raise."""
+        # Python's ast module sets module=None for relative imports like 'from . import x'.
+        # The new guard (``if node.module``) prevents a TypeError on None.
+        code = "from . import something"
+        result = self.tool.execute({"code": code})
+        # The code parses fine; module=None entries should simply be omitted from imports.
+        assert result["status"] == "success"
+        assert "something" not in result["imports"]
+
+    def test_execute_relative_import_with_module_is_collected(self) -> None:
+        """'from .subpackage import x' has module='subpackage'; it must be collected."""
+        code = "from .utils import helper"
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert "utils" in result["imports"]
+
+    def test_execute_nested_functions_counted(self) -> None:
+        """Nested FunctionDef nodes must each be counted separately."""
+        code = textwrap.dedent(
+            """\
+            def outer():
+                def inner():
+                    pass
+            """
+        )
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert result["num_functions"] == 2
+
+    def test_execute_class_with_methods_counted(self) -> None:
+        """Methods inside a class are FunctionDefs and must be included in num_functions."""
+        code = textwrap.dedent(
+            """\
+            class MyClass:
+                def method_a(self): pass
+                def method_b(self): pass
+            """
+        )
+        result = self.tool.execute({"code": code})
+        assert result["status"] == "success"
+        assert result["num_classes"] == 1
+        assert result["num_functions"] == 2
+
+    def test_execute_complexity_increases_with_more_nodes(self) -> None:
+        """More AST nodes in longer code must produce a higher complexity score."""
+        simple_result = self.tool.execute({"code": "x = 1"})
+        complex_code = "def f(x):\n    if x:\n        return x + 1\n    return x"
+        complex_result = self.tool.execute({"code": complex_code})
+        assert complex_result["complexity"] > simple_result["complexity"]
 
 
 if __name__ == "__main__":

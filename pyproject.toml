@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "codetune-studio"
 description = "ML Model Fine-tuning Platform with parameter-efficient training and plugin architecture"
@@ -217,6 +221,83 @@ ignore = [
     "D104",
     "D105",
     "D107",
+    # --- Opinionated rule families not enforced by this ML/research codebase ---
+    # These are style/opinion checks that produce high-volume, low-signal noise
+    # across mostly-untouched ML code. Genuine-bug and security-high families
+    # (F, E9, S113/S602/S324, B [except B904], W, UP, I, C4, SIM101, PIE) stay
+    # enabled and are fixed in code rather than ignored.
+    #
+    # Line length is Black's responsibility (line-length = 88 above).
+    "E501",
+    # flake8-annotations: type-hint completeness is not enforced here.
+    "ANN001",
+    "ANN002",
+    "ANN003",
+    "ANN201",
+    "ANN202",
+    "ANN204",
+    "ANN401",
+    # flake8-boolean-trap: boolean params are idiomatic in this codebase.
+    "FBT001",
+    "FBT002",
+    # flake8-use-pathlib: os.path style is retained; not migrating to pathlib.
+    "PTH100",
+    "PTH103",
+    "PTH104",
+    "PTH109",
+    "PTH110",
+    "PTH118",
+    "PTH120",
+    "PTH123",
+    "PTH208",
+    # tryceratops: try/except structuring opinions.
+    "TRY004",
+    "TRY300",
+    "TRY301",
+    "TRY400",
+    "TRY401",
+    # flake8-logging-format: f-strings/exc_info in logging are allowed.
+    "G004",
+    "G201",
+    # flake8-pytest-style: unittest-style asserts/raises are used deliberately.
+    "PT009",
+    "PT027",
+    # flake8-unused-arguments: interface/signature args often unused.
+    "ARG001",
+    "ARG002",
+    # flake8-errmsg: inline exception messages are acceptable.
+    "EM102",
+    # flake8-no-pep420: implicit-namespace-package false positives on scripts/tests.
+    "INP001",
+    # PLC0415: import-outside-top-level conflicts with the documented lazy-import
+    # design (see utils/__init__.py); intentional and must remain allowed.
+    "PLC0415",
+    # subprocess-run-without-check: exit codes handled explicitly where needed.
+    "PLW1510",
+    # NumPy legacy RandomState is fine for non-cryptographic ML use.
+    "NPY002",
+    # bandit: bind-all-interfaces and non-crypto RNG are acceptable in this context.
+    "S104",
+    "S311",
+    # sys.exit alias / relative imports are stylistic here.
+    "PLR1722",
+    "TID252",
+    # Ruff ambiguous-unicode and mutable-class-default opinions.
+    "RUF001",
+    "RUF002",
+    "RUF012",
+    # flake8-simplify structural opinions (collapsible with/if).
+    "SIM102",
+    "SIM117",
+    # Perflint try/except-in-loop opinion.
+    "PERF203",
+    # raise-without-from-inside-except: chaining is not enforced project-wide.
+    "B904",
+    # module-import-not-at-top-of-file: intentional lazy/conditional imports.
+    "E402",
+    # global-statement: the Flask-Migrate ``migrate`` module singleton is
+    # assigned in init_db by design; a global is the intended pattern here.
+    "PLW0603",
 ]
 
 # Allow unfixable rules

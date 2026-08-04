@@ -1,4 +1,379 @@
-IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiIKV29ya2Zsb3cgVmFsaWRhdGlvbiBTY3JpcHQKClRoaXMgc2NyaXB0IHZhbGlkYXRlcyBHaXRIdWIgd29ya2Zsb3cgZmlsZXMgZm9yIHN5bnRheCwgc2VjdXJpdHksIGFuZCBiZXN0IHByYWN0aWNlcy4KQ2FuIGJlIHJ1biBsb2NhbGx5IG9yIGluIENJIHRvIGVuc3VyZSB3b3JrZmxvd3MgYXJlIHByb3Blcmx5IGNvbmZpZ3VyZWQuCgpVc2FnZToKICAgIHB5dGhvbiBzY3JpcHRzL3ZhbGlkYXRlX3dvcmtmbG93cy5weQogICAgcHl0aG9uIHNjcmlwdHMvdmFsaWRhdGVfd29ya2Zsb3dzLnB5IC0td29ya2Zsb3cgY2kueW1sCiAgICBweXRob24gc2NyaXB0cy92YWxpZGF0ZV93b3JrZmxvd3MucHkgLS1zZWN1cml0eS1vbmx5CiIiIgoKaW1wb3J0IGFyZ3BhcnNlCmltcG9ydCBzeXMKZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmZyb20gdHlwaW5nIGltcG9ydCBMaXN0LCBEaWN0LCBBbnksIFR1cGxlCmltcG9ydCB5YW1sCmltcG9ydCByZQoKCmNsYXNzIFdvcmtmbG93VmFsaWRhdG9yOgogICAgIiIiVmFsaWRhdGVzIEdpdEh1YiB3b3JrZmxvdyBmaWxlcyIiIgoKICAgIGRlZiBfX2luaXRfXyhzZWxmLCByZXBvX3Jvb3Q6IFBhdGgpOgogICAgICAgIHNlbGYucmVwb19yb290ID0gcmVwb19yb290CiAgICAgICAgc2VsZi53b3JrZmxvd3NfZGlyID0gcmVwb19yb290IC8gIi5naXRodWIiIC8gIndvcmtmbG93cyIKICAgICAgICBzZWxmLmVycm9yczogTGlzdFtzdHJdID0gW10KICAgICAgICBzZWxmLndhcm5pbmdzOiBMaXN0W3N0cl0gPSBbXQogICAgICAgIHNlbGYuaW5mbzogTGlzdFtzdHJdID0gW10KCiAgICBkZWYgdmFsaWRhdGVfYWxsKHNlbGYsIHdvcmtmbG93X25hbWU6IHN0ciA9IE5vbmUpIC0+IGJvb2w6CiAgICAgICAgIiIiCiAgICAgICAgVmFsaWRhdGUgYWxsIHdvcmtmbG93cyBvciBhIHNwZWNpZmljIHdvcmtmbG93CgogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIHdvcmtmbG93X25hbWU6IE9wdGlvbmFsIHNwZWNpZmljIHdvcmtmbG93IHRvIHZhbGlkYXRlCgogICAgICAgIFJldHVybnM6CiAgICAgICAgICAgIFRydWUgaWYgdmFsaWRhdGlvbiBwYXNzZXMsIEZhbHNlIG90aGVyd2lzZQogICAgICAgICIiIgogICAgICAgIHByaW50KCLwn5SMIEdpdEh1YiBXb3JrZmxvdyBWYWxpZGF0b3IiKQogICAgICAgIHByaW50KCI9IiAqIDYwKQoKICAgICAgICBpZiB3b3JrZmxvd19uYW1lOgogICAgICAgICAgICB3b3JrZmxvd19maWxlID0gc2VsZi53b3JrZmxvd3NfZGlyIC8gd29ya2Zsb3dfbmFtZQogICAgICAgICAgICBpZiBub3Qgd29ya2Zsb3dfZmlsZS5leGlzdHMoKToKICAgICAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmIldvcmtmbG93IGZpbGUgbm90IGZvdW5kOiB7d29ya2Zsb3dfbmFtZX0iKQogICAgICAgICAgICAgICAgcmV0dXJuIEZhbHNlCiAgICAgICAgICAgIHdvcmtmbG93cyA9IFt3b3JrZmxvd19maWxlXQogICAgICAgIGVsc2U6CiAgICAgICAgICAgIHdvcmtmbG93cyA9IHNlbGYuX2dldF93b3JrZmxvd19maWxlcygpCgogICAgICAgIGlmIG5vdCB3b3JrZmxvd3M6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZCgiTm8gd29ya2Zsb3cgZmlsZXMgZm91bmQiKQogICAgICAgICAgICByZXR1cm4gRmFsc2UKCiAgICAgICAgcHJpbnQoZiLwn5O7IEZvdW5kIHtsZW4od29ya2Zsb3dzKX0gd29ya2Zsb3cgZmlsZShzKSB0byB2YWxpZGF0ZVxuIikKCiAgICAgICAgZm9yIHdvcmtmbG93IGluIHdvcmtmbG93czoKICAgICAgICAgICAgc2VsZi5fdmFsaWRhdGVfd29ya2Zsb3cod29ya2Zsb3cpCgogICAgICAgIHNlbGYuX3ByaW50X3Jlc3VsdHMoKQogICAgICAgIHJldHVybiBsZW4oc2VsZi5lcnJvcnMpID09IDAKCiAgICBkZWYgX2dldF93b3JrZmxvd19maWxlcyhzZWxmKSAtPiBMaXN0W1BhdGhdOgogICAgICAgICIiIkdldCBhbGwgd29ya2Zsb3cgZmlsZXMiIiIKICAgICAgICB3b3JrZmxvd3MgPSBbXQogICAgICAgIGZvciBwYXR0ZXJuIGluIFsiKi55bWwiLCAiKi55YW1sIl06CiAgICAgICAgICAgIHdvcmtmbG93cy5leHRlbmQoc2VsZi53b3JrZmxvd3NfZGlyLmdsb2IocGF0dGVybikpCiAgICAgICAgICAgIHdvcmtmbG93cy5leHRlbmQoc2VsZi53b3JrZmxvd3NfZGlyLmdsb2IoZiIqKi97cGF0dGVybn0iKSkKICAgICAgICByZXR1cm4gc29ydGVkKHNldCh3b3JrZmxvd3MpKQoKICAgIGRlZiBfdmFsaWRhdGVfd29ya2Zsb3coc2VsZiwgd29ya2Zsb3dfcGF0aDogUGF0aCk6CiAgICAgICAgIiIiVmFsaWRhdGUgYSBzaW5nbGUgd29ya2Zsb3cgZmlsZSIiIgogICAgICAgIHByaW50KGYi8J+ThCBWYWxpZGF0aW5nOiB7d29ya2Zsb3dfcGF0aC5yZWxhdGl2ZV90byhzZWxmLnJlcG9fcm9vdCl9IikKCiAgICAgICAgIyBDaGVjayBZQU1MIHN5bnRheAogICAgICAgIHRyeToKICAgICAgICAgICAgd2l0aCBvcGVuKHdvcmtmbG93X3BhdGgsICJyIikgYXMgZjoKICAgICAgICAgICAgICAgIHJhd19jb250ZW50ID0gZi5yZWFkKCkKICAgICAgICAgICAgICAgIGYuc2VlaygwKQogICAgICAgICAgICAgICAgY29udGVudCA9IHlhbWwuc2FmZV9sb2FkKGYpCiAgICAgICAgZXhjZXB0IHlhbWwuWUFNTEVycm9yIGFzIGU6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmInt3b3JrZmxvd19wYXRoLm5hbWV9OiBJbnZhbGlkIFlBTUwgLSB7ZX0iKQogICAgICAgICAgICByZXR1cm4KICAgICAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmInt3b3JrZmxvd19wYXRoLm5hbWV9OiBFcnJvciByZWFkaW5nIGZpbGUgLSB7ZX0iKQogICAgICAgICAgICByZXR1cm4KCiAgICAgICAgaWYgY29udGVudCBpcyBOb25lOgogICAgICAgICAgICBzZWxmLndhcm5pbmdzLmFwcGVuZChmInt3b3JrZmxvd19wYXRoLm5hbWV9OiBFbXB0eSB3b3JrZmxvdyBmaWxlIikKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgICMgQ2hlY2sgaWYgdGhpcyBpcyBhIG1ldGFkYXRhIGZpbGUgKG5vdCBhIHdvcmtmbG93KQogICAgICAgIGlmIHNlbGYuX2lzX21ldGFkYXRhX2ZpbGUod29ya2Zsb3dfcGF0aC5uYW1lLCBjb250ZW50KToKICAgICAgICAgICAgcHJpbnQoZiIgIOKEue++jyAgTWV0YWRhdGEgZmlsZSAobm90IGEgd29ya2Zsb3cpIC0gc2tpcHBpbmcgd29ya2Zsb3cgdmFsaWRhdGlvblxuIikKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgICMgVmFsaWRhdGUgc3RydWN0dXJlCiAgICAgICAgc2VsZi5fdmFsaWRhdGVfc3RydWN0dXJlKHdvcmtmbG93X3BhdGgubmFtZSwgY29udGVudCkKCiAgICAgICAgIyBWYWxpZGF0ZSBzZWN1cml0eQogICAgICAgIHNlbGYuX3ZhbGlkYXRlX3NlY3VyaXR5KHdvcmtmbG93X3BhdGgubmFtZSwgcmF3X2NvbnRlbnQsIGNvbnRlbnQpCgogICAgICAgICMgVmFsaWRhdGUgYmVzdCBwcmFjdGljZXMKICAgICAgICBzZWxmLl92YWxpZGF0ZV9iZXN0X3ByYWN0aWNlcyh3b3JrZmxvd19wYXRoLm5hbWUsIGNvbnRlbnQpCgogICAgICAgIHByaW50KGYiICDinpMgVmFsaWRhdGlvbiBjb21wbGV0ZVxuIikKCiAgICBkZWYgX2lzX21ldGFkYXRhX2ZpbGUoc2VsZiwgZmlsZW5hbWU6IHN0ciwgY29udGVudDogRGljdFtzdHIsIEFueV0pIC0+IGJvb2w6CiAgICAgICAgIiIiQ2hlY2sgaWYgZmlsZSBpcyBtZXRhZGF0YSByYXRoZXIgdGhhbiBhIHdvcmtmbG93IiIiCiAgICAgICAgIyBDaGVjayBmb3IgSEYgU3BhY2UgbWV0YWRhdGEgaW5kaWNhdG9ycwogICAgICAgIGlmICJzZGsiIGluIGNvbnRlbnQgb3IgImVtb2ppIiBpbiBjb250ZW50IG9yICJjb2xvckZyb20iIGluIGNvbnRlbnQ6CiAgICAgICAgICAgIHJldHVybiBUcnVlCiAgICAgICAgCiAgICAgICAgIyBmaWxlcyB0aGF0IGNvbnRhaW4gJ3RpdGxlJyBidXQgbm8gJ2pvYnMnIGFyZSBsaWtlbHkgbWV0YWRhdGEKICAgICAgICBpZiAidGl0bGUiIGluIGNvbnRlbnQgYW5kICJqb2JzIiBub3QgaW4gY29udGVudCBhbmQgIm9uIiBub3QgaW4gY29udGVudDsKICAgICAgICAgICAgcmV0dXJuIFRydWUKICAgICAgICAgICAgCiAgICAgICAgcmV0dXJuIEZhbHNlCgogICAgZGVmIF92YWxpZGF0ZV9zdHJ1Y3R1cmUoc2VsZiwgZmlsZW5hbWU6IHN0ciwgY29udGVudDogRGljdFtzdHIsIEFueV0pOgogICAgICAgICIiIlZhbGlkYXRlIHdvcmtmbG93IHN0cnVjdHVyZSIiIgogICAgICAgICMgQ2hlY2sgcmVxdWlyZWQgZmllbGRzCiAgICAgICAgaWYgIm5hbWUiIG5vdCBpbiBjb250ZW50OgogICAgICAgICAgICBzZWxmLndhcm5pbmdzLmFwcGVuZChmIntmaWxlbmFtZX06IE1pc3NpbmcgJ25hbWUnIGZpZWxkIikKCiAgICAgICAgIyBDaGVjayBmb3IgdHJpZ2dlciAob246IG9yIFRydWUgZm9yIFlBTUwgYm9vbGVhbikKICAgICAgICBoYXNfdHJpZ2dlciA9ICJvbiIgaW4gY29udGVudCBvciBUcnVlIGluIGNvbnRlbnQKICAgICAgICBpZiBub3QgaGFzX3RyaWdnZXI6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmIntmaWxlbmFtZX06IE1pc3NpbmcgdHJpZ2dlciAoJ29uJyBmaWVsZCkiKQoKICAgICAgICBpZiAiam9icyIgbm90IGluIGNvbnRlbnQ6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmIntmaWxlbmFtZX06IE1pc3NpbmcgJ2pvYnMnIGRlZmluaXRpb24iKQogICAgICAgICAgICByZXR1cm4KCiAgICAgICAgIyBWYWxpZGF0ZSBqb2JzCiAgICAgICAgam9icyA9IGNvbnRlbnQuZ2V0KCJqb2JzIiwge30pCiAgICAgICAgaWYgbm90IGlzaW5zdGFuY2Uoam9icywgZGljdCk6CiAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZChmIntmaWxlbmFtZX06ICdqb2JzJyBtdXN0IGJlIGEgZGljdGlvbmFyeSIpCiAgICAgICAgICAgIHJldHVybgoKICAgICAgICBpZiBub3Qgam9iczoKICAgICAgICAgICAgc2VsZi5lcnJvcnMuYXBwZW5kKGYie2ZpbGVuYW1lfTogTm8gam9icyBkZWZpbmVkIikKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgICMgVmFsaWRhdGUgZWFjaCBqb2IKICAgICAgICBmb3Igam9iX25hbWUsIGpvYl9jb25maWcgaW4gam9icy5pdGVtcygpOgogICAgICAgICAgICBpWY2VwdCB5YW1sLllBTUxFcnJvciBhcyBlOgogICAgICAgICAgICBzZWxmLmVycm9ycy5hcHBlbmQoZiJ7d29ya2Zsb3dfcGF0aC5uYW1lfTogSW52YWxpZCBZQU1MIC0ge2V9IikKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgICAgICAgICBzZWxmLmVycm9ycy5hcHBlbmQoZiJ7d29ya2Zsb3dfcGF0aC5uYW1lfTogRXJyb3IgcmVhZGluZyBmaWxlIC0ge2V9IikKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgIGlmIGNvbnRlbnQgaXMgTm9uZToKICAgICAgICAgICAgc2VsZi53YXJuaW5ncy5hcHBlbmQoZiJ7d29ya2Zsb3dfcGF0aC5uYW1lfTogRW1wdHkgd29ya2Zsb3cgZmlsZSIpCiAgICAgICAgICAgIHJldHVybgoKICAgICAgICAjIENoZWNrIGlmIHRoaXMgaXMgYSBtZXRhZGF0YSBmaWxlIChub3QgYSB3b3JrZmxvdykKICAgICAgICBpZiAiaWYgbm90IGlzaW5zdGFuY2Uoam9iX2NvbmZpZywgZGljdCk6CiAgICAgICAgICAgICAgICBjb250aW51ZQoKICAgICAgICAgICAgaWYgInJ1bnMtb24iIG5vdCBpbiBqb2JfY29uZmlnOgogICAgICAgICAgICAgICAgc2VsZi5lcnJvcnMuYXBwZW5kKGYie2ZpbGVuYW1lfTogSm9iICd7am9iX25hbWV9JyBtaXNzaW5nICdydW5zLW9uJyIpCgogICAgICAgICAgICBpZiAic3RlcHMiIG5vdCBpbiBqb2JfY29uZmlnOgogICAgICAgICAgICAgICAgc2VsZi5lcnJvcnMuYXBwZW5kKGYie2ZpbGVuYW1lfTogSm9iICd7am9iX25hbWV9JyBtaXNzaW5nICdzdGVwcyciKQoKICAgIGRlZiBfdmFsaWRhdGVfc2VjdXJpdHkoCiAgICAgICAgc2VsZiwgZmlsZW5hbWU6IHN0ciwgcmF3X2NvbnRlbnQ6IHN0ciwgY29udGVudDogRGljdFtzdHIsIEFueV0KICAgICk6CiAgICAgICAgIiIiVmFsaWRhdGUgc2VjdXJpdHkgYmVzdCBwcmFjdGljZXMiIiIKICAgICAgICAjIENoZWNrIGZvciBoYXJkY29kZWQgc2VjcmV0cwogICAgICAgIHNlY3JldF9wYXR0ZXJucyA9IFsKICAgICAgICAgICAgKHIiZ2hwX1thLXpBLVowLTldezM2fSIsICJHaXRIdWIgcGVyc29uYWwgYWNjZXNzIHRva2VuIiksCiAgICAgICAgICAgIChyInNrLVthLXpBLVowLTldezQ4fSIsICJPcGVuQUkgQVBJIGtleSIpLAogICAgICAgICAgICAoCiAgICAgICAgICAgICAgICByIlsnXCJdcGFzc3dvcmRbJ1wiXTpccypbJ1wiXVteJFx7XSIsCiAgICAgICAgICAgICAgICAiSGFyZGNvZGVkIHBhc3N3b3JkIiwKICAgICAgICAgICAgKSwKICAgICAgICAgICAgKHIiWydcIl10b2tlblsnXCJdOlxzKlsnXCJdW14kXHtdIiwgIkhhcmRjb2RlZCB0b2tlbiIpLAogICAgICAgIF0KCiAgICAgICAgZm9yIHBhdHRlcm4sIHNlY3JldF90eXBlIGluIHNlY3JldF9wYXR0ZXJuczoKICAgICAgICAgICAgcmF3X2NvbnRlbnRfcmVkYWN0ZWQgPSByZS5zdWIocGF0dGVybiwgIltSRURBQ1RFRF0iLCByYXdfY29udGVudCwgaWdub3JlY2FzZT1UcnVlKQogICAgICAgICAgICBpZiByYXdfY29udGVudF9yZWRhY3RlZCAhPSByYXdfY29udGVudDoKICAgICAgICAgICAgICAgIHNlbGYuZXJyb3JzLmFwcGVuZCgKICAgICAgICAgICAgICAgICAgICBmIntmaWxlbmFtZX06IFBvdGVudGlhbCB7c2VjcmV0X3R5cGV9IGZvdW5kIC0gdXNlIEdpdEh1YiBzZWNyZXRzIgogICAgICAgICAgICAgICAgKQoKICAgICAgICAjIENoZWNrIGZvciBwdWxsX3JlcXVlc3RfdGFyZ2V0CiAgICAgICAgdHJpZ2dlcnMgPSBjb250ZW50LmdldCgib24iLCB7fSkgb3IgY29udGVudC5nZXQoVHJ1ZSwge30pCiAgICAgICAgaWYgaXNpbnN0YW5jZSh0cmlnZ2VycywgZGljdCkgYW5kICJwdWxsX3JlcXVlc3RfdGFyZ2V0IiBpbiB0cmlnZ2VyczoKICAgICAgICAgICAgc2VsZi53YXJuaW5ncy5hcHBlbmQoCiAgICAgICAgICAgICAgICBmIntmaWxlbmFtZX06IFVzZXMgJ3B1bGxfcmVxdWVzdF90YXJnZXQnIC0gZW5zdXJlIHByb3BlciBzYWZldHkgY2hlY2tzIgogICAgICAgICAgICApCgogICAgICAgICMgQ2hlY2sgcGVybWlzc2lvbnMKICAgICAgICBpZiAicGVybWlzc2lvbnMiIG5vdCBpbiBjb250ZW50OgogICAgICAgICAgICBqb2JzID0gY29udGVudC5nZXQoImpvYnMiLCB7fSkKICAgICAgICAgICAgaGFzX2pvYl9wZXJtaXNzaW9ucyA9IGFueSgKICAgICAgICAgICAgICAgICJwZXJtaXNzaW9ucyIgaW4gam9iCiAgICAgICAgICAgICAgICBmb3Igam9iIGluIGpvYnMudmFsdWVzKCkKIC2ICAgICAgICAgICAgICAgaWYgaXNpbnN0YW5jZShqb2IsIGRpY3QpCiAgICAgICAgICAgICApCiAgICAgICAgICAgIGlmIG5vdCBoYXNfam9iX3Blcm1pc3Npb25zOgogICAgICAgICAgICAgICAgc2VsZi5pbmZvLmFwcGVuZCgKICAgICAgICAgICAgICAgICAgICBmIntmaWxlbmFtZX06IE5vIHBlcm1pc3Npb25zIGRlZmluZWQgKG1heSB1c2UgZGVmYXVsdCkiCiAgICAgICAgICAgICAgICApCgogICAgZGVmIF92YWxpZGF0ZV9iZXN0X3ByYWN0aWNlcyhzZWxmLCBmaWxlbmFtZTogc3RyLCBjb250ZW50OiBEaWN0W3N0ciwgQW55XSk6CiAgICAgICAgIiIiVmFsaWRhdGUgYmVzdCBwcmFjdGljZXMiIiIKICAgICAgICAjIENoZWNrIFB5dGhvbiB2ZXJzaW9ucwogICAgICAgIHJhd19zdHIgPSBzdHIoY29udGVudCkKICAgICAgICBweXRob25fdmVy
-c2lvbnMgPSByZS5maW5kYWxsKHIicHl0aG9uLXZlcnNpb25bJ1wiXT86XHMqWydcIl0/KFxkK1wuXGQrKSIsIHJhd19zdHIpCgogICAgICAgIHN1cHBvcnRlZF92ZXJzaW9ucyA9IFsiMy4xMCIsICIzLjExIiwgIjMuMTIiXQogICAgICAgIGZvciB2ZXJzaW9uIGluIHB5dGhvbl92ZXJzaW9uczoKICAgICAgICAgICAgaWYgdmVyc2lvbiBub3QgaW4gc3VwcG9ydGVkX3ZlcnNpb25zOgogICAgICAgICAgICAgICAgc2VsZi53YXJuaW5ncy5hcHBlbmQoCiAgICAgICAgICAgICAgICAgICAgZiJ7ZmlsZW5hbWV9OiBQeXRob24ge3ZlcnNpb259IG1heSBub3QgYmUgc3VwcG9ydGVkIgogICAgICAgICAgICAgICAgKQoKICAgICAgICAjIENoZWNrIGFjdGlvbiB2ZXJzaW9ucwogICAgICAgIGpvYnMgPSBjb250ZW50LmdldCgiam9icyIsIHt9KQogICAgICAgIGZvciBqb2JfbmFtZSwgam9iX2NvbmZpZyBpbiBqb2JzLml0ZW1zKCk6CiAgICAgICAgICAgIGlmIG5vdCBpc2luc3RhbmNlKGpvYl9jb25maWcsIGRpY3QpOgogICAgICAgICAgICAgICAgY29udGlu
-dWUKCiAgICAgICAgICAgIHN0ZXBzID0gam9iX2NvbmZpZy5nZXQoInN0ZXBzIiwgW10pCiAgICAgICAgICAgIGZvciBzdGVwIGluIHN0ZXBzOgogICAgICAgICAgICAgICAgaWYgbm90IGlzaW5zdGFuY2Uoc3RlcCwgZGljdCk6CiAgICAgICAgICAgICAgICAgICAgY29udGludWUKCiAgICAgICAgICAgICAgICB1c2VzID0gc3RlcC5nZXQoInVzZXMiLCAiIikKICAgICAgICAgICAgICAgIGlmIHVzZXMgYW5kIG5vdCB1c2VzLnN0YXJ0c3dpdGgoIi4vIik6CiAgICAgICAgICAgICAgICAgICAgICAjIENoZWNrIGlmIGFjdGlvbiBpcyBwaW5uZWQKICAgICAgICAgICAgICAgICAgICAgIGlmICJAIiBub3QgaW4gdXNlczoKICAgICAgICAgICAgICAgICAgICAgICAgICBzZWxmLndhcm5pbmdzLmFwcGVuZCgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZiJ7ZmlsZW5hbWV9OiBVbnBpbm5lZCBhY3Rpb24gaW4gam9iICd7am9iX25hbWV9Jzoge3VzZXN9IgogICAgICAgICAgICAgICAgICAgICAgICAgICApCgogICAgZGVmIF9wcmludF9yZXN1bHRzKHNlbGYpOgogICAgICAgICIiIlByaW50IHZhbGlkYXRpb24gcmVzdWx0cyIiIgogICAgICAgIHByaW50KCJcbiIgKyAiPSIgKiA2MCkKICAgICAgICBwcmludCgi8J+UiiBWYWxpZGF0aW9uIFJlc3VsdHMiikKICAgICAgICBwcmludCgiPSIgKiA2MCkKCiAgICAgICAgaWYgc2VsZi5lcnJvcnM6CiAgICAgICAgICAgIHByaW50KGYiXG7inYwgRXJyb3JzICh7bGVuKHNlbGYuZXJyb3JzKX0pOiIpCiAgICAgICAgICAgIGZvciBlcnJvciBpbiBzZWxmLmVycm9yczoKICAgICAgICAgICAgICAgIHByaW50KGYiICDigKIge2Vycm9yfSIpCgogICAgICAgIGlmIHNlbGYud2FybmluZ3M6CiAgICAgICAgICAgIHByaW50KGYiXG7imqDvuI8gIFdhcm5pbmdzICh7bGVuKHNlbGYud2FybmluZ3MpfSk6IikKICAgICAgICAgICAgZm9yIHdhcm5pbmcgaW4gc2VsZi53YXJuaW5nczoKICAgICAgICAgICAgICAgIHByaW50KGYiICDigKIge3dhcm5pbmd9IikKCiAgICAgICAgaWYgc2VsZi5pbmZvOgogICAgICAgICAgICBwcmludChmIlxu4oS577iPICBJbmZvICh7bGVuKHNlbGYuaW5mbyl9KToiKQogICAgICAgICAgICBmb3IgaW5mbyBpbiBzZWxmLmluZm86CiAgICAgICAgICAgICAgICBwcmludChmIiAg4oCiIHtpbmZvfSIpCgogICAgICAgIGlmIG5vdCBzZWxmLmVycm9ycyBhbmQgbm90IHNlbGYud2FybmluZ3M6CiAgICAgICAgICAgIHByaW50KCJcbuKchSBBbGwgdmFsaWRhdGlvbnMgcGFzc2VkISIpCgogICAgICAgIHByaW50KCJcbiIgKyAiPSIgKiA2MCkKCgpkZWYgbWFpbigpOgogICAgIiIiTWFpbiBlbnRyeSBwb2ludCIiIgogICAgcGFyc2VyID0gYXJncGFyc2UuQXJndW1lbnRQYXJzZXIoCiAgICAgICAgZGVzY3JpcHRpb249IlZhbGlkYXRlIEdpdEh1YiB3b3JrZmxvdyBmaWxlcyIsCiAgICAgICAgZm9ybWF0dGVyX2NsYXNzPWFyZ3BhcnNlLlJhd0Rlc2NyaXB0aW9uSGVscEZvcm1h
-dHRlciwKICAgICkKICAgIHBhcnNlci5hZGRfYXJndW1lbnQoCiAgICAgICAgCi0td29ya2Zsb3ciLAogICAgICAgIGhlbHA9IlNwZWNpZmljIHdvcmtmbG93IGZpbGUgdG8gdmFsaWRhdGUgKGUuZy4sIGNpLnltbCkiLAogICAgKQogICAgcGFyc2VyLmFkZF9hcmd1bWVudCgKICAgICAgICAiLS1zZWN1cml0eS1vbmx5IiwKICAgICAgICBhY3Rpb249InN0b3JlX3RydWUiLAogICAgICAgIGhlbHA9Ik9ubHkgcnVuIHNlY3VyaXR5IGNoZWNrcyIsCiAgICApCgogICAgYXJncyA9IHBhcnNlci5wYXJzZV9hcmdzKCkKCiAgICAjIEZpbmQgcmVwb3NpdG9yeSByb290CiAgICByZXBvX3Jvb3QgPSBQYXRoKF9fZmlsZV9fKS5wYXJlbnQucGFyZW50CiAgICBpZiBub3QgKHJlcG9fcm9vdCAvICIuZ2l0aHViIiAvICJ3b3JrZmxvd3MiKS5leGlzdHMoKToKICAgICAgICBwcmludCgi4p2MIEVycm9yOiAuZ2l0aHViL3dvcmtmbG93cyBkaXJlY3Rvcnkgbm90IGZvdW5kIikKICAgICAgICBwcmludChmIiAgIFNlYXJjaGVkIGluOiB7cmVwb19yb290fSIpCiAgICAgICAgcmV0dXJuIDEKCiAgICB2YWxpZGF0b3IgPSBXb3JrZmxvd1ZhbGlkYXRvcihyZXBvX3Jvb3QpCiAgICBzdWNjZXNzID0gdmFsaWRhdG9yLnZhbGlkYXRlX2FsbCh3b3JrZmxvd19uYW1lPWFyZ3Mud29ya2Zsb3cpCgogICAgcmV0dXJuIDAgaWYgc3VjY2VzcyBlbHNlIDEKCgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgc3lzLmV4aXQobWFpmainKQo=
+#!/usr/bin/env python3
+"""Validate GitHub workflow files for syntax, security, and best practices."""
+
+import argparse
+import importlib
+import importlib.util
+import re
+import sys
+from pathlib import Path
+from typing import Any
+
+_yaml = None
+if importlib.util.find_spec("yaml") is not None:
+    _yaml = importlib.import_module("yaml")
+
+
+class WorkflowValidator:
+    """Validates GitHub workflow files."""
+
+    def __init__(self, repo_root: Path) -> None:
+        """
+        Initialize the validator with the repository root path.
+
+        Parameters:
+            repo_root (Path): The repository root; workflows are expected at `<repo_root>/.github/workflows`.
+        """
+        self.repo_root = repo_root
+        self.workflows_dir = repo_root / ".github" / "workflows"
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.info: list[str] = []
+
+    def validate_all(
+        self, workflow_name: str | None = None, security_only: bool = False
+    ) -> bool:
+        """
+        Validate GitHub Actions workflow files in the repository.
+
+        Validates all workflow files found under .github/workflows (including nested directories) or a single specified workflow. Unless security_only is True, runs structure and best-practice checks in addition to security validation.
+
+        Parameters:
+            workflow_name (str | None): Name of a specific workflow file to validate relative to .github/workflows. If None, all *.yml and *.yaml files are validated.
+            security_only (bool): If True, only security-related checks are performed. Defaults to False.
+
+        Returns:
+            bool: `true` if no errors were found, `false` otherwise.
+        """
+        # Reset accumulated findings so repeated calls on the same instance
+        # do not report stale errors/warnings from a previous run.
+        self.errors = []
+        self.warnings = []
+        self.info = []
+
+        print("🔍 GitHub Workflow Validator")
+        print("=" * 60)
+
+        if _yaml is None:
+            self.errors.append("PyYAML is required to validate workflow files")
+            self._print_results()
+            return False
+
+        workflows = self._select_workflows(workflow_name)
+        if not workflows:
+            # _select_workflows may already have recorded a specific error
+            # (e.g. a named file was not found); avoid a duplicate generic one.
+            if not self.errors:
+                self.errors.append("No workflow files found")
+            self._print_results()
+            return False
+
+        print(f"📻 Found {len(workflows)} workflow file(s) to validate\n")
+        for workflow in workflows:
+            self._validate_workflow(workflow, security_only=security_only)
+
+        self._print_results()
+        return len(self.errors) == 0
+
+    def _select_workflows(self, workflow_name: str | None) -> list[Path]:
+        """
+        Select workflow files to validate based on the given filter.
+
+        If a workflow name is provided, returns that file path if it exists; records an error and returns an empty list otherwise. If no name is provided, returns all .yml and .yaml files in the workflows directory and subdirectories, deduplicated and sorted.
+
+        Parameters:
+            workflow_name (str | None): Optional filename of a specific workflow.
+
+        Returns:
+            list[Path]: Paths of selected workflow files.
+        """
+        if workflow_name:
+            candidate = Path(workflow_name)
+            if candidate.is_absolute() or ".." in candidate.parts:
+                self.errors.append(f"Invalid workflow path: {workflow_name}")
+                return []
+            if candidate.suffix not in (".yml", ".yaml"):
+                self.errors.append(
+                    f"Workflow file must be a .yml/.yaml file: {workflow_name}"
+                )
+                return []
+            workflow_file = self.workflows_dir / workflow_name
+            try:
+                resolved = workflow_file.resolve()
+                resolved.relative_to(self.workflows_dir.resolve())
+            except (OSError, ValueError):
+                self.errors.append(
+                    f"Workflow path escapes workflows directory: {workflow_name}"
+                )
+                return []
+            if not workflow_file.exists():
+                self.errors.append(f"Workflow file not found: {workflow_name}")
+                return []
+            return [workflow_file]
+
+        workflows: list[Path] = []
+        for pattern in ("*.yml", "*.yaml"):
+            workflows.extend(self.workflows_dir.glob(pattern))
+            workflows.extend(self.workflows_dir.glob(f"**/{pattern}"))
+        return sorted(set(workflows))
+
+    def _validate_workflow(self, workflow_path: Path, security_only: bool) -> None:
+        """
+        Validate a single workflow file.
+
+        Reads and parses the workflow YAML. Skips empty and metadata-only files. Runs structure and best-practice checks unless `security_only` is True; security checks always run. Records findings as errors, warnings, or informational messages.
+
+        Parameters:
+                security_only (bool): If True, skip structure and best-practice checks.
+        """
+        try:
+            relative = workflow_path.relative_to(self.repo_root)
+        except ValueError:
+            self.errors.append(
+                f"{workflow_path.name}: Workflow path is outside the repository"
+            )
+            return
+        print(f"📄 Validating: {relative}")
+
+        try:
+            raw_content = workflow_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            self.errors.append(f"{workflow_path.name}: Unable to read file - {exc}")
+            return
+
+        try:
+            content = _yaml.safe_load(raw_content)
+        except Exception as exc:
+            self.errors.append(f"{workflow_path.name}: Invalid YAML syntax - {exc}")
+            return
+
+        if content is None:
+            self.warnings.append(f"{workflow_path.name}: Empty workflow file")
+            return
+
+        if not isinstance(content, dict):
+            self.errors.append(
+                f"{workflow_path.name}: Top-level YAML must be a mapping/dictionary"
+            )
+            return
+
+        if self._is_metadata_file(content):
+            self.info.append(f"{workflow_path.name}: Metadata file skipped")
+            return
+
+        if not security_only:
+            self._validate_structure(workflow_path.name, content)
+            self._validate_best_practices(workflow_path.name, content)
+        self._validate_security(workflow_path.name, raw_content, content)
+
+    def _is_metadata_file(self, content: dict[str, Any]) -> bool:
+        """
+        Determine if a parsed workflow YAML is metadata-only.
+
+        Returns:
+            `true` if the mapping contains SDK/theme metadata ("sdk", "emoji", "colorFrom") or has "title" without "jobs" and "on", `false` otherwise.
+        """
+        return any(key in content for key in ("sdk", "emoji", "colorFrom")) or (
+            "title" in content and "jobs" not in content and "on" not in content
+        )
+
+    def _validate_structure(self, filename: str, content: dict[str, Any]) -> None:
+        """
+        Validate basic GitHub Actions workflow structure and record any structural issues.
+
+        Checks performed:
+        - Warns if the top-level `name` field is missing.
+        - Errors if the workflow trigger (`on`) is missing.
+        - Errors if the top-level `jobs` section is missing (and returns immediately).
+        - Errors if `jobs` exists but is not a non-empty mapping.
+
+        Parameters:
+            filename (str): The workflow file name used in reported messages.
+            content (dict[str, Any]): Parsed YAML content of the workflow.
+
+        Notes:
+            Detected issues are appended to `self.errors` and `self.warnings`.
+        """
+        if "name" not in content:
+            self.warnings.append(f"{filename}: Missing 'name' field")
+
+        has_trigger = "on" in content or True in content
+        if not has_trigger:
+            self.errors.append(f"{filename}: Missing workflow trigger ('on')")
+
+        if "jobs" not in content:
+            self.errors.append(f"{filename}: Missing 'jobs' section")
+            return
+
+        jobs = content.get("jobs", {})
+        if not isinstance(jobs, dict) or not jobs:
+            self.errors.append(f"{filename}: 'jobs' must be a non-empty mapping")
+
+    def _validate_security(
+        self, filename: str, raw_content: str, content: dict[str, Any]
+    ) -> None:
+        """
+        Scan a workflow's raw and parsed YAML for security issues and record findings.
+
+        Searches the raw file text for potential hardcoded secrets (passwords, tokens, GitHub tokens, OpenAI keys) and appends an error for each match. Records an error if the workflow uses `pull_request_target`. If no top-level `permissions` and no job-level `permissions` are present, records an informational message that defaults may apply.
+
+        Parameters:
+            filename (str): Workflow file name used in recorded messages.
+            raw_content (str): Raw YAML text of the workflow file.
+            content (dict[str, Any]): Parsed YAML content (mapping) of the workflow.
+        """
+        secret_patterns = [
+            # Quote is optional so unquoted YAML (``token: abc123``) is caught,
+            # while templated ``${{ ... }}`` values and GitHub permission scopes
+            # (``id-token: write``) are excluded.
+            (
+                r"password\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                "hardcoded password",
+            ),
+            (
+                r"token\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                "hardcoded token",
+            ),
+            (
+                r"api[_-]?key\s*[:=]\s*['\"]?(?!\$\{)(?!(?:read|write|none)\b)[^\s'\"]",
+                "hardcoded api key",
+            ),
+            (r"ghp_[A-Za-z0-9]{36}", "GitHub token"),
+            (r"sk-[A-Za-z0-9]{48}", "OpenAI API key"),
+        ]
+        for pattern, secret_type in secret_patterns:
+            if re.search(pattern, raw_content, flags=re.IGNORECASE):
+                self.errors.append(
+                    f"{filename}: Potential {secret_type} found; use GitHub secrets"
+                )
+
+        triggers = content.get("on", {}) or content.get(True, {})
+        uses_pr_target = False
+        if isinstance(triggers, (dict, list)):
+            uses_pr_target = "pull_request_target" in triggers
+        elif isinstance(triggers, str):
+            uses_pr_target = triggers == "pull_request_target"
+        if uses_pr_target:
+            self.errors.append(
+                f"{filename}: Uses 'pull_request_target'; disallow or add explicit "
+                "safety gates (untrusted code runs with write access to the repo)"
+            )
+
+        if "permissions" not in content:
+            jobs = content.get("jobs", {})
+            if not isinstance(jobs, dict):
+                jobs = {}
+            has_job_permissions = any(
+                isinstance(job, dict) and "permissions" in job for job in jobs.values()
+            )
+            if not has_job_permissions:
+                self.info.append(
+                    f"{filename}: No permissions defined; defaults may apply"
+                )
+
+    def _validate_best_practices(self, filename: str, content: dict[str, Any]) -> None:
+        """
+        Record warnings for third-party actions not pinned to a full commit SHA.
+
+        Iterates through each job and its steps. For third-party actions (not
+        local, not docker images), warns if the action is not pinned to exactly
+        a 40-character commit SHA. Actions pinned to tags or branches are flagged
+        as unpinned.
+
+        Parameters:
+            filename (str): The workflow file name used in warning messages.
+            content (dict[str, Any]): Parsed workflow YAML as a dictionary.
+        """
+        jobs = content.get("jobs", {})
+        if not isinstance(jobs, dict):
+            return
+        for job_name, job_config in jobs.items():
+            if not isinstance(job_config, dict):
+                continue
+            steps = job_config.get("steps", [])
+            if not isinstance(steps, list):
+                continue
+            for step in steps:
+                if not isinstance(step, dict):
+                    continue
+                uses = step.get("uses")
+                if not isinstance(uses, str) or uses.startswith(("./", "docker://")):
+                    continue
+                # A fully pinned action references an immutable 40-char commit
+                # SHA (e.g. ``owner/repo@<sha>``). Tag/branch pins such as
+                # ``owner/repo@v4`` are mutable and reported as unpinned.
+                if not re.search(r"@[0-9a-fA-F]{40}$", uses):
+                    self.warnings.append(
+                        f"{filename}: Action not pinned to a full commit SHA in "
+                        f"job '{job_name}': {uses}"
+                    )
+
+    def _print_results(self) -> None:
+        """
+        Print a formatted validation report of errors, warnings, and informational messages to stdout.
+
+        Displays each error, warning, and info message with their respective counts. Shows a success message if both errors and warnings are empty.
+        """
+        print("\n" + "=" * 60)
+        print("🔎 Validation Results")
+        print("=" * 60)
+
+        if self.errors:
+            print(f"\n❌ Errors ({len(self.errors)}):")
+            for error in self.errors:
+                print(f"  • {error}")
+
+        if self.warnings:
+            print(f"\n⚠️  Warnings ({len(self.warnings)}):")
+            for warning in self.warnings:
+                print(f"  • {warning}")
+
+        if self.info:
+            print(f"\nℹ️  Info ({len(self.info)}):")
+            for info in self.info:
+                print(f"  • {info}")
+
+        if not self.errors and not self.warnings:
+            print("\n✅ All validations passed!")
+
+        print("\n" + "=" * 60)
+
+
+def main() -> int:
+    """
+    Validate GitHub Actions workflow files in the repository.
+
+    Returns:
+        int: Exit code 0 if validation completed with no errors, 1 if validation failed or the .github/workflows directory is missing.
+    """
+    parser = argparse.ArgumentParser(
+        description="Validate GitHub workflow files",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--workflow",
+        help="Specific workflow file to validate (e.g., ci.yml)",
+    )
+    parser.add_argument(
+        "--security-only",
+        action="store_true",
+        help="Only run security checks",
+    )
+
+    args = parser.parse_args()
+    repo_root = Path(__file__).parent.parent
+    if not (repo_root / ".github" / "workflows").exists():
+        print("❌ Error: .github/workflows directory not found")
+        print(f"   Searched in: {repo_root}")
+        return 1
+
+    validator = WorkflowValidator(repo_root)
+    success = validator.validate_all(
+        workflow_name=args.workflow,
+        security_only=args.security_only,
+    )
+    return 0 if success else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

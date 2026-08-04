@@ -10,7 +10,7 @@ import os
 import time
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third-party imports
 import streamlit as st
@@ -25,6 +25,7 @@ from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from core.logging import redact_url
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
@@ -75,7 +76,11 @@ class MLFineTuningApp:
     """
 
     def __init__(self) -> None:
-        """Initialize the application with improved error handling and caching"""
+        """
+        Initialize the application by configuring the Flask server, database, Streamlit UI, and loading plugins.
+
+        Sets up database connectivity with automatic retry logic and fallback behavior. Plugin loading failures do not prevent application startup.
+        """
         self.flask_app = Flask(__name__)
         self._configure_database()
         self._configure_streamlit()
@@ -86,7 +91,14 @@ class MLFineTuningApp:
         self._initialize_database_with_retry()
 
     def _configure_database(self) -> None:
-        """Configure database with optimized settings and connection pooling"""
+        """
+        Configure the Flask application's database URI and connection pool settings.
+
+        Reads the DATABASE_URL environment variable (or uses sqlite:///database.db as default)
+        and updates Flask configuration with SQLAlchemy engine options including connection
+        pool sizing, recycling, timeouts, and conditional SQL debug logging. Logs the
+        configured database URL with credential information redacted.
+        """
         database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 
         # Optimized database configuration
@@ -101,16 +113,27 @@ class MLFineTuningApp:
                     "pool_timeout": 30,
                     "pool_recycle": 1800,
                     "pool_pre_ping": True,
-                    "echo": bool(os.environ.get("SQL_DEBUG", False)),
+                    "echo": bool(os.environ.get("SQL_DEBUG", "")),
                 },
             }
         )
-        logger.info(f"Database configured with URL: {database_url}")
+        logger.info("Database configured with URL: %s", redact_url(database_url))
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0
     ) -> None:
-        """Initialize database with exponential backoff retry strategy"""
+        """
+        Attempt to initialize the application's database, retrying with exponential backoff and falling back to a local SQLite database on repeated failures.
+
+        Parameters:
+            max_retries (int): Maximum number of initialization attempts before using the fallback database.
+            base_delay (float): Initial delay in seconds used to compute exponential backoff between attempts.
+
+        Behavior:
+            - Tries to initialize the database up to `max_retries` times, waiting `base_delay * 2**attempt` seconds between retries.
+            - If all attempts fail, switches the app configuration to use a local SQLite fallback (`sqlite:///fallback.db`) and attempts initialization once more.
+            - Logs success, warnings, and critical errors; raises the final exception if fallback initialization also fails.
+        """
         for attempt in range(max_retries):
             try:
                 with self.flask_app.app_context():
@@ -195,7 +218,11 @@ class MLFineTuningApp:
             raise RuntimeError(f"Failed to configure Streamlit: {e}") from e
 
     def _load_plugins(self) -> None:
-        """Load plugins with improved error handling and logging"""
+        """
+        Load all available plugins from the plugins directory.
+
+        Plugins are optional; if loading fails, the application continues without them.
+        """
         try:
             # Clear any existing plugins
             registry.clear_tools()
@@ -213,7 +240,9 @@ class MLFineTuningApp:
             # Don't raise - plugins are optional
 
     def setup_sidebar(self) -> None:
-        """Setup sidebar with enhanced plugin information and navigation"""
+        """
+        Populate the sidebar with the application title, available plugins, and resource navigation.
+        """
         with st.sidebar:
             st.title("ML Model Fine-tuning")
 
@@ -231,7 +260,9 @@ class MLFineTuningApp:
             self._render_navigation()
 
     def _render_navigation(self) -> None:
-        """Render navigation links with improved styling"""
+        """
+        Display navigation links in the sidebar for documentation, API reference, examples, and issue reporting.
+        """
         st.markdown(
             """
             ### 📚 Resources
@@ -243,7 +274,17 @@ class MLFineTuningApp:
         )
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
-        """Save training configuration with improved validation and error handling"""
+        """
+        Save a training configuration to the database.
+
+        Parameters:
+            config (dict[str, Any]): Mapping containing training parameters. Must include keys:
+                `model_type`, `batch_size`, `learning_rate`, `epochs`, `max_seq_length`, `warmup_steps`.
+            dataset (str): Name of the dataset associated with this configuration.
+
+        Returns:
+            int | None: The database ID of the persisted TrainingConfig if successfully saved, `None` if validation fails or an error occurs.
+        """
         if not isinstance(config, dict):
             logger.error(f"Invalid configuration type: {type(config)}")
             return None
@@ -289,21 +330,21 @@ class MLFineTuningApp:
             # Enhanced header with visual appeal
             st.markdown(
                 """
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 2rem; 
-                            border-radius: 16px; 
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 2rem;
+                            border-radius: 16px;
                             margin-bottom: 2rem;
                             box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
-                    <h1 style="color: white; 
-                               margin: 0; 
+                    <h1 style="color: white;
+                               margin: 0;
                                text-align: center;
                                font-size: 2.5rem;
                                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                                -webkit-text-fill-color: white;">
                         🚀 ML Model Fine-tuning Platform
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.9); 
-                              text-align: center; 
+                    <p style="color: rgba(255, 255, 255, 0.9);
+                              text-align: center;
                               margin-top: 0.5rem;
                               font-size: 1.1rem;">
                         Advanced training and optimization for machine learning models

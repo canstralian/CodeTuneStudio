@@ -1,7 +1,10 @@
 
 [flake8]
 max-line-length = 88
-extend-ignore = E203
+# E501 (line length) is delegated to Black (line-length = 88), matching Ruff.
+# E402 (import-not-at-top) is intentional for sys.path bootstrapping in tests
+# and lazy/conditional imports; Ruff ignores it for the same reason.
+extend-ignore = E203,E501,E402
 exclude = .git,__pycache__,build,dist,venv,ENV,env,.venv,app.py,index.html
 per-file-ignores =
     __init__.py:F401

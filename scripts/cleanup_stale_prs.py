@@ -6,8 +6,8 @@ Automates closing of stale and redundant pull requests.
 
 import os
 import sys
+
 import requests
-from typing import List, Dict
 
 # Configuration
 REPO_OWNER = "canstralian"
@@ -19,8 +19,26 @@ STALE_PRS = {
     "security_autofix": [28, 35, 53],
     "september_prs": [5, 21, 25, 26],
     "october_prs": [
-        28, 33, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 50, 53, 55, 59,
-        64, 67, 68
+        28,
+        33,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        45,
+        46,
+        50,
+        53,
+        55,
+        59,
+        64,
+        67,
+        68,
     ],
     "duplicate_docs": [99, 103, 105, 118, 119, 121, 149, 151, 152, 153],
     "duplicate_ci": [96, 97, 111, 144],
@@ -115,16 +133,15 @@ def get_github_token() -> str:
 
 def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> bool:
     """
-    Close a pull request with a comment.
+    Close a pull request and add a comment.
 
-    Args:
-        pr_number: The PR number to close
-        comment: The comment to add when closing
-        token: GitHub API token
-        dry_run: If True, only print actions without executing
+    In dry-run mode, prints the intended actions without making API calls. In execute mode, posts the comment and closes the pull request via the GitHub API.
+
+    Parameters:
+        dry_run (bool): If True, simulate the actions; if False, execute them
 
     Returns:
-        True if successful, False otherwise
+        bool: `true` if the operation succeeded (always in dry-run mode), `false` if an API call failed
     """
     headers = {
         "Authorization": f"Bearer {token}",
@@ -132,7 +149,9 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     }
 
     pr_url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}"
-    comment_url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/issues/{pr_number}/comments"
+    comment_url = (
+        f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/issues/{pr_number}/comments"
+    )
 
     if dry_run:
         print(f"[DRY RUN] Would close PR #{pr_number}")
@@ -142,9 +161,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Add comment
     try:
         comment_response = requests.post(
-            comment_url,
-            headers=headers,
-            json={"body": comment}
+            comment_url, headers=headers, json={"body": comment}, timeout=30
         )
         if comment_response.status_code != 201:
             print(f"Error adding comment to PR #{pr_number}: {comment_response.text}")
@@ -156,9 +173,7 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
     # Close PR
     try:
         close_response = requests.patch(
-            pr_url,
-            headers=headers,
-            json={"state": "closed"}
+            pr_url, headers=headers, json={"state": "closed"}, timeout=30
         )
         if close_response.status_code != 200:
             print(f"Error closing PR #{pr_number}: {close_response.text}")
@@ -172,12 +187,20 @@ def close_pr(pr_number: int, comment: str, token: str, dry_run: bool = True) -> 
 
 
 def close_prs_by_category(
-    category: str,
-    pr_numbers: List[int],
-    token: str,
-    dry_run: bool = True
-) -> Dict[str, int]:
-    """Close all PRs in a category."""
+    category: str, pr_numbers: list[int], token: str, dry_run: bool = True
+) -> dict[str, int]:
+    """
+    Close a set of pull requests in a given category.
+
+    Parameters:
+        category (str): Category name used to select the closure comment message.
+        pr_numbers (List[int]): PR numbers to close.
+        token (str): GitHub API authentication token.
+        dry_run (bool): If True, simulates the operation without making network requests.
+
+    Returns:
+        Dict[str, int]: Dictionary with "success" and "failed" keys indicating the count of closed and failed PRs.
+    """
     message = CLOSURE_MESSAGES.get(category, CLOSURE_MESSAGES["september_prs"])
 
     print(f"\n{'='*80}")
@@ -197,7 +220,14 @@ def close_prs_by_category(
 
 
 def main():
-    """Main execution function."""
+    """
+    Parse arguments and close stale GitHub pull requests based on configuration.
+
+    Operates in dry-run mode by default, showing what would be closed without
+    making changes. Use --execute flag and confirm at the prompt to actually
+    close PRs. Processes all configured PR categories or a single category
+    via --category. Prints a summary of processed and closed PRs.
+    """
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -207,18 +237,18 @@ def main():
         "--dry-run",
         action="store_true",
         default=True,
-        help="Print actions without executing (default: True)"
+        help="Print actions without executing (default: True)",
     )
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Actually execute the PR closures (overrides --dry-run)"
+        help="Actually execute the PR closures (overrides --dry-run)",
     )
     parser.add_argument(
         "--category",
         type=str,
-        choices=list(STALE_PRS.keys()) + ["all"],
-        help="Only process specific category (default: all)"
+        choices=[*STALE_PRS.keys(), "all"],
+        help="Only process specific category (default: all)",
     )
 
     args = parser.parse_args()
@@ -227,14 +257,14 @@ def main():
     dry_run = not args.execute
 
     if dry_run:
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("DRY RUN MODE - No actual changes will be made")
         print("Use --execute flag to actually close PRs")
-        print("="*80 + "\n")
+        print("=" * 80 + "\n")
     else:
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("EXECUTE MODE - PRs will actually be closed!")
-        print("="*80 + "\n")
+        print("=" * 80 + "\n")
         response = input("Are you sure you want to proceed? (yes/no): ")
         if response.lower() != "yes":
             print("Aborted.")
@@ -245,7 +275,8 @@ def main():
 
     # Process categories
     categories_to_process = (
-        [args.category] if args.category and args.category != "all"
+        [args.category]
+        if args.category and args.category != "all"
         else list(STALE_PRS.keys())
     )
 
@@ -255,19 +286,14 @@ def main():
         if category not in STALE_PRS:
             continue
 
-        results = close_prs_by_category(
-            category,
-            STALE_PRS[category],
-            token,
-            dry_run
-        )
+        results = close_prs_by_category(category, STALE_PRS[category], token, dry_run)
         total_results["success"] += results["success"]
         total_results["failed"] += results["failed"]
 
     # Print summary
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("SUMMARY")
-    print("="*80)
+    print("=" * 80)
     print(f"Total PRs processed: {total_results['success'] + total_results['failed']}")
     print(f"Successfully closed: {total_results['success']}")
     print(f"Failed: {total_results['failed']}")
@@ -275,7 +301,7 @@ def main():
     if dry_run:
         print("\nThis was a dry run. Use --execute to actually close the PRs.")
 
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":

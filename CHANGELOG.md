@@ -5,6 +5,44 @@ All notable changes to CodeTune Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-06-13
+
+### Security
+
+- **Credential redaction**: `core.logging.redact_url` now fully masks URL
+  credentials as `***:***` (previously the username was emitted in clear text),
+  so database connection strings logged at startup no longer leak the username
+  or password.
+- **Workflow validation hardening** (`scripts/validate_workflows.py`):
+  - YAML loading is wrapped in error handling; unreadable files, invalid YAML,
+    and non-mapping top-level documents now produce structured errors instead
+    of crashing the validator.
+  - Broadened hardcoded-secret detection to match unquoted keys and `api_key`
+    variants.
+  - `pull_request_target` is now a release-blocking error rather than a warning.
+  - Action pinning now flags any action not pinned to a full 40-character commit
+    SHA (mutable tag/branch pins are reported as warnings).
+
+### Fixed
+
+- **Parser thread-safety** (`core.parser.engine`): the JavaScript parser is now
+  instantiated per invocation instead of sharing a stateful module-level
+  `PyJsParser`, making concurrent parsing safe.
+- **Parser input validation**: `parse_code` now returns a structured failed
+  `ParseResult` for non-string `code` (or a non-string `filename`) instead of
+  raising.
+- **Optional provider fallbacks**: OpenAI/Anthropic plugins degrade gracefully
+  with informative messages when SDKs or API keys are unavailable.
+- **Diagnostics**: `code_analyzer` now logs swallowed parse/analysis exceptions
+  while keeping user-facing error payloads generic.
+- Added request timeouts to `scripts/cleanup_stale_prs.py` GitHub API calls.
+
+### Changed
+
+- Applied Black formatting and resolved Ruff `ANN202`/`EM102` findings across
+  touched modules.
+- Bumped package version to 0.2.1.
+
 ## [0.2.0] - 2024-11-19
 
 ### Added
@@ -98,5 +136,6 @@ Initial prototype release with core functionality:
 
 ---
 
+[0.2.1]: https://github.com/canstralian/CodeTuneStudio/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/canstralian/CodeTuneStudio/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/canstralian/CodeTuneStudio/releases/tag/v0.1.0
