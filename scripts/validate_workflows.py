@@ -290,11 +290,14 @@ class WorkflowValidator:
         for job_name, job_config in jobs.items():
             if not isinstance(job_config, dict):
                 continue
-            for step in job_config.get("steps", []):
+            steps = job_config.get("steps", [])
+            if not isinstance(steps, list):
+                continue
+            for step in steps:
                 if not isinstance(step, dict):
                     continue
-                uses = step.get("uses", "")
-                if not uses or uses.startswith(("./", "docker://")):
+                uses = step.get("uses")
+                if not isinstance(uses, str) or uses.startswith(("./", "docker://")):
                     continue
                 # A fully pinned action references an immutable 40-char commit
                 # SHA (e.g. ``owner/repo@<sha>``). Tag/branch pins such as

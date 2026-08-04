@@ -410,6 +410,20 @@ class TestValidateBestPractices(unittest.TestCase):
         self._run({"jobs": ["build"]})
         self.assertEqual(self.v.warnings, [])
 
+    def test_malformed_steps_and_uses_do_not_crash(self):
+        # ``steps: null`` and non-string ``uses`` values must be skipped
+        # rather than raising TypeError/AttributeError.
+        self._run(
+            {
+                "jobs": {
+                    "a": {"steps": None},
+                    "b": {"steps": [{"uses": ["not", "a", "string"]}]},
+                    "c": {"steps": [{"uses": 123}]},
+                }
+            }
+        )
+        self.assertEqual(self.v.warnings, [])
+
 
 class TestValidateWorkflow(unittest.TestCase):
     """Tests for _validate_workflow called via a real YAML file on disk."""

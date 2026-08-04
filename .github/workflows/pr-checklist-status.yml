@@ -83,6 +83,8 @@ jobs:
       - name: Validate completed tasks
         # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
         # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
-        uses: kentaro-m/task-completed-checker-action@v0.1.2
+        # Pinned to the v0.1.2 commit SHA (immutable) because this job grants
+        # the action checks:write / pull-requests:write.
+        uses: kentaro-m/task-completed-checker-action@2ddb65fdd5577bae4a8e82e0564e459677aec893 # v0.1.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
