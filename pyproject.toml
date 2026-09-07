@@ -39,7 +39,7 @@ dependencies = [
     "sqlalchemy>=2.0.37",
     "streamlit>=1.42.0",
     "torch>=2.6.0",
-    "transformers>=5.7.0",
+    "transformers>=5.16.1",
     "twilio>=9.10.5",
 ]
 
