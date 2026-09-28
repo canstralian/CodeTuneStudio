@@ -10,11 +10,41 @@ import logging
 import os
 import sys
 from typing import Optional
+from urllib.parse import urlsplit, urlunsplit
 
 from core import __version__
 from core.monitoring import setup_sentry
 
 logger = logging.getLogger(__name__)
+
+
+def _redact_url_credentials(url: str) -> str:
+    """
+    Mask any password embedded in a URL's userinfo before it is logged.
+
+    Database URLs such as ``postgresql://user:secret@host/db`` carry
+    credentials that must never reach logs (and, once Sentry is enabled,
+    log breadcrumbs). This replaces the password component with ``***``
+    while leaving the rest of the URL intact.
+
+    Args:
+        url: The URL to sanitize.
+
+    Returns:
+        The URL with any password replaced by ``***``; the input is returned
+        unchanged when it has no password or cannot be parsed.
+    """
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return url
+    if not parts.password:
+        return url
+    host = parts.hostname or ""
+    netloc = f"{parts.username or ''}:***@{host}"
+    if parts.port is not None:
+        netloc = f"{netloc}:{parts.port}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
 
 
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
@@ -148,7 +178,7 @@ def main(args: Optional[list[str]] = None) -> int:
         logger.info(f"Starting CodeTune Studio v{__version__}")
         logger.info(f"Host: {parsed_args.host}")
         logger.info(f"Port: {parsed_args.port}")
-        logger.info(f"Database: {parsed_args.database_url}")
+        logger.info("Database: %s", _redact_url_credentials(parsed_args.database_url))
 
         # Set environment variables for the application
         os.environ["DATABASE_URL"] = parsed_args.database_url
