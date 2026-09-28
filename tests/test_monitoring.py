@@ -148,5 +148,52 @@ class TestSetupSentry(unittest.TestCase):
             self.assertFalse(monitoring.setup_sentry())
 
 
+class TestScrubbing(unittest.TestCase):
+    """Test that outgoing events and breadcrumbs are scrubbed of secrets."""
+
+    def test_scrub_text_masks_url_password(self) -> None:
+        """A password in URL userinfo is masked, host and user preserved."""
+        monitoring = _fresh_monitoring()
+        out = monitoring._scrub_text("postgresql://user:secret@localhost/db")
+        self.assertEqual(out, "postgresql://user:***@localhost/db")
+        self.assertNotIn("secret", out)
+
+    def test_scrub_text_masks_key_value_secret(self) -> None:
+        """A ``password=``/``token=`` style secret is masked in place."""
+        monitoring = _fresh_monitoring()
+        self.assertNotIn("hunter2", monitoring._scrub_text("db?password=hunter2"))
+        self.assertNotIn("abc123", monitoring._scrub_text("Authorization token=abc123"))
+
+    def test_scrub_event_data_walks_nested_structures(self) -> None:
+        """Secrets are scrubbed from nested dict/list event structures."""
+        monitoring = _fresh_monitoring()
+        event = {
+            "message": "connect postgresql://u:pw@h/db",
+            "extra": {"urls": ["redis://a:b@h:6379/0"]},
+        }
+        scrubbed = monitoring._scrub_event_data(event)
+        self.assertNotIn("pw@", scrubbed["message"])
+        self.assertNotIn(":b@", scrubbed["extra"]["urls"][0])
+
+    def test_before_send_scrubs_and_survives_bad_input(self) -> None:
+        """before_send scrubs strings and never raises on odd input."""
+        monitoring = _fresh_monitoring()
+        event = {"message": "postgresql://u:pw@h/db"}
+        self.assertNotIn("pw@", monitoring._before_send(event, None)["message"])
+
+    def test_init_registers_scrubbers(self) -> None:
+        """setup_sentry wires the before_send/before_breadcrumb scrubbers."""
+        monitoring = _fresh_monitoring()
+        fake_sdk = MagicMock()
+        with (
+            patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}),
+            patch.dict("sys.modules", {"sentry_sdk": fake_sdk}),
+        ):
+            self.assertTrue(monitoring.setup_sentry())
+        _, kwargs = fake_sdk.init.call_args
+        self.assertTrue(callable(kwargs["before_send"]))
+        self.assertTrue(callable(kwargs["before_breadcrumb"]))
+
+
 if __name__ == "__main__":
     unittest.main()

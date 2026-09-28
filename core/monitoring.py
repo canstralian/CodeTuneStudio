@@ -18,12 +18,76 @@ from __future__ import annotations
 import logging
 import math
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
 # Idempotency guard held in a mutable mapping so repeated calls within a
 # single interpreter (e.g. CLI + app process) are cheap and safe.
 _STATE: dict[str, bool] = {"initialized": False}
+
+# Patterns for secrets that must never leave the host inside Sentry events or
+# breadcrumbs. Defense-in-depth: even though known log sites are already
+# sanitized, an unforeseen log line or exception message could still embed a
+# credential, so every outbound string is scrubbed before it is sent.
+_SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    # URL userinfo password: scheme://user:password@host -> scheme://user:***@host
+    (re.compile(r"://([^:/?#@\s]+):[^@/?#\s]+@"), r"://\1:***@"),
+    # key=value secrets in query strings / connection strings.
+    (
+        re.compile(r"(?i)\b(password|passwd|pwd|token|secret|api[_-]?key)=[^&\s;]+"),
+        r"\1=***",
+    ),
+)
+
+# Bound recursion when walking arbitrary Sentry event structures.
+_MAX_SCRUB_DEPTH = 20
+
+
+def _scrub_text(text: str) -> str:
+    """Redact known credential patterns from a single string."""
+    for pattern, replacement in _SECRET_PATTERNS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def _scrub_event_data(obj: object, _depth: int = 0) -> object:
+    """
+    Recursively redact secrets from a Sentry event or breadcrumb structure.
+
+    Walks nested dicts and lists up to a bounded depth, applying
+    :func:`_scrub_text` to every string leaf. Non-string, non-container values
+    are returned unchanged.
+    """
+    if _depth > _MAX_SCRUB_DEPTH:
+        return obj
+    if isinstance(obj, str):
+        return _scrub_text(obj)
+    if isinstance(obj, dict):
+        return {k: _scrub_event_data(v, _depth + 1) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_scrub_event_data(v, _depth + 1) for v in obj]
+    if isinstance(obj, tuple):
+        return tuple(_scrub_event_data(v, _depth + 1) for v in obj)
+    return obj
+
+
+def _before_send(event: object, _hint: object) -> object:
+    """Sentry ``before_send`` hook: scrub secrets from outgoing events."""
+    try:
+        return _scrub_event_data(event)
+    except Exception:
+        logger.exception("Sentry event scrubbing failed; dropping event")
+        return None
+
+
+def _before_breadcrumb(crumb: object, _hint: object) -> object:
+    """Sentry ``before_breadcrumb`` hook: scrub secrets from breadcrumbs."""
+    try:
+        return _scrub_event_data(crumb)
+    except Exception:
+        logger.exception("Sentry breadcrumb scrubbing failed; dropping breadcrumb")
+        return None
 
 
 def _env_bool(name: str, *, default: bool) -> bool:
@@ -115,6 +179,11 @@ def setup_sentry() -> bool:
     - ``SENTRY_ENVIRONMENT``: Environment name reported to Sentry
       (defaults to ``APP_ENV`` or ``"development"``).
 
+    Outgoing events and breadcrumbs are passed through credential scrubbers
+    (``before_send`` / ``before_breadcrumb``) so secrets such as database-URL
+    passwords cannot leak even if an unrelated log line or exception embeds
+    one.
+
     The call is idempotent within a process and never raises: any failure
     (missing package, bad DSN, network restriction) is logged and swallowed
     so monitoring can never take down the application.
@@ -156,6 +225,10 @@ def setup_sentry() -> bool:
             # Fraction of transactions sampled for performance tracing.
             # 1.0 traces every transaction; lower it for high-traffic apps.
             traces_sample_rate=traces_sample_rate,
+            # Defense-in-depth: scrub credentials from every outgoing event and
+            # breadcrumb so a stray log line or exception cannot leak secrets.
+            before_send=_before_send,
+            before_breadcrumb=_before_breadcrumb,
         )
     except Exception:
         logger.exception("Failed to initialize Sentry")
