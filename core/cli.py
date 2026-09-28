@@ -9,14 +9,14 @@ import argparse
 import logging
 import os
 import sys
-from typing import Optional
 
 from core import __version__
+from core.logging import redact_url
 
 logger = logging.getLogger(__name__)
 
 
-def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """
     Parse command-line arguments for CodeTune Studio.
 
@@ -122,15 +122,18 @@ def configure_logging(log_level: str) -> None:
     logger.info(f"Logging configured at {log_level} level")
 
 
-def main(args: Optional[list[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     """
-    Main CLI entrypoint for CodeTune Studio.
+    Launch the CodeTune Studio Streamlit application with CLI-configured settings.
 
-    Args:
-        args: Optional list of arguments. If None, uses sys.argv[1:].
+    Parses command-line arguments, configures logging, sets environment variables,
+    and executes the Streamlit application as a subprocess.
+
+    Parameters:
+        args: Command-line arguments to parse; if None, defaults to sys.argv[1:].
 
     Returns:
-        Exit code (0 for success, non-zero for failure).
+        0 on success or user interruption, 1 on fatal error.
     """
     try:
         # Parse arguments
@@ -142,7 +145,7 @@ def main(args: Optional[list[str]] = None) -> int:
         logger.info(f"Starting CodeTune Studio v{__version__}")
         logger.info(f"Host: {parsed_args.host}")
         logger.info(f"Port: {parsed_args.port}")
-        logger.info(f"Database: {parsed_args.database_url}")
+        logger.info("Database: %s", redact_url(parsed_args.database_url))
 
         # Set environment variables for the application
         os.environ["DATABASE_URL"] = parsed_args.database_url
@@ -169,7 +172,7 @@ def main(args: Optional[list[str]] = None) -> int:
         if parsed_args.no_browser:
             streamlit_cmd.append("--server.headless=true")
 
-        logger.info(f"Launching Streamlit: {' '.join(streamlit_cmd)}")
+        logger.info("Launching Streamlit: %s", " ".join(streamlit_cmd))
 
         # Run streamlit
         result = subprocess.run(streamlit_cmd, check=False)
@@ -178,8 +181,8 @@ def main(args: Optional[list[str]] = None) -> int:
     except KeyboardInterrupt:
         logger.info("Application interrupted by user")
         return 0
-    except Exception as e:
-        logger.critical(f"Fatal error: {e}", exc_info=True)
+    except Exception:
+        logger.critical("Fatal error while starting CodeTune Studio", exc_info=True)
         return 1
 
 

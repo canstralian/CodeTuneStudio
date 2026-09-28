@@ -5,10 +5,11 @@ These tests verify that workflows follow security best practices
 and don't expose sensitive information or use insecure patterns.
 """
 
-import unittest
-import yaml
-from pathlib import Path
 import re
+import unittest
+from pathlib import Path
+
+import yaml
 
 
 class TestWorkflowSecurity(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestWorkflowSecurity(unittest.TestCase):
 
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 for pattern in secret_patterns:
@@ -59,10 +60,12 @@ class TestWorkflowSecurity(unittest.TestCase):
                     )
 
     def test_secrets_use_github_secrets(self):
-        """Test that workflows use GitHub secrets properly"""
+        """
+        Verify that sensitive environment variables in workflows use GitHub secrets syntax.
+        """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None or "jobs" not in content:
@@ -72,7 +75,18 @@ class TestWorkflowSecurity(unittest.TestCase):
                 self._check_secrets_usage(content, workflow_file.name)
 
     def _check_secrets_usage(self, content, filename):
-        """Helper to check secrets usage in workflow"""
+        """
+        Validate that sensitive environment variables in a parsed GitHub Actions workflow are set using GitHub secret expressions.
+
+        Inspects job-level and step-level `env` sections for the following sensitive names: GITHUB_TOKEN, HF_TOKEN, PYPI_API_TOKEN, API_KEY. If any of these keys are present and their value does not contain the GitHub expression marker `${{`, the test is failed.
+
+        Parameters:
+            content (dict): Parsed YAML content of the workflow file.
+            filename (str): Name of the workflow file (used in failure messages).
+
+        Raises:
+            AssertionError: Fails the test via `self.fail()` when a sensitive variable is not configured to use a GitHub secret expression.
+        """
         sensitive_vars = [
             "GITHUB_TOKEN",
             "HF_TOKEN",
@@ -95,7 +109,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         # Check all jobs - handle both 'jobs' key and YAML boolean 'on' issue
         # YAML parsers may convert 'on:' to boolean True
         jobs = content.get("jobs", {})
-        
+
         # Check if the content has True key (YAML boolean parsing issue)
         if True in content and isinstance(content[True], dict):
             trigger_section = content[True]
@@ -103,7 +117,7 @@ class TestWorkflowSecurity(unittest.TestCase):
             if "jobs" in trigger_section:
                 jobs = trigger_section["jobs"]
 
-        for job_name, job_config in jobs.items():
+        for job_config in jobs.values():
             if not isinstance(job_config, dict):
                 continue
 
@@ -118,10 +132,14 @@ class TestWorkflowSecurity(unittest.TestCase):
                         check_env_section(step["env"])
 
     def test_workflows_have_permissions(self):
-        """Test that workflows define appropriate permissions"""
+        """
+        Check workflows for permission definitions and log when none are found.
+
+        Verifies whether each workflow declares permissions at the top-level or within individual job configurations. Does not fail if permissions are absent, only logs an informational message.
+        """
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None:
@@ -130,13 +148,10 @@ class TestWorkflowSecurity(unittest.TestCase):
                 # Workflows should define permissions (least privilege)
                 # Some workflows may not need this if they don't access GitHub APIs
                 if "jobs" in content:
-                    has_permissions = (
-                        "permissions" in content
-                        or any(
-                            "permissions" in job
-                            for job in content["jobs"].values()
-                            if isinstance(job, dict)
-                        )
+                    has_permissions = "permissions" in content or any(
+                        "permissions" in job
+                        for job in content["jobs"].values()
+                        if isinstance(job, dict)
                     )
                     # This is a warning, not a hard failure
                     # Some workflows don't need special permissions
@@ -149,7 +164,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         """Test that pull_request_target is used safely"""
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = yaml.safe_load(f)
 
                 if content is None:
@@ -172,7 +187,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         """Test that dangerous workflows checkout specific refs"""
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 # Look for pull_request_target
@@ -190,7 +205,7 @@ class TestWorkflowSecurity(unittest.TestCase):
         # This is a best practice but not strictly required
         for workflow_file in self.get_workflow_files():
             with self.subTest(workflow=workflow_file.name):
-                with open(workflow_file, "r") as f:
+                with open(workflow_file) as f:
                     content = f.read()
 
                 # Find all action uses
@@ -221,7 +236,7 @@ class TestWorkflowDependencies(unittest.TestCase):
         supported_versions = ["3.10", "3.11", "3.12"]
 
         for workflow_file in self.workflows_dir.glob("*.yml"):
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 content = f.read()
 
             # Find Python version specifications
@@ -249,7 +264,7 @@ class TestWorkflowDependencies(unittest.TestCase):
         }
 
         for workflow_file in self.workflows_dir.glob("*.yml"):
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 content = f.read()
 
             for action, min_version in min_versions.items():

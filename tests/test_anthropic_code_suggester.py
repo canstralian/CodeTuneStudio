@@ -1,8 +1,8 @@
 import os
 import unittest
+import unittest.mock
 from unittest.mock import MagicMock, patch
 
-import pytest
 from plugins.anthropic_code_suggester import AnthropicCodeSuggesterTool
 
 
@@ -75,8 +75,9 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
     def test_execute_invalid_inputs(self, mock_anthropic_class) -> None:
         with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
             tool = AnthropicCodeSuggesterTool()
-            with pytest.raises(ValueError):
-                tool.execute({})
+            result = tool.execute({})
+            assert result["status"] == "error"
+            assert "Invalid input" in result["error"]
 
     @patch("plugins.anthropic_code_suggester.Anthropic")
     def test_execute_api_error(self, mock_anthropic_class) -> None:
@@ -89,7 +90,74 @@ class TestAnthropicCodeSuggesterTool(unittest.TestCase):
             result = tool.execute({"code": "def foo(): pass"})
 
             assert result["status"] == "error"
-            assert "API error" in result["error"]
+            assert (
+                result["error"]
+                == "Anthropic code suggestion failed. See logs for details."
+            )
+
+    def test_init_no_api_key_client_is_none(self) -> None:
+        """Missing API key must set client to None without raising."""
+        import os
+
+        env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+        with unittest.mock.patch.dict(os.environ, env, clear=True):
+            tool = AnthropicCodeSuggesterTool()
+            assert tool.client is None
+
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_no_client_returns_error(self, mock_anthropic_class) -> None:
+        """When client is None (no API key), execute returns an error dict without calling API."""
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
+            tool = AnthropicCodeSuggesterTool()
+        tool.client = None  # force no-client state
+        result = tool.execute({"code": "def foo(): pass"})
+        assert result["status"] == "error"
+        assert (
+            "ANTHROPIC_API_KEY" in result["error"] or "unavailable" in result["error"]
+        )
+        mock_anthropic_class.return_value.messages.create.assert_not_called()
+
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_empty_content_returns_error(self, mock_anthropic_class) -> None:
+        """Empty content list from API returns an error dict."""
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_message = MagicMock()
+        mock_message.content = []
+        mock_client.messages.create.return_value = mock_message
+
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
+            tool = AnthropicCodeSuggesterTool()
+            result = tool.execute({"code": "def foo(): pass"})
+
+        assert result["status"] == "error"
+        assert "empty" in result["error"].lower() or "API" in result["error"]
+
+    @patch("plugins.anthropic_code_suggester.Anthropic")
+    def test_execute_response_without_text_attribute_returns_error(
+        self, mock_anthropic_class
+    ) -> None:
+        """Content block missing .text returns an error dict."""
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_message = MagicMock()
+        # A bare object() has no 'text' attribute, unlike an auto-speccing
+        # MagicMock, so the missing-text branch is exercised deterministically.
+        mock_message.content = [object()]
+        mock_client.messages.create.return_value = mock_message
+
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
+            tool = AnthropicCodeSuggesterTool()
+            result = tool.execute({"code": "def foo(): pass"})
+
+        assert result["status"] == "error"
+
+    @patch("plugins.anthropic_code_suggester.Anthropic", None)
+    def test_init_package_unavailable_client_is_none(self) -> None:
+        """When the anthropic package module-level variable is None, client stays None."""
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake_key"}):
+            tool = AnthropicCodeSuggesterTool()
+            assert tool.client is None
 
 
 if __name__ == "__main__":

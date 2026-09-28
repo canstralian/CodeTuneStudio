@@ -5,9 +5,9 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 
+# Default all jobs to read-only; the checklist job elevates its own permissions.
 permissions:
   contents: read
-  pull-requests: write  # Required for task-completed-checker-action to comment on PR
 
 # Ensure only one run per PR at a time; cancel older runs on the same branch
 concurrency:
@@ -25,17 +25,17 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       # Set up Python
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       # Cache pip packages to speed up subsequent runs
       - name: Cache pip dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
@@ -68,6 +68,14 @@ jobs:
     name: Checklist Validation
     runs-on: ubuntu-latest
 
+    # Only this job needs write access for task-completed-checker-action:
+    #   checks: write        → publish the check run
+    #   pull-requests: write → read/comment on the PR
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
     # Skip validation on draft PRs
     if: github.event.pull_request.draft == false
 
@@ -75,6 +83,8 @@ jobs:
       - name: Validate completed tasks
         # Uses the Task Completed Checker action to ensure all tasks in the PR body are checked
         # See usage instructions on the action page [oai_citation:0‡github.com](https://github.com/marketplace/actions/task-completed-checker#:~:text=Task%20Completed%20Checker%20Action)
-        uses: kentaro-m/task-completed-checker-action@v0.1.2
+        # Pinned to the v0.1.2 commit SHA (immutable) because this job grants
+        # the action checks:write / pull-requests:write.
+        uses: kentaro-m/task-completed-checker-action@2ddb65fdd5577bae4a8e82e0564e459677aec893 # v0.1.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

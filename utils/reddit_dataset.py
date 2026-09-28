@@ -1,7 +1,6 @@
 import logging
 import os
 import random
-from functools import lru_cache
 from typing import Any
 
 import numpy as np
@@ -111,7 +110,6 @@ class RedditDatasetManager:
         available_templates = templates.get(language.lower(), templates["python"])
         return random.choice(available_templates)
 
-    @lru_cache(maxsize=128)
     def augment_with_amphigory(
         self, texts: tuple[str, ...], ratio: float = 0.1
     ) -> list[str]:
