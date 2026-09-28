@@ -24,6 +24,7 @@ class TestEnvParsers(unittest.TestCase):
     """Test the environment-variable parsing helpers."""
 
     def test_env_bool_default_when_unset(self):
+        """An unset variable falls back to the provided default."""
         monitoring = _fresh_monitoring()
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("SENTRY_TEST_BOOL", None)
@@ -31,6 +32,7 @@ class TestEnvParsers(unittest.TestCase):
             self.assertFalse(monitoring._env_bool("SENTRY_TEST_BOOL", default=False))
 
     def test_env_bool_truthy_and_falsy(self):
+        """Common truthy strings parse True and everything else False."""
         monitoring = _fresh_monitoring()
         for truthy in ("1", "true", "TRUE", "Yes", "on"):
             with patch.dict(os.environ, {"SENTRY_TEST_BOOL": truthy}):
@@ -40,6 +42,7 @@ class TestEnvParsers(unittest.TestCase):
                 self.assertFalse(monitoring._env_bool("SENTRY_TEST_BOOL", default=True))
 
     def test_env_float_valid_and_invalid(self):
+        """Valid floats parse; invalid or unset values fall back to default."""
         monitoring = _fresh_monitoring()
         with patch.dict(os.environ, {"SENTRY_TEST_FLOAT": "0.25"}):
             self.assertEqual(monitoring._env_float("SENTRY_TEST_FLOAT", 1.0), 0.25)
@@ -54,11 +57,13 @@ class TestSetupSentry(unittest.TestCase):
     """Test the setup_sentry entry point."""
 
     def test_disabled_when_dsn_empty(self):
+        """An empty SENTRY_DSN disables Sentry and returns False."""
         monitoring = _fresh_monitoring()
         with patch.dict(os.environ, {"SENTRY_DSN": ""}):
             self.assertFalse(monitoring.setup_sentry())
 
     def test_idempotent(self):
+        """A second setup_sentry call is a no-op after the first succeeds."""
         monitoring = _fresh_monitoring()
         fake_sdk = MagicMock()
         with (
@@ -71,6 +76,7 @@ class TestSetupSentry(unittest.TestCase):
         fake_sdk.init.assert_called_once()
 
     def test_init_receives_tracing_config(self):
+        """Env vars are passed through to sentry_sdk.init as tracing config."""
         monitoring = _fresh_monitoring()
         fake_sdk = MagicMock()
         env = {
@@ -92,6 +98,7 @@ class TestSetupSentry(unittest.TestCase):
         self.assertEqual(kwargs["environment"], "staging")
 
     def test_swallows_init_errors(self):
+        """An SDK init error is caught and reported as False, never raised."""
         monitoring = _fresh_monitoring()
         fake_sdk = MagicMock()
         fake_sdk.init.side_effect = RuntimeError("boom")
