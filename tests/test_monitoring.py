@@ -181,6 +181,16 @@ class TestScrubbing(unittest.TestCase):
         event = {"message": "postgresql://u:pw@h/db"}
         self.assertNotIn("pw@", monitoring._before_send(event, None)["message"])
 
+    def test_before_send_drops_payload_past_depth_limit(self) -> None:
+        """A structure too deep to fully scrub is dropped, not sent partial."""
+        monitoring = _fresh_monitoring()
+        deep: object = "postgresql://u:pw@h/db"
+        for _ in range(monitoring._MAX_SCRUB_DEPTH + 5):
+            deep = {"nested": deep}
+        # Fails closed: the whole event is dropped rather than sent unscrubbed.
+        self.assertIsNone(monitoring._before_send(deep, None))
+        self.assertIsNone(monitoring._before_breadcrumb(deep, None))
+
     def test_init_registers_scrubbers(self) -> None:
         """setup_sentry wires the before_send/before_breadcrumb scrubbers."""
         monitoring = _fresh_monitoring()

@@ -44,6 +44,10 @@ _SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
 _MAX_SCRUB_DEPTH = 20
 
 
+class _ScrubError(Exception):
+    """Raised when event data cannot be fully scrubbed and must be dropped."""
+
+
 def _scrub_text(text: str) -> str:
     """Redact known credential patterns from a single string."""
     for pattern, replacement in _SECRET_PATTERNS:
@@ -55,12 +59,17 @@ def _scrub_event_data(obj: object, _depth: int = 0) -> object:
     """
     Recursively redact secrets from a Sentry event or breadcrumb structure.
 
-    Walks nested dicts and lists up to a bounded depth, applying
-    :func:`_scrub_text` to every string leaf. Non-string, non-container values
-    are returned unchanged.
+    Walks nested dicts and lists, applying :func:`_scrub_text` to every string
+    leaf. Non-string, non-container values are returned unchanged.
+
+    Raises:
+        _ScrubError: if nesting exceeds ``_MAX_SCRUB_DEPTH``. The subtree can no
+            longer be guaranteed secret-free, so the caller must fail closed
+            (drop the whole payload) rather than emit partially scrubbed data.
     """
     if _depth > _MAX_SCRUB_DEPTH:
-        return obj
+        msg = "event nesting exceeded the scrub depth limit"
+        raise _ScrubError(msg)
     if isinstance(obj, str):
         return _scrub_text(obj)
     if isinstance(obj, dict):
@@ -76,8 +85,8 @@ def _before_send(event: object, _hint: object) -> object:
     """Sentry ``before_send`` hook: scrub secrets from outgoing events."""
     try:
         return _scrub_event_data(event)
-    except Exception:
-        logger.exception("Sentry event scrubbing failed; dropping event")
+    except Exception as exc:
+        logger.warning("Dropping Sentry event that could not be scrubbed: %s", exc)
         return None
 
 
@@ -85,8 +94,8 @@ def _before_breadcrumb(crumb: object, _hint: object) -> object:
     """Sentry ``before_breadcrumb`` hook: scrub secrets from breadcrumbs."""
     try:
         return _scrub_event_data(crumb)
-    except Exception:
-        logger.exception("Sentry breadcrumb scrubbing failed; dropping breadcrumb")
+    except Exception as exc:
+        logger.warning("Dropping Sentry breadcrumb that could not be scrubbed: %s", exc)
         return None
 
 
