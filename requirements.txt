@@ -21,6 +21,11 @@ peft==0.4.0
 # Visualization
 plotly==6.6.0
 
+# Monitoring & performance tracing
+# sentry-sdk >= 0.11.2 is required for Tracing; 2.x pulls in the Flask
+# integration for automatic request instrumentation.
+sentry-sdk[flask]>=2.0.0
+
 # Annotation & feedback
 # Note: argilla 1.24.0 does not exist; updated to argilla 2.x with compatible API
 # argilla 2.x has breaking changes from 1.x but provides a stable, well-supported API

@@ -10,10 +10,42 @@ import logging
 import os
 import sys
 from typing import Optional
+from urllib.parse import urlsplit
 
 from core import __version__
+from core.monitoring import setup_sentry
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_database_url(url: str) -> str:
+    """
+    Return a non-secret summary of a database URL, safe for logging.
+
+    Database URLs such as ``postgresql://user:secret@host/db`` carry
+    credentials that must never reach logs (and, once Sentry is enabled, log
+    breadcrumbs). Rather than masking a single field, this strips *all*
+    credential-bearing components — the userinfo (``user:password@``) and the
+    query string (which can also carry secrets, e.g. ``?password=...``) —
+    leaving only the scheme, host, optional port, and path (CWE-532).
+
+    Args:
+        url: The database URL to summarize.
+
+    Returns:
+        ``scheme://host[:port]/path`` with credentials removed, or the
+        placeholder ``"<database>"`` when the URL cannot be parsed.
+    """
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+        port = parts.port
+    except ValueError:
+        return "<database>"
+    netloc = f"{host}:{port}" if port is not None else host
+    # Build directly rather than via urlunsplit, which collapses the empty
+    # netloc of host-less URLs (e.g. sqlite:///db.sqlite).
+    return f"{parts.scheme}://{netloc}{parts.path}"
 
 
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
@@ -139,10 +171,15 @@ def main(args: Optional[list[str]] = None) -> int:
         # Configure logging
         configure_logging(parsed_args.log_level)
 
+        # Initialize Sentry as early as possible so launcher-side failures are
+        # also captured. The env vars set below are inherited by the Streamlit
+        # subprocess, which re-initializes Sentry in its own interpreter.
+        setup_sentry()
+
         logger.info(f"Starting CodeTune Studio v{__version__}")
         logger.info(f"Host: {parsed_args.host}")
         logger.info(f"Port: {parsed_args.port}")
-        logger.info(f"Database: {parsed_args.database_url}")
+        logger.info("Database: %s", _safe_database_url(parsed_args.database_url))
 
         # Set environment variables for the application
         os.environ["DATABASE_URL"] = parsed_args.database_url
