@@ -1,0 +1,28 @@
+# Gitleaks ignore list — verified false positives only.
+#
+# Each fingerprint below was triaged on 2026-10-09 against the actual value at
+# its commit (see docs/security/GITLEAKS_TRIAGE_2026-10.md). All are documentation
+# or test placeholders, or detect-secrets SHA-1 hashes of placeholders.
+# Do NOT add a fingerprint here without inspecting the real value first.
+#
+# Format: <commit>:<file>:<rule-id>:<line>
+10d2b9b8ca6bf8b3e591bb5f15aadc3d6539933f:tests/ai_review_gate/test_rules_engine.py:generic-api-key:34
+294b772b28967ef62b2be2f90a1e4ed77ae2bb8b:docs/PYTHON_RULES.md:generic-api-key:101
+b7672e9e35027a0fec1a7e0afc01d8cd4c8e56f3:docs/COPILOT_GUIDE.md:generic-api-key:61
+1364b4a42d7010f712acd588d4fb793bd2ffb854:codex/templates/SECRETS.md:generic-api-key:25
+be2ad05aba2513264fce7d56ff3836c725fa6bf6:examples/logging_demo.py:generic-api-key:75
+17610555bf07ddcbc89381f902bab80a6664d415:tests/test_logging.py:generic-api-key:62
+17610555bf07ddcbc89381f902bab80a6664d415:LOGGING.md:generic-api-key:95
+904a8fcfd1c6ae4a442d2100628d96280c89a07d:docs/COPILOT_CODEX_COMPREHENSIVE_GUIDE.md:generic-api-key:478
+0aed503dadd9f76371642e36dd87b93d5c0ae719:docs/SECURITY_BEST_PRACTICES.md:generic-api-key:116
+9269b0845439a57d04a70319b70558307400b030:docs/SECURITY_MIGRATION_GUIDE.md:generic-api-key:249
+9269b0845439a57d04a70319b70558307400b030:docs/SECURITY_QUICK_REFERENCE.md:generic-api-key:188
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:115
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:124
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:131
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:138
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:147
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:156
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:165
+9a80be13ad01ed7f9aa367c28982857970a083e3:.secrets.baseline:generic-api-key:174
+d957b5d38cbf522252ef430e5e280bb8412776f0:.github/copilot-instructions.md:generic-api-key:57
