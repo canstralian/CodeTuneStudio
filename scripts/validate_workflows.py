@@ -14,6 +14,11 @@ if importlib.util.find_spec("yaml") is not None:
     _yaml = importlib.import_module("yaml")
 
 
+def _is_nonempty_str(value: Any) -> bool:
+    """Return True if `value` is a string containing non-whitespace characters."""
+    return isinstance(value, str) and bool(value.strip())
+
+
 class WorkflowValidator:
     """Validates GitHub workflow files."""
 
@@ -186,6 +191,7 @@ class WorkflowValidator:
         - Errors if the workflow trigger (`on`) is missing.
         - Errors if the top-level `jobs` section is missing (and returns immediately).
         - Errors if `jobs` exists but is not a non-empty mapping.
+        - Errors on malformed jobs and steps (see `_validate_jobs`).
 
         Parameters:
             filename (str): The workflow file name used in reported messages.
@@ -208,6 +214,62 @@ class WorkflowValidator:
         jobs = content.get("jobs", {})
         if not isinstance(jobs, dict) or not jobs:
             self.errors.append(f"{filename}: 'jobs' must be a non-empty mapping")
+            return
+
+        self._validate_jobs(filename, jobs)
+
+    def _validate_jobs(self, filename: str, jobs: dict[str, Any]) -> None:
+        """
+        Reject malformed job and step definitions that GitHub would refuse to run.
+
+        Checks performed for each job:
+        - The job must be a mapping.
+        - A reusable-workflow job (`uses` at job level) must reference a non-empty
+          string and is not checked for steps.
+        - Any other job must define `steps` as a list.
+        - Each step must be a mapping with exactly one of `uses` or `run`, and that
+          value must be a non-empty string.
+
+        Parameters:
+            filename (str): The workflow file name used in reported messages.
+            jobs (dict[str, Any]): The parsed top-level `jobs` mapping.
+        """
+        for job_name, job in jobs.items():
+            where = f"{filename}: job '{job_name}'"
+            if not isinstance(job, dict):
+                self.errors.append(f"{where} must be a mapping")
+                continue
+
+            if "uses" in job:
+                if not _is_nonempty_str(job["uses"]):
+                    self.errors.append(f"{where}: 'uses' must be a non-empty string")
+                continue
+
+            if "steps" not in job:
+                self.errors.append(f"{where}: missing 'steps' (or job-level 'uses')")
+                continue
+            steps = job["steps"]
+            if not isinstance(steps, list):
+                self.errors.append(f"{where}: 'steps' must be a list")
+                continue
+
+            for index, step in enumerate(steps, start=1):
+                step_where = f"{where} step {index}"
+                if not isinstance(step, dict):
+                    self.errors.append(f"{step_where} must be a mapping")
+                    continue
+                has_uses = "uses" in step
+                has_run = "run" in step
+                if has_uses == has_run:
+                    self.errors.append(
+                        f"{step_where} must define exactly one of 'uses' or 'run'"
+                    )
+                    continue
+                key = "uses" if has_uses else "run"
+                if not _is_nonempty_str(step[key]):
+                    self.errors.append(
+                        f"{step_where}: '{key}' must be a non-empty string"
+                    )
 
     def _validate_security(
         self, filename: str, raw_content: str, content: dict[str, Any]
