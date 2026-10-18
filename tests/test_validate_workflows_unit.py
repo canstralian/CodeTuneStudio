@@ -135,6 +135,87 @@ class TestValidateStructure(unittest.TestCase):
         self.v._validate_structure("ci.yml", content)
         self.assertTrue(any("jobs" in e for e in self.v.errors))
 
+    def _structure_errors(self, jobs):
+        """Run the structure check on a minimal workflow and return its errors."""
+        self._fresh()
+        self.v._validate_structure("ci.yml", {"name": "CI", "on": "push", "jobs": jobs})
+        return self.v.errors
+
+    def test_valid_steps_produce_no_errors(self):
+        jobs = {
+            "build": {
+                "runs-on": "ubuntu-latest",
+                "steps": [{"uses": "actions/checkout@v4"}, {"run": "make test"}],
+            },
+            "call": {"uses": "./.github/workflows/reusable.yml"},
+        }
+        self.assertEqual(self._structure_errors(jobs), [])
+
+    def test_null_steps_is_error(self):
+        errors = self._structure_errors({"build": {"steps": None}})
+        self.assertTrue(any("'steps' must be a list" in e for e in errors), errors)
+
+    def test_missing_steps_is_error(self):
+        errors = self._structure_errors({"build": {"runs-on": "ubuntu-latest"}})
+        self.assertTrue(any("missing 'steps'" in e for e in errors), errors)
+
+    def test_non_mapping_job_is_error(self):
+        errors = self._structure_errors({"build": "not-a-dict"})
+        self.assertTrue(any("must be a mapping" in e for e in errors), errors)
+
+    def test_non_string_step_uses_is_error(self):
+        for bad in (123, None, "", ["a"]):
+            with self.subTest(uses=bad):
+                errors = self._structure_errors({"build": {"steps": [{"uses": bad}]}})
+                self.assertTrue(
+                    any("'uses' must be a non-empty string" in e for e in errors),
+                    errors,
+                )
+
+    def test_non_string_run_is_error(self):
+        errors = self._structure_errors({"build": {"steps": [{"run": 42}]}})
+        self.assertTrue(
+            any("'run' must be a non-empty string" in e for e in errors), errors
+        )
+
+    def test_step_with_both_or_neither_uses_and_run_is_error(self):
+        for step in ({"uses": "a/b@v1", "run": "echo"}, {"name": "noop"}):
+            with self.subTest(step=step):
+                errors = self._structure_errors({"build": {"steps": [step]}})
+                self.assertTrue(any("exactly one of" in e for e in errors), errors)
+
+    def test_non_mapping_step_is_error(self):
+        errors = self._structure_errors({"build": {"steps": ["just-a-string"]}})
+        self.assertTrue(any("step 1 must be a mapping" in e for e in errors), errors)
+
+    def test_non_string_reusable_workflow_uses_is_error(self):
+        errors = self._structure_errors({"call": {"uses": 123}})
+        self.assertTrue(
+            any("'uses' must be a non-empty string" in e for e in errors), errors
+        )
+
+    def test_malformed_steps_fail_validate_all(self):
+        """End to end: the cases from the #357 review now exit non-zero."""
+        workflows_dir = Path(self._tmp.name) / ".github" / "workflows"
+        _write_workflow(
+            workflows_dir,
+            "bad.yml",
+            """\
+            name: Bad
+            on: push
+            jobs:
+              a:
+                runs-on: ubuntu-latest
+                steps: null
+              b:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: 123
+            """,
+        )
+        self.assertFalse(self.v.validate_all())
+        self.assertEqual(len(self.v.errors), 2, self.v.errors)
+
 
 class TestValidateSecurity(unittest.TestCase):
     def setUp(self):
