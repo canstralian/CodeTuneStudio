@@ -10,14 +10,16 @@ headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 # Fetch PRs
 response = requests.get(
-    f"https://api.github.com/repos/{REPO}/pulls?state=closed", headers=headers
+    f"https://api.github.com/repos/{REPO}/pulls?state=closed",
+    headers=headers,
+    timeout=30,
 )
 response.raise_for_status()
 prs = response.json()
 
 # Open checklist file
 try:
-    with open(CHECKLIST_PATH, "r") as f:
+    with open(CHECKLIST_PATH) as f:
         lines = f.readlines()
 except FileNotFoundError:
     print(f"Error: Checklist file '{CHECKLIST_PATH}' not found.")
@@ -35,5 +37,5 @@ for i, line in enumerate(lines):
 try:
     with open(CHECKLIST_PATH, "w") as f:
         f.writelines(lines)
-except (IOError, OSError) as e:
+except OSError as e:
     print(f"Error writing to {CHECKLIST_PATH}: {e}")

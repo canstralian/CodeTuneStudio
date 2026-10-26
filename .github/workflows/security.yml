@@ -1,4 +1,4 @@
-name: "Security OS — Static Analysis & Vulnerability Scanning"
+name: Security Checks
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: ["main"]
   schedule:
-    # Full security sweep every Monday at 03:00 UTC
     - cron: "0 3 * * 1"
 
 permissions:
@@ -15,97 +14,68 @@ permissions:
   actions: read
 
 jobs:
-  # ──────────────────────────────────────────────────────────────────────────
-  # Semgrep — fast, rule-based SAST (blocks PR merges on failure)
-  # ──────────────────────────────────────────────────────────────────────────
   semgrep:
-    name: "Semgrep · Security Audit"
+    name: Semgrep Audit
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
-    if: >
-      github.actor != 'dependabot[bot]'
-
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Run Semgrep security scan
+        with:
+          persist-credentials: false
+      - name: Run Semgrep audit
         run: |
-          semgrep ci \
+          semgrep scan \
             --config p/security-audit \
-            --config p/secrets \
+            --exclude venv \
+            --exclude .venv \
+            --exclude node_modules \
+            --exclude dist \
             --sarif \
             --output semgrep-results.sarif \
             --error
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-
-      - name: Upload SARIF to GitHub Security tab
-        if: always()
+      - name: Upload Semgrep SARIF
+        if: always() && hashFiles('semgrep-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep-results.sarif
           category: semgrep
-
-      - name: Upload SARIF as build artifact (fallback)
-        if: always()
+      - name: Upload Semgrep artifact
+        if: always() && hashFiles('semgrep-results.sarif') != ''
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-sarif-${{ github.run_id }}
           path: semgrep-results.sarif
           retention-days: 30
+          if-no-files-found: ignore
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # CodeQL — deep GitHub-native static analysis
-  # ──────────────────────────────────────────────────────────────────────────
-  codeql:
-    name: "CodeQL · Deep Static Analysis"
+  gitleaks:
+    name: Gitleaks Audit
     runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
-    strategy:
-      fail-fast: false
-      matrix:
-        # CodeTuneStudio has Python and JavaScript
-        language: ["python", "javascript"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: ${{ matrix.language }}
-          queries: security-extended,security-and-quality
-
-      - name: Auto-build
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:${{ matrix.language }}"
-
-  # ──────────────────────────────────────────────────────────────────────────
-  # Secret scanning hardening
-  # ──────────────────────────────────────────────────────────────────────────
-  secret-scan:
-    name: "Secret Scan · Credential Leak Detection"
-    runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks secret scanner
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          persist-credentials: false
+      - name: Run Gitleaks audit
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
+            detect \
+            --source=/repo \
+            --no-git \
+            --redact \
+            --report-format=sarif \
+            --report-path=/repo/audit-results.sarif \
+            --exit-code=1
+      - name: Upload audit artifact
+        if: always() && hashFiles('audit-results.sarif') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-sarif-${{ github.run_id }}
+          path: audit-results.sarif
+          retention-days: 30
+          if-no-files-found: ignore

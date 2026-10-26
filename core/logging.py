@@ -10,7 +10,6 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 
 class StructuredFormatter(logging.Formatter):
@@ -40,13 +39,10 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record with optional color support.
-
-        Args:
-            record: The log record to format.
+        Format a log record, applying ANSI color to the level name if color is enabled.
 
         Returns:
-            Formatted log string.
+            str: The formatted log message.
         """
         if self.use_color:
             levelname = record.levelname
@@ -56,19 +52,64 @@ class StructuredFormatter(logging.Formatter):
         return super().format(record)
 
 
+def redact_url(value: str) -> str:
+    """
+    Fully mask user credentials in a URL's network location for safe logging.
+
+    When the URL contains a username and/or password, the entire credential
+    component is replaced with ``***:***`` so that neither the username nor the
+    password is ever emitted in clear text. Scheme, host, optional port, path,
+    query, and fragment are preserved. Returns the input unchanged if it is
+    falsy or has no network location.
+
+    Returns:
+        redacted (str): The URL with any credentials masked as ``***:***``, or
+        the original value if no redaction was performed.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    if not value:
+        return value
+
+    parts = urlsplit(value)
+    if not parts.netloc:
+        return value
+
+    host = parts.hostname or ""
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+
+    redacted_netloc = host
+    try:
+        port = parts.port
+    except ValueError:
+        # Keep logging safe on malformed ports instead of raising from redaction.
+        port = None
+    if port is not None:
+        redacted_netloc = f"{redacted_netloc}:{port}"
+    if parts.username is not None or parts.password is not None:
+        redacted_netloc = f"***:***@{redacted_netloc}"
+
+    return urlunsplit(
+        (parts.scheme, redacted_netloc, parts.path, parts.query, parts.fragment)
+    )
+
+
 def setup_logging(
-    log_level: Optional[str] = None,
-    log_file: Optional[str] = None,
+    log_level: str | None = None,
+    log_file: str | None = None,
     enable_color: bool = True,
 ) -> None:
     """
-    Configure application-wide logging.
+    Configure the root logger with a console handler (optional ANSI color) and an optional rotating file handler.
 
-    Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-                  If None, reads from LOG_LEVEL environment variable or defaults to INFO.
-        log_file: Optional path to log file. If provided, logs are also written to file.
-        enable_color: Whether to use colored output in console (default: True).
+    Parameters:
+        log_level (Optional[str]): Logging level name (e.g., "DEBUG", "INFO"). If None, reads the LOG_LEVEL environment variable or defaults to "INFO".
+        log_file (Optional[str]): Path to a log file. If provided, a rotating file handler is added (10 MB max per file, 5 backups).
+        enable_color (bool): Enable ANSI-colored console output when stdout is a TTY.
+
+    Raises:
+        ValueError: If `log_level` does not correspond to a valid logging level name.
     """
     # Determine log level
     if log_level is None:

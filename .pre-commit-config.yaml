@@ -3,21 +3,42 @@ minimum_pre_commit_version: "3.5.0"
 default_stages: [pre-commit]
 fail_fast: true
 
+# Do not lint vendored, generated, or non-maintained files.
+exclude: >
+  (?x)^(
+    venv/|\.venv/|build/|dist/|node_modules/|
+    attached_assets/|
+    .*\.backup$|
+    generated-icon\.png$
+  )
+
 repos:
+  # Ruff for linting only (Black is the formatter of record for this repo).
+  # Pinned to match the version used by the CI style-check job.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.2
+    rev: v0.14.6
     hooks:
-      - id: ruff-check
+      - id: ruff
         args: [--fix]
         types_or: [python, pyi]
-      - id: ruff-format
-        types_or: [python, pyi]
+
+  # Black, pinned to match the CI style-check job.
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.11.0
+    hooks:
+      - id: black
+        args: [--line-length=88]
+        exclude: '^(app\.py|index\.html)$'
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # Restrict whitespace fixers to Python source, which Black keeps clean;
+      # avoids churn on the repo's many hand-authored docs/assets.
       - id: trailing-whitespace
+        types_or: [python, pyi]
       - id: end-of-file-fixer
+        types_or: [python, pyi]
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: check-added-large-files

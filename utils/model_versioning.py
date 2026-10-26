@@ -27,7 +27,7 @@ class ModelVersion:
         """Save a model version with its configuration"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         config_hash = hashlib.md5(
-            json.dumps(config, sort_keys=True).encode()
+            json.dumps(config, sort_keys=True).encode(), usedforsecurity=False
         ).hexdigest()[:8]
         version_id = f"{timestamp}_{config_hash}"
 
