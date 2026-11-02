@@ -42,14 +42,34 @@ _SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         r"\1=***",
     ),
     # JSON / Python-dict style secrets: "token": "abc" or 'password': 'x'.
-    # Keeps the key and the value's quote style, masking only the value.
+    # Keeps the key and the value's quote style, masking only the value. The
+    # value match is escape-aware so values containing the other quote
+    # ("can't") or an escaped delimiter ("a\"b") are redacted in full.
     (
         re.compile(
             r"""(?i)(["'](?:password|passwd|pwd|token|secret|api[_-]?key)["']\s*:\s*)"""
-            r"""(["'])[^"']*\2"""
+            r"""(["'])(?:\\.|(?!\2).)*\2"""
         ),
         r"\1\2***\2",
     ),
+)
+
+# Dictionary keys whose values are secrets and must be redacted wholesale,
+# regardless of the value's own formatting. Matched case-insensitively.
+_SENSITIVE_KEYS = frozenset(
+    {
+        "password",
+        "passwd",
+        "pwd",
+        "token",
+        "secret",
+        "api_key",
+        "api-key",
+        "apikey",
+        "authorization",
+        "access_token",
+        "refresh_token",
+    }
 )
 
 # Bound recursion when walking arbitrary Sentry event structures.
@@ -85,7 +105,14 @@ def _scrub_event_data(obj: object, _depth: int = 0) -> object:
     if isinstance(obj, str):
         return _scrub_text(obj)
     if isinstance(obj, dict):
-        return {k: _scrub_event_data(v, _depth + 1) for k, v in obj.items()}
+        return {
+            k: (
+                "***"
+                if isinstance(k, str) and k.lower() in _SENSITIVE_KEYS
+                else _scrub_event_data(v, _depth + 1)
+            )
+            for k, v in obj.items()
+        }
     if isinstance(obj, list):
         return [_scrub_event_data(v, _depth + 1) for v in obj]
     if isinstance(obj, tuple):

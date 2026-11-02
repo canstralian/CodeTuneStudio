@@ -185,6 +185,23 @@ class TestScrubbing(unittest.TestCase):
         self.assertNotIn("pw@", scrubbed["message"])
         self.assertNotIn(":b@", scrubbed["extra"]["urls"][0])
 
+    def test_scrub_event_data_redacts_sensitive_keys(self) -> None:
+        """Values under sensitive dict keys are redacted wholesale."""
+        monitoring = _fresh_monitoring()
+        event = {"extra": {"password": "actual-secret", "user": "alice"}}
+        scrubbed = monitoring._scrub_event_data(event)
+        self.assertEqual(scrubbed["extra"]["password"], "***")
+        self.assertEqual(scrubbed["extra"]["user"], "alice")
+        self.assertNotIn("actual-secret", str(scrubbed))
+
+    def test_scrub_text_masks_quoted_values_with_quotes(self) -> None:
+        """Quoted secret values survive embedded or escaped quotes."""
+        monitoring = _fresh_monitoring()
+        self.assertNotIn(
+            "can'tshare", monitoring._scrub_text('{"token": "can\'tshare"}')
+        )
+        self.assertNotIn("def", monitoring._scrub_text(r'{"token": "abc\"def"}'))
+
     def test_before_send_scrubs_and_survives_bad_input(self) -> None:
         """before_send scrubs strings and never raises on odd input."""
         monitoring = _fresh_monitoring()
