@@ -25,6 +25,7 @@ from components.parameter_config import training_parameters
 from components.plugin_manager import plugin_manager
 from components.tokenizer_builder import tokenizer_builder
 from components.training_monitor import training_monitor
+from core.monitoring import setup_sentry
 from utils.config_validator import validate_config
 from utils.database import TrainingConfig, db, init_db
 from utils.plugins.registry import registry
@@ -105,7 +106,9 @@ class MLFineTuningApp:
                 },
             }
         )
-        logger.info(f"Database configured with URL: {database_url}")
+        # Avoid logging the raw URL: it can carry credentials that would leak
+        # into logs and Sentry breadcrumbs (CWE-532).
+        logger.info("Database configured")
 
     def _initialize_database_with_retry(
         self, max_retries: int = 3, base_delay: float = 1.0
@@ -232,15 +235,13 @@ class MLFineTuningApp:
 
     def _render_navigation(self) -> None:
         """Render navigation links with improved styling"""
-        st.markdown(
-            """
+        st.markdown("""
             ### 📚 Resources
             - [Documentation](https://github.com/canstralian/CodeTuneStudio/wiki)
             - [API Reference](https://github.com/canstralian/CodeTuneStudio/blob/main/API.md)
             - [Examples](https://github.com/canstralian/CodeTuneStudio/tree/main/examples)
             - [Report Issues](https://github.com/canstralian/CodeTuneStudio/issues)
-        """
-        )
+        """)
 
     def save_training_config(self, config: dict[str, Any], dataset: str) -> int | None:
         """Save training configuration with improved validation and error handling"""
@@ -379,6 +380,10 @@ def run_app() -> None:
     This function instantiates and runs the MLFineTuningApp.
     It's the primary entry point called by the CLI and legacy app.py.
     """
+    # Initialize Sentry (error monitoring + performance tracing) before the
+    # Flask/Streamlit application objects are created so the SDK's automatic
+    # instrumentation can hook into them. Safe no-op if Sentry is unconfigured.
+    setup_sentry()
     try:
         app = MLFineTuningApp()
         app.run()
