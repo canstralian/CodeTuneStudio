@@ -8,6 +8,7 @@ created. They pass whether or not ``sentry_sdk`` is installed.
 
 import importlib
 import os
+import time
 import unittest
 from types import ModuleType
 from unittest.mock import MagicMock, patch
@@ -201,6 +202,17 @@ class TestScrubbing(unittest.TestCase):
             "can'tshare", monitoring._scrub_text('{"token": "can\'tshare"}')
         )
         self.assertNotIn("def", monitoring._scrub_text(r'{"token": "abc\"def"}'))
+
+    def test_scrub_text_quoted_value_is_not_redos_prone(self) -> None:
+        """A pathological quoted value scrubs in linear time, not exponential."""
+        monitoring = _fresh_monitoring()
+        # This input triggers catastrophic backtracking in an ambiguous
+        # backreference-delimited pattern; the literal-delimiter patterns
+        # handle it in linear time.
+        pathological = '"pwd":"' + ("\\a" * 5000)
+        start = time.monotonic()
+        monitoring._scrub_text(pathological)
+        self.assertLess(time.monotonic() - start, 2.0)
 
     def test_before_send_scrubs_and_survives_bad_input(self) -> None:
         """before_send scrubs strings and never raises on odd input."""

@@ -42,15 +42,24 @@ _SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         r"\1=***",
     ),
     # JSON / Python-dict style secrets: "token": "abc" or 'password': 'x'.
-    # Keeps the key and the value's quote style, masking only the value. The
-    # value match is escape-aware so values containing the other quote
-    # ("can't") or an escaped delimiter ("a\"b") are redacted in full.
+    # Two patterns, one per value-quote style, each using a *literal* delimiter
+    # with mutually-exclusive branches (non-delimiter char OR escaped char).
+    # This is escape-aware (handles "a\"b" and embedded other-quotes) while
+    # staying linear-time — a single backreference-delimited value would allow
+    # catastrophic backtracking (ReDoS).
     (
         re.compile(
-            r"""(?i)(["'](?:password|passwd|pwd|token|secret|api[_-]?key)["']\s*:\s*)"""
-            r"""(["'])(?:\\.|(?!\2).)*\2"""
+            r'(?i)(["\'](?:password|passwd|pwd|token|secret|api[_-]?key)["\']\s*:\s*)'
+            r'"(?:[^"\\]|\\.)*"'
         ),
-        r"\1\2***\2",
+        r'\1"***"',
+    ),
+    (
+        re.compile(
+            r"(?i)([\"'](?:password|passwd|pwd|token|secret|api[_-]?key)[\"']\s*:\s*)"
+            r"'(?:[^'\\]|\\.)*'"
+        ),
+        r"\1'***'",
     ),
 )
 
