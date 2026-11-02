@@ -42,6 +42,10 @@ def _safe_database_url(url: str) -> str:
         port = parts.port
     except ValueError:
         return "<database>"
+    # A URL with no scheme (e.g. "localhost/db") is not a usable DB URL and
+    # would render as a malformed "://..."; treat it as unparseable.
+    if not parts.scheme:
+        return "<database>"
     netloc = f"{host}:{port}" if port is not None else host
     # Build directly rather than via urlunsplit, which collapses the empty
     # netloc of host-less URLs (e.g. sqlite:///db.sqlite).

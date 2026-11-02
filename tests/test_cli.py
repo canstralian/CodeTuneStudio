@@ -46,6 +46,11 @@ class TestSafeDatabaseUrl(unittest.TestCase):
             _safe_database_url("postgresql://host:notaport/db"), "<database>"
         )
 
+    def test_schemeless_url_falls_back(self) -> None:
+        """A schemeless string is treated as unparseable, not rendered raw."""
+        self.assertEqual(_safe_database_url("localhost/db"), "<database>")
+        self.assertEqual(_safe_database_url("not a url"), "<database>")
+
 
 if __name__ == "__main__":
     unittest.main()

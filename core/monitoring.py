@@ -19,12 +19,15 @@ import logging
 import math
 import os
 import re
+import threading
 
 logger = logging.getLogger(__name__)
 
 # Idempotency guard held in a mutable mapping so repeated calls within a
-# single interpreter (e.g. CLI + app process) are cheap and safe.
+# single interpreter (e.g. CLI + app process) are cheap and safe. The lock
+# makes the check-and-initialize sequence atomic across threads.
 _STATE: dict[str, bool] = {"initialized": False}
+_INIT_LOCK = threading.Lock()
 
 # Patterns for secrets that must never leave the host inside Sentry events or
 # breadcrumbs. Defense-in-depth: even though known log sites are already
@@ -210,52 +213,54 @@ def setup_sentry() -> bool:
         ``True`` if Sentry was initialized, ``False`` if it was skipped
         (missing DSN, missing ``sentry_sdk``, already initialized, or error).
     """
-    if _STATE["initialized"]:
-        return False
+    with _INIT_LOCK:
+        if _STATE["initialized"]:
+            return False
 
-    dsn = os.environ.get("SENTRY_DSN", "").strip()
-    if not dsn:
-        logger.info("SENTRY_DSN not set; Sentry monitoring is disabled")
-        return False
+        dsn = os.environ.get("SENTRY_DSN", "").strip()
+        if not dsn:
+            logger.info("SENTRY_DSN not set; Sentry monitoring is disabled")
+            return False
 
-    try:
-        import sentry_sdk  # noqa: PLC0415 - optional dependency, imported lazily
-    except ImportError:
-        logger.warning(
-            "sentry_sdk is not installed; skipping Sentry initialization. "
-            "Install with `pip install 'sentry-sdk[flask]'` to enable monitoring."
+        try:
+            import sentry_sdk  # noqa: PLC0415 - optional dependency, imported lazily
+        except ImportError:
+            logger.warning(
+                "sentry_sdk is not installed; skipping Sentry initialization. "
+                "Install with `pip install 'sentry-sdk[flask]'` to enable monitoring."
+            )
+            return False
+
+        traces_sample_rate = _env_sample_rate("SENTRY_TRACES_SAMPLE_RATE", 1.0)
+        send_default_pii = _env_bool("SENTRY_SEND_DEFAULT_PII", default=False)
+        environment = os.environ.get(
+            "SENTRY_ENVIRONMENT", os.environ.get("APP_ENV", "development")
         )
-        return False
 
-    traces_sample_rate = _env_sample_rate("SENTRY_TRACES_SAMPLE_RATE", 1.0)
-    send_default_pii = _env_bool("SENTRY_SEND_DEFAULT_PII", default=False)
-    environment = os.environ.get(
-        "SENTRY_ENVIRONMENT", os.environ.get("APP_ENV", "development")
-    )
+        try:
+            sentry_sdk.init(
+                dsn=dsn,
+                environment=environment,
+                # Attach request headers and IP addresses only when explicitly
+                # opted in via SENTRY_SEND_DEFAULT_PII=true.
+                send_default_pii=send_default_pii,
+                # Fraction of transactions sampled for performance tracing.
+                # 1.0 traces every transaction; lower it for high-traffic apps.
+                traces_sample_rate=traces_sample_rate,
+                # Defense-in-depth: scrub credentials from every outgoing event,
+                # transaction, and breadcrumb so a stray log line or exception
+                # cannot leak secrets. Transactions bypass before_send, so the
+                # same scrubber is registered as before_send_transaction too.
+                before_send=_before_send,
+                before_send_transaction=_before_send,
+                before_breadcrumb=_before_breadcrumb,
+            )
+        except Exception:
+            logger.exception("Failed to initialize Sentry")
+            return False
 
-    try:
-        sentry_sdk.init(
-            dsn=dsn,
-            environment=environment,
-            # Attach request headers and IP addresses only when explicitly
-            # opted in via SENTRY_SEND_DEFAULT_PII=true.
-            send_default_pii=send_default_pii,
-            # Fraction of transactions sampled for performance tracing.
-            # 1.0 traces every transaction; lower it for high-traffic apps.
-            traces_sample_rate=traces_sample_rate,
-            # Defense-in-depth: scrub credentials from every outgoing event,
-            # transaction, and breadcrumb so a stray log line or exception
-            # cannot leak secrets. Transactions bypass before_send, so the
-            # same scrubber is registered as before_send_transaction too.
-            before_send=_before_send,
-            before_send_transaction=_before_send,
-            before_breadcrumb=_before_breadcrumb,
-        )
-    except Exception:
-        logger.exception("Failed to initialize Sentry")
-        return False
+        _STATE["initialized"] = True
 
-    _STATE["initialized"] = True
     logger.info(
         "Sentry initialized (environment=%s, traces_sample_rate=%s, "
         "send_default_pii=%s)",
