@@ -38,6 +38,15 @@ _SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         re.compile(r"(?i)\b(password|passwd|pwd|token|secret|api[_-]?key)=[^&\s;]+"),
         r"\1=***",
     ),
+    # JSON / Python-dict style secrets: "token": "abc" or 'password': 'x'.
+    # Keeps the key and the value's quote style, masking only the value.
+    (
+        re.compile(
+            r"""(?i)(["'](?:password|passwd|pwd|token|secret|api[_-]?key)["']\s*:\s*)"""
+            r"""(["'])[^"']*\2"""
+        ),
+        r"\1\2***\2",
+    ),
 )
 
 # Bound recursion when walking arbitrary Sentry event structures.
@@ -234,9 +243,12 @@ def setup_sentry() -> bool:
             # Fraction of transactions sampled for performance tracing.
             # 1.0 traces every transaction; lower it for high-traffic apps.
             traces_sample_rate=traces_sample_rate,
-            # Defense-in-depth: scrub credentials from every outgoing event and
-            # breadcrumb so a stray log line or exception cannot leak secrets.
+            # Defense-in-depth: scrub credentials from every outgoing event,
+            # transaction, and breadcrumb so a stray log line or exception
+            # cannot leak secrets. Transactions bypass before_send, so the
+            # same scrubber is registered as before_send_transaction too.
             before_send=_before_send,
+            before_send_transaction=_before_send,
             before_breadcrumb=_before_breadcrumb,
         )
     except Exception:

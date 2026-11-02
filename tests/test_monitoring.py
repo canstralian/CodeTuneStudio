@@ -164,6 +164,16 @@ class TestScrubbing(unittest.TestCase):
         self.assertNotIn("hunter2", monitoring._scrub_text("db?password=hunter2"))
         self.assertNotIn("abc123", monitoring._scrub_text("Authorization token=abc123"))
 
+    def test_scrub_text_masks_json_and_dict_secret(self) -> None:
+        """JSON and Python-dict credential forms are masked, key preserved."""
+        monitoring = _fresh_monitoring()
+        out_json = monitoring._scrub_text('{"token": "abc123"}')
+        self.assertEqual(out_json, '{"token": "***"}')
+        self.assertNotIn("abc123", out_json)
+        out_dict = monitoring._scrub_text("{'password': 'secret'}")
+        self.assertEqual(out_dict, "{'password': '***'}")
+        self.assertNotIn("secret", out_dict)
+
     def test_scrub_event_data_walks_nested_structures(self) -> None:
         """Secrets are scrubbed from nested dict/list event structures."""
         monitoring = _fresh_monitoring()
@@ -203,6 +213,21 @@ class TestScrubbing(unittest.TestCase):
         _, kwargs = fake_sdk.init.call_args
         self.assertTrue(callable(kwargs["before_send"]))
         self.assertTrue(callable(kwargs["before_breadcrumb"]))
+
+    def test_init_registers_transaction_scrubber(self) -> None:
+        """setup_sentry also scrubs performance transactions via the hook."""
+        monitoring = _fresh_monitoring()
+        fake_sdk = MagicMock()
+        with (
+            patch.dict(os.environ, {"SENTRY_DSN": "https://k@example.test/1"}),
+            patch.dict("sys.modules", {"sentry_sdk": fake_sdk}),
+        ):
+            self.assertTrue(monitoring.setup_sentry())
+        _, kwargs = fake_sdk.init.call_args
+        # Transactions bypass before_send, so the scrubber must also be wired
+        # as before_send_transaction.
+        self.assertIs(kwargs["before_send_transaction"], kwargs["before_send"])
+        self.assertTrue(callable(kwargs["before_send_transaction"]))
 
 
 if __name__ == "__main__":
